@@ -1,0 +1,3 @@
+#!/bin/sh
+cd /web/lucos/contacts/contacts
+python manage.py runserver 0.0.0.0:8005

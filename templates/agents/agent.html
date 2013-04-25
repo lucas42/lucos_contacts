@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html> 
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+	<head>
+		<meta name="viewport" content="initial-scale=1.0" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<link rel="apple-touch-icon" href="http://l42.eu/ios.png"/>
+		<script type='text/javascript' src='http://l42.eu/bootloader'></script>
+		<title>LucOs - {{ name }}</title>
+	</head>
+	<body>
+		<nav>
+			<a href="/agents" class='navback'>&lt;- Contact List</a>
+			<a href="{{ url }}/edit" class='navedit'>Edit -&gt;</a>
+		</nav>
+		<h1 id='title'>{{ name }}</h1>
+		{%for num in phone %}
+			<a class='phonenum' href="tel:{{num}}">{{num}}</a>
+		{%endfor%}
+                {%for address in formattedaddresses %}
+                        <span class='address'>{{address}}</span>
+                {%endfor%}
+	</body>
+</html>
