@@ -176,7 +176,7 @@ def identify(request):
 	
 def resources(request):
 	resourcefiles = {
-		'_lucos': { 'filename': "../../core/lucos.js", 'type': 'js'},
+		'_lucos': { 'filename': "../core/lucos.js", 'type': 'js'},
 		'contacts': { 'filename': "templates/resources/script.js", 'type': 'js'},
 		'style': { 'filename': "templates/resources/style.css", 'type': 'css'}
 	};
