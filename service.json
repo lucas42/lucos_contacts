@@ -1,0 +1,8 @@
+{
+	"port": 8005,
+	"name": "Contacts",
+	"commands": {
+		"main": 'python manage.py runserver %p'
+	},
+	"subdomain": "contacts"
+}
