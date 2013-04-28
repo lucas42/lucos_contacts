@@ -77,7 +77,7 @@ INSTALLED_APPS = (
 )
 
 # Need newer version of django for logging to work
-LOGGING = {
+'''LOGGING = {
     'handlers': {
         'null': {
             'level':'ERROR',
@@ -97,4 +97,4 @@ LOGGING = {
 			'propagate': False,
 		},
 	}
-}
+}'''
