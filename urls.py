@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-from django.views.generic.simple import redirect_to
+from django.views.generic import RedirectView
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -12,7 +12,7 @@ urlpatterns = patterns('',
      (r'^agents/(?P<list>(phone|postal|all))$', 'contacts.agents.views.agentindex'),
      (r'^identify/?$', 'contacts.agents.views.identify'),
      (r'^resources$', 'contacts.agents.views.resources'),
-     (r'^(?:agents/?)?$', redirect_to, {'url': '/agents/all'}),
+     (r'^(?:agents/?)?$', RedirectView.as_view(url='/agents/all')),
      (r'^favicon.ico$', 'django.views.static.serve', {'document_root': 'templates/resources/', 'path': 'favicon.png'}),
      (r'^icon$', 'django.views.static.serve', {'document_root': 'templates/resources/', 'path': 'logo.png'}),
 
