@@ -4,6 +4,7 @@ from django import utils
 from django.shortcuts import redirect, render_to_response
 from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from local_settings import API_KEY
 import json, time, urllib2, os
 
 # Returns a HttpResponse object
