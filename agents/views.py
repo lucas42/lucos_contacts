@@ -36,11 +36,13 @@ def authenticate(request):
 		else:
 			return HttpResponse(status=403)
 	if ('token' in request.GET):
-		data = json.load(urllib2.urlopen('http://auth.l42.eu/data?' + utils.http.urlencode({'token': request.GET['token']})))
+		url = 'http://auth.l42.eu/data?' + utils.http.urlencode({'token': request.GET['token']})
+		data = json.load(urllib2.urlopen(url))
 		if (data['id'] == None):
-			return HttpResponse(status=500)
-		request.session['agentid'] = data['id']
-		return redirect(request.path)
+			print "No id returned by auth service; "+url
+		else:
+			request.session['agentid'] = data['id']
+			return redirect(request.path)
 	return redirect('http://auth.l42.eu/authenticate?' + utils.http.urlencode({'redirect_uri': request.build_absolute_uri()}))
 
 @csrf_exempt
