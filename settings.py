@@ -75,25 +75,30 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 )
 
-# Need newer version of django for logging to work
 '''LOGGING = {
+    'version': 1,
     'handlers': {
         'null': {
             'level':'ERROR',
             'class':'django.utils.log.NullHandler',
-            'stream': sys.stdout
+        },
+        'console': {
+            'level':'ERROR',
+            'class':'logging.StreamHandler',
+            'stream': sys.stderr
         },
     },
 	'loggers': {
-		'django': {
-			'handlers':['null'],
-			'propagate': False,
-			'level':'CRITICAL',
-		},
+        'django': {
+            'handlers': ['null'],
+            'propagate': False,
+            'level': 'CRITICAL',
+        },
 		'django.request': {
 			'level': 'CRITICAL',
 			'handlers': ['null'],
 			'propagate': False,
 		},
-	}
+    }
 }'''
+

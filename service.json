@@ -4,5 +4,6 @@
 	"commands": {
 		"main": 'python manage.py runserver %p'
 	},
-	"subdomain": "contacts"
+	"subdomain": "contacts",
+	"combinestdouterr": true
 }
