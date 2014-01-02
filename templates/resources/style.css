@@ -1,4 +1,4 @@
-.agentlist { list-style-type: none; max-width: 400px; margin: 0 auto; }
+.agentlist { list-style-type: none; max-width: 400px; margin: 0 auto; padding: 0; }
 .agentlist a { text-decoration: none; color: inherit; display:block; background: #cc9; padding: 10px; margin: 1px;}
 .agentlist a:hover { background: #9c9; }
 .agentlist h3 { margin: 0; }
@@ -13,6 +13,7 @@ nav { display: block; overflow: hidden; }
 .navswitch a { display: inline; }
 .navswitch a:not(:first-child) { border-left: black solid thin; }
 .navswitch a:not(:last-child) { border-right: black solid thin; }
+.navswitch a.current { background-color: #9c9; color: #fff; }
 a.phonenum { display: block; font-weight: bold; font-family: monospace; font-size: 2em; padding: 0.7em; background: #99f; max-width: 400px; text-align: center; color: #555; text-decoration: none; margin: 0 auto; }
 .agentlist .phonenum { display: block; font-family: monospace; padding: 0.3em 0; text-align: right; }
 .address { display: block;
