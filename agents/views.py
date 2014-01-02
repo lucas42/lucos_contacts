@@ -4,7 +4,7 @@ from django import utils
 from django.shortcuts import redirect, render_to_response
 from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from local_settings import API_KEY
+from local_settings import API_KEY, AUTH_DOMAIN
 import json, time, urllib2, os
 
 # Returns a HttpResponse object
@@ -36,7 +36,7 @@ def authenticate(request):
 		else:
 			return HttpResponse(status=403)
 	if ('token' in request.GET):
-		url = 'http://'+AUTH_DOMAIN+'auth.l42.eu''/data?' + utils.http.urlencode({'token': request.GET['token']})
+		url = 'http://'+AUTH_DOMAIN+'/data?' + utils.http.urlencode({'token': request.GET['token']})
 		data = json.load(urllib2.urlopen(url))
 		if (data['id'] == None):
 			print "No id returned by auth service; "+url
