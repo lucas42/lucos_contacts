@@ -138,7 +138,7 @@ def agentindex(request, list):
 		agentlist = Agent.objects.all()
 	else:
 		agentlist = Agent.objects.filter(id=0)
-	for agent in agentlist.distinct():
+	for agent in agentlist.distinct().order_by('id'):
 		agents.append(agentdata(agent, request.session['agentid']))
 	return render_to_response('agents/index.html', {'agents': agents, 'list': list })
 
