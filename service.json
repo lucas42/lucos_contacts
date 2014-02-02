@@ -2,7 +2,7 @@
 	"port": 8005,
 	"name": "Contacts",
 	"commands": {
-		"main": 'python manage.py runserver %p'
+		"main": 'python manage.py runserver %p --insecure'
 	},
 	"subdomain": "contacts",
 	"combinestdouterr": true
