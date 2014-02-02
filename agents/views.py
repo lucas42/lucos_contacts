@@ -91,6 +91,7 @@ def agent(request, extid, method):
 			new_addresses = filter(None, request.POST.getlist('addresses'))
 			to_delete = array_diff(output['addresses'], new_addresses)
 			to_add = array_diff(new_addresses, output['addresses'])
+			addresstype = AccountType(id=10)
 			for i, v in enumerate(to_delete):
 				Account.objects.filter(type=addresstype).filter(agent=agent).filter(url=v).delete()
 			for i, v in enumerate(to_add):
