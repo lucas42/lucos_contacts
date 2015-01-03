@@ -90,9 +90,15 @@ class RelationshipType(models.Model):
 			self.inverse.save()
 			print "inverseinverse:"+self.inverse.inverse.__unicode__();
 		super(RelationshipType, self).save(*args, **kwargs)
+		self.inferRelationships()
 	
 	def getLabel(self):
 		return getTranslated(self, 'label')
+
+	# Infer Relationships for all relationships of this type
+	def inferRelationships(self):
+		for relationship in Relationship.objects.filter(type=self):
+			relationship.inferRelationships()
 
 	def __unicode__(self):
 		return self.getLabel()
@@ -180,11 +186,8 @@ class RelationshipTypeConnection(models.Model):
 	def save(self, *args, **kwargs):
 		super(RelationshipTypeConnection, self).save(*args, **kwargs)
 
-		# Find any existing relationsships which may be affected by this new connection
-		for relationship in Relationship.objects.filter(type=self.relation_type_a):
-			relationship.inferRelationships()
-		for relationship in Relationship.objects.filter(type=self.relation_type_b):
-			relationship.inferRelationships()
+		# Find any existing relationships which may be affected by this new connection
+		self.relation_type_a.inferRelationships()
+		self.relation_type_b.inferRelationships()
 		if self.reversible:
-			for relationship in Relationship.objects.filter(type=self.inferred_relation_type):
-				relationship.inferRelationships()
+			self.inferred_relation_type.inferRelationships()
