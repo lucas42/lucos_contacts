@@ -103,6 +103,9 @@ class Relationship(models.Model):
 	type = models.ForeignKey(RelationshipType, blank=False, help_text='Subject is a $type of object')
 	def save(self, *args, **kwargs):
 		super(Relationship, self).save(*args, **kwargs)
+		self.inferRelationships()
+
+	def inferRelationships(self):
 		#print "--Saved "+self.__unicode__()
 		# Set inferred relationships
 		if self.type.transitive:
@@ -172,3 +175,16 @@ class RelationshipTypeConnection(models.Model):
 	reversible = models.BooleanField(default=False)
 	def __unicode__(self):
 		return "a="+self.relation_type_a.getLabel()+" b="+self.relation_type_b.getLabel()+" infer="+self.inferred_relation_type.getLabel()
+
+
+	def save(self, *args, **kwargs):
+		super(RelationshipTypeConnection, self).save(*args, **kwargs)
+
+		# Find any existing relationsships which may be affected by this new connection
+		for relationship in Relationship.objects.filter(type=self.relation_type_a):
+			relationship.inferRelationships()
+		for relationship in Relationship.objects.filter(type=self.relation_type_b):
+			relationship.inferRelationships()
+		if self.reversible:
+			for relationship in Relationship.objects.filter(type=self.inferred_relation_type):
+				relationship.inferRelationships()
