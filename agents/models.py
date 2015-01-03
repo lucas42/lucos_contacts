@@ -75,8 +75,8 @@ class RelationshipType(models.Model):
 	label_ga = models.CharField(max_length=255, blank=True)
 	label_gd = models.CharField(max_length=255, blank=True)
 	label_cy = models.CharField(max_length=255, blank=True)
-	symmetrical = models.BooleanField()
-	transitive = models.BooleanField()
+	symmetrical = models.BooleanField(default=False)
+	transitive = models.BooleanField(default=False)
 	inverse = models.OneToOneField('self', null=True, blank=True)
 	
 	
@@ -169,6 +169,6 @@ class RelationshipTypeConnection(models.Model):
 	relation_type_a = models.ForeignKey(RelationshipType, related_name='a', blank=False)
 	relation_type_b = models.ForeignKey(RelationshipType, related_name='b', blank=True, null=True)
 	inferred_relation_type = models.ForeignKey(RelationshipType, related_name='inferred', blank=False)
-	reversible = models.BooleanField()
+	reversible = models.BooleanField(default=False)
 	def __unicode__(self):
 		return "a="+self.relation_type_a.getLabel()+" b="+self.relation_type_b.getLabel()+" infer="+self.inferred_relation_type.getLabel()

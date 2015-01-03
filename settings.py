@@ -105,3 +105,5 @@ INSTALLED_APPS = (
     }
 }'''
 
+# This prevents warning about old test runners
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
