@@ -20,3 +20,5 @@ a.phonenum { display: block; font-weight: bold; font-family: monospace; font-siz
 text-align: center;
 margin: 1em;
 font-weight: bold; white-space: pre; }
+.relation { display: block;}
+h2 { text-align: center; }

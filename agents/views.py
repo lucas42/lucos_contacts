@@ -73,7 +73,7 @@ def agent(request, extid, method):
 	if (agent.id <> ext.id):
 		return redirect(agent)
 	
-	output = agentdata(agent, request.session['agentid'])
+	output = agentdata(agent, request.session['agentid'], True)
 	if (method == 'edit'):
 		template = 'agent-edit.html'
 		if (request.method == 'POST'):
@@ -144,7 +144,7 @@ def agentindex(request, list):
 		agents.append(agentdata(agent, request.session['agentid']))
 	return render_to_response('agents/index.html', {'agents': agents, 'list': list })
 
-def agentdata(agent, currentid):
+def agentdata(agent, currentid, extended=False):
 
 	phonenums = []
         phonenumbertype = AccountType(id=5)
@@ -157,14 +157,19 @@ def agentdata(agent, currentid):
                 rawaddresses.append(address.url)
                 formattedaddresses.append(address.url.replace(',', ',\n'))
 	
-	agentdata = {'agent': agent, 'name': agent.getName(), 'phone': phonenums, 'url': agent.get_absolute_url(), 'isme': agent.id == currentid, 'addresses': rawaddresses, 'formattedaddresses': formattedaddresses}
-        try:
-                rel = Relationship.objects.get(subject=agent.id, object=currentid)
-                agentdata['rel'] = rel.type.getLabel()
-        except Relationship.DoesNotExist:
-                if (agent.id == currentid):
-                        agentdata['rel'] = 'me'
-	return agentdata
+	agentdataobj = {'agent': agent, 'name': agent.getName(), 'phone': phonenums, 'url': agent.get_absolute_url(), 'isme': agent.id == currentid, 'addresses': rawaddresses, 'formattedaddresses': formattedaddresses}
+
+	if extended:
+		agentdataobj['relations'] = []
+		for relation in Relationship.objects.filter(object=agent).order_by('subject'):
+			agentdataobj['relations'].append(agentdata(relation.subject, agent.id))
+	try:
+		rel = Relationship.objects.get(subject=agent.id, object=currentid)
+		agentdataobj['rel'] = rel.type.getLabel()
+	except Relationship.DoesNotExist:
+		if (agent.id == currentid):
+			agentdataobj['rel'] = 'me'
+	return agentdataobj
 
 def identify(request):
 	try:

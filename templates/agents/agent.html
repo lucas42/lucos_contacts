@@ -20,5 +20,9 @@
                 {%for address in formattedaddresses %}
                         <span class='address'>{{address}}</span>
                 {%endfor%}
+        {%if relations %}
+        <h2>Relations</h2>
+			{% include "agents/agentlist.html" with agents=relations %}
+		{%endif%}
 	</body>
 </html>

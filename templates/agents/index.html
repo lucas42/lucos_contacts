@@ -18,23 +18,6 @@
 			</span>
 			<a href="/agents/add" class='navedit'>Add -&gt;</a>
 		</nav>
-		<ul class='agentlist'>
-		{%for agent in agents %}
-			<li><a href="{{agent.url}}">
-				<h3>{% filter force_escape %}{{ agent.name }}{% endfilter %}</h3>
-				<span class='relation'>{% filter force_escape %}{{agent.rel}}{% endfilter %}</span>
-			{% if list == "postal" %}
-                		{%for address in agent.formattedaddresses %}
-                        		<span class='address'>{{address}}</span>
-                		{%endfor%}
-			{% endif %}
-			{% if list == "phone" %}
-                		{%for num in agent.phone %}
-                        		<span class='phonenum'>{{num}}</span>
-                		{%endfor%}
-			{% endif %}
-			</a></li>
-		{% endfor %}
-		</ul>
+		{% include "agents/agentlist.html" %}
 	</body>
 </html>
