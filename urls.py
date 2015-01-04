@@ -15,7 +15,7 @@ urlpatterns = patterns('',
      (r'^identify/?$', 'agents.views.identify'),
      (r'^resources$', 'agents.views.resources'),
      (r'^(?:agents/?)?$', RedirectView.as_view(url='/agents/all')),
-     (r'^favicon.ico$', 'django.views.static.serve', {'document_root': 'templates/resources/', 'path': 'favicon.png'}),
+     (r'^favicon.ico$', 'django.views.static.serve', {'document_root': 'templates/resources/', 'path': 'logo.png'}),
      (r'^icon$', 'django.views.static.serve', {'document_root': 'templates/resources/', 'path': 'logo.png'}),
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
