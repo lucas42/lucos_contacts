@@ -1,8 +1,20 @@
 from agents.models import Agent, ExternalAgent, AccountType, Account, RelationshipType, Relationship, RelationshipTypeConnection
 from django.contrib import admin
 
+class AccountInline(admin.StackedInline):
+    model = Account
+
+class RelationshipInline(admin.TabularInline):
+	model = Relationship
+	fk_name = 'object'
+	fields = ('type', 'subject')
+
 class AgentAdmin(admin.ModelAdmin):
     actions = ['merge']
+    inlines = [
+    	AccountInline,
+    	RelationshipInline
+    ]
     def merge(self, request, queryset):
 		agents = queryset.order_by('id')
 		if (agents.count() < 2):
