@@ -16,7 +16,7 @@
 				<a href="/agents/phone" class="{% if list == "phone" %}current{% endif %}">Phonebook</a>
 				<a href="/agents/postal" class="{% if list == "postal" %}current{% endif %}">Address Book</a>
 			</span>
-			<a href="/agents/add" class='navedit'>Add -&gt;</a>
+			<a href="{{addurl}}" class='navedit'>Add -&gt;</a>
 		</nav>
 		{% include "agents/agentlist.html" %}
 	</body>

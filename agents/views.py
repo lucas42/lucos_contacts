@@ -5,6 +5,7 @@ from django.shortcuts import redirect, render_to_response
 from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.decorators import login_required
+from django.core import urlresolvers
 from local_settings import API_KEY, AUTH_DOMAIN
 import json, time, urllib2, os
 
@@ -142,7 +143,11 @@ def agentindex(request, list):
 		agentlist = Agent.objects.filter(id=0)
 	for agent in agentlist.distinct().order_by('id'):
 		agents.append(agentdata(agent, request.user.agent))
-	return render_to_response('agents/index.html', {'agents': agents, 'list': list })
+	return render_to_response('agents/index.html', {
+		'agents': agents,
+		'list': list,
+		'addurl': urlresolvers.reverse('admin:agents_agent_add'),
+	})
 
 # Get a bunch of data abount an agent
 # agent: the Agent in to get info about
@@ -161,7 +166,16 @@ def agentdata(agent, currentagent, extended=False):
                 rawaddresses.append(address.url)
                 formattedaddresses.append(address.url.replace(',', ',\n'))
 	
-	agentdataobj = {'agent': agent, 'name': agent.getName(), 'phone': phonenums, 'url': agent.get_absolute_url(), 'isme': agent == currentagent, 'addresses': rawaddresses, 'formattedaddresses': formattedaddresses}
+	agentdataobj = {
+		'agent': agent,
+		'name': agent.getName(),
+		'phone': phonenums,
+		'url': agent.get_absolute_url(),
+		'isme': agent == currentagent,
+		'addresses': rawaddresses,
+		'formattedaddresses': formattedaddresses,
+		'editurl': urlresolvers.reverse('admin:agents_agent_change', args=(agent.id,)),
+	}
 
 	if extended:
 		agentdataobj['relations'] = []
