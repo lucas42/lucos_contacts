@@ -212,7 +212,7 @@ def resources(request):
 	resources = {}
 	version = 0
 	for key, val in resourcefiles.iteritems():
-		filename = val['filename']
+		filename = os.path.join(os.path.dirname(__file__), '..', val['filename'])
 		if (os.path.getmtime(filename) > version):
 			version = os.path.getmtime(filename)
 		file = open(filename)
