@@ -156,15 +156,19 @@ def agentindex(request, list):
 def agentdata(agent, currentagent, extended=False):
 
 	phonenums = []
-        phonenumbertype = AccountType(id=5)
-        for num in Account.objects.filter(type=phonenumbertype).filter(agent=agent):
-                phonenums.append(num.userid)
-        rawaddresses = []
-        formattedaddresses = []
-        addresstype = AccountType(id=10)
-        for address in Account.objects.filter(type=addresstype).filter(agent=agent):
-                rawaddresses.append(address.url)
-                formattedaddresses.append(address.url.replace(',', ',\n'))
+	phonenumbertype = AccountType(id=5)
+	for num in Account.objects.filter(type=phonenumbertype).filter(agent=agent):
+			phonenums.append(num.userid)
+	rawaddresses = []
+	formattedaddresses = []
+	addresstype = AccountType(id=10)
+	for address in Account.objects.filter(type=addresstype).filter(agent=agent):
+			rawaddresses.append(address.url)
+			formattedaddresses.append(address.url.replace(',', ',\n'))
+	facebookaccounts = []
+	facebooktype = AccountType(id=2)
+	for facebookaccount in Account.objects.filter(type=facebooktype).filter(agent=agent):
+			facebookaccounts.append(facebookaccount.userid)
 	
 	agentdataobj = {
 		'agent': agent,
@@ -174,6 +178,7 @@ def agentdata(agent, currentagent, extended=False):
 		'isme': agent == currentagent,
 		'addresses': rawaddresses,
 		'formattedaddresses': formattedaddresses,
+		'facebookaccounts': facebookaccounts,
 		'editurl': urlresolvers.reverse('admin:agents_agent_change', args=(agent.id,)),
 	}
 

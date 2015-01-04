@@ -22,3 +22,7 @@ margin: 1em;
 font-weight: bold; white-space: pre; }
 .relation { display: block;}
 h2 { text-align: center; }
+.facebooklink { }
+.facebooklink img { float: left; height: 50px; margin-right: 10px;}
+.facebooklink a { display: block; margin: 10px auto; max-width: 428px; overflow: hidden; border: outset #3b5998 4px; text-decoration: inherit; color: #3b5998; font-weight: bold; line-height: 50px; text-align: center; background: #dfe3ee; font-size: 20px;}
+.facebooklink a:active { border-style: inset; }
