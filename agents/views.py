@@ -4,12 +4,15 @@ from django import utils
 from django.shortcuts import redirect, render_to_response
 from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.contrib.auth.decorators import login_required
 from local_settings import API_KEY, AUTH_DOMAIN
 import json, time, urllib2, os
 
 # Returns a HttpResponse object
 # If auth has been successful the status will be 204, and the wrapper function can do it's own thing
 # Any other response should be returned to the client
+# @deprecated - use @login_required instead
+# NB: moving to login_required breaks API authentication - need to find a solution for that
 @csrf_exempt
 def authenticate(request):
 	
@@ -46,15 +49,13 @@ def authenticate(request):
 	return redirect('http://'+AUTH_DOMAIN+'/authenticate?' + utils.http.urlencode({'redirect_uri': request.build_absolute_uri()}))
 
 @csrf_exempt
+@login_required
 def agent(request, extid, method):
-	auth = authenticate(request)
-	if (auth.status_code != 204):
-		return auth
 	if (extid == 'me'):
 		# API requests have no concept of 'me'
-		if (auth.agent == None):
+		if (request.user.agent == None):
 			raise Http404
-		return redirect(auth.agent)
+		return redirect(request.user.agent)
 	if (extid == 'add'):
 		if (request.method == 'POST'):
 			newagent = Agent(name_en=request.POST.get('name_en', ""), name_ga=request.POST.get('name_ga', ""), name_gd=request.POST.get('name_gd', ""), name_cy=request.POST.get('name_cy', ""))
@@ -73,7 +74,7 @@ def agent(request, extid, method):
 	if (agent.id <> ext.id):
 		return redirect(agent)
 	
-	output = agentdata(agent, request.session['agentid'], True)
+	output = agentdata(agent, request.user.agent, True)
 	if (method == 'edit'):
 		template = 'agent-edit.html'
 		if (request.method == 'POST'):
@@ -125,10 +126,9 @@ def array_diff(a, b):
 	b = set(b)
 	return [aa for aa in a if aa not in b]
 	
+
+@login_required
 def agentindex(request, list):
-	auth = authenticate(request)
-	if (auth.status_code != 204):
-		return auth
 	agents = []
 	if (list == 'postal'):
 		addresstype = AccountType(id=10)
@@ -141,10 +141,14 @@ def agentindex(request, list):
 	else:
 		agentlist = Agent.objects.filter(id=0)
 	for agent in agentlist.distinct().order_by('id'):
-		agents.append(agentdata(agent, request.session['agentid']))
+		agents.append(agentdata(agent, request.user.agent))
 	return render_to_response('agents/index.html', {'agents': agents, 'list': list })
 
-def agentdata(agent, currentid, extended=False):
+# Get a bunch of data abount an agent
+# agent: the Agent in to get info about
+# currentagent: The Agent that relationships should be relative to
+# extended: whether to get information about relatives
+def agentdata(agent, currentagent, extended=False):
 
 	phonenums = []
         phonenumbertype = AccountType(id=5)
@@ -157,17 +161,17 @@ def agentdata(agent, currentid, extended=False):
                 rawaddresses.append(address.url)
                 formattedaddresses.append(address.url.replace(',', ',\n'))
 	
-	agentdataobj = {'agent': agent, 'name': agent.getName(), 'phone': phonenums, 'url': agent.get_absolute_url(), 'isme': agent.id == currentid, 'addresses': rawaddresses, 'formattedaddresses': formattedaddresses}
+	agentdataobj = {'agent': agent, 'name': agent.getName(), 'phone': phonenums, 'url': agent.get_absolute_url(), 'isme': agent == currentagent, 'addresses': rawaddresses, 'formattedaddresses': formattedaddresses}
 
 	if extended:
 		agentdataobj['relations'] = []
 		for relation in Relationship.objects.filter(object=agent).order_by('subject'):
-			agentdataobj['relations'].append(agentdata(relation.subject, agent.id))
+			agentdataobj['relations'].append(agentdata(relation.subject, agent))
 	try:
-		rel = Relationship.objects.get(subject=agent.id, object=currentid)
+		rel = Relationship.objects.get(subject=agent.id, object=currentagent.id)
 		agentdataobj['rel'] = rel.type.getLabel()
 	except Relationship.DoesNotExist:
-		if (agent.id == currentid):
+		if (agent == currentagent):
 			agentdataobj['rel'] = 'me'
 	return agentdataobj
 
