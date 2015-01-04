@@ -73,9 +73,14 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'agents',
+    'lucosauth',
     'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.messages',
+)
+
+AUTHENTICATION_BACKENDS = (
+    'lucosauth.models.LucosAuthBackend',
 )
 
 '''LOGGING = {
