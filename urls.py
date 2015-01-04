@@ -1,9 +1,11 @@
 from django.conf.urls import patterns, url, include
 from django.views.generic import RedirectView
+from django.contrib.auth.decorators import user_passes_test
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
+admin.site.login = user_passes_test(lambda u:u.is_staff, login_url='/accounts/login')(admin.site.login)
 
 urlpatterns = patterns('',
     # Example:
@@ -22,4 +24,5 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
      (r'^admin/', include(admin.site.urls)),
+     (r'^accounts/login/', 'lucosauth.views.loginview'),
 )
