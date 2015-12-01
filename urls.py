@@ -15,8 +15,7 @@ urlpatterns = patterns('',
      (r'^identify/?$', 'agents.views.identify'),
      (r'^resources$', 'agents.views.resources'),
      (r'^(?:agents/?)?$', RedirectView.as_view(url='/agents/all')),
-     (r'^favicon.ico$', 'django.views.static.serve', {'document_root': 'templates/resources/', 'path': 'logo.png'}),
-     (r'^icon$', 'django.views.static.serve', {'document_root': 'templates/resources/', 'path': 'logo.png'}),
+	# Static files (icons, bootloader) are handled directly in apache using aliases
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:
