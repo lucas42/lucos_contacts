@@ -42,7 +42,11 @@ MEDIA_URL = ''
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-STATIC_URL = '/media/'
+STATIC_URL = '/resources/'
+
+STATICFILES_DIRS = [
+    os.path.join(PROJECT_PATH, "templates/resources"),
+]
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = [
