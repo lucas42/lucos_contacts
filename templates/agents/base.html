@@ -7,9 +7,17 @@
 		<link rel="apple-touch-icon" href="/icon.png"/>
 		<link rel="icon" href="resources/icon.png" />
 		<link rel="stylesheet" href="/resources/style.css" />
-		<title>{% block title %}{% endblock %}</title>
+		<title>{% block headtitle %}{% endblock %}</title>
 	</head>
 	<body>
+		<div id="lucos_navbar">
+			<a href="https://l42.eu/">
+				<img src="https://l42.eu/logo.png" alt="lucOS" style="">
+			</a>
+			<span id="lucos_navbar_title">
+				{% block title %}{% endblock %}
+			</span>
+		</div>
 		{% block body %}{% endblock %}
 	</body>
 </html>
