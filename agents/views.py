@@ -2,7 +2,6 @@ from agents.models import Agent, ExternalAgent, AccountType, Account, Relationsh
 from django.http import HttpResponse, Http404
 from django import utils
 from django.shortcuts import redirect, render_to_response
-from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers

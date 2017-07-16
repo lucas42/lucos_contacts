@@ -8,7 +8,7 @@ import json, time, urllib2, os
 
 class LucosAuthBackend(object):
 	def authenticate(self, token):
-		url = 'http://'+AUTH_DOMAIN+'/data?' + utils.http.urlencode({'token': token})
+		url = 'https://'+AUTH_DOMAIN+'/data?' + utils.http.urlencode({'token': token})
 		try:
 			data = json.load(urllib2.urlopen(url))
 		except HTTPError:
