@@ -1,4 +1,4 @@
-from agents.models import Agent, ExternalAgent, AccountType, Account, RelationshipType, Relationship, RelationshipTypeConnection
+from agents.models import *
 from django.http import HttpResponse, Http404
 from django import utils
 from django.shortcuts import redirect, render_to_response
@@ -131,11 +131,9 @@ def array_diff(a, b):
 def agentindex(request, list):
 	agents = []
 	if (list == 'postal'):
-		addresstype = AccountType(id=10)
-		agentlist = Agent.objects.filter(account__type=addresstype)
+		agentlist = Agent.objects.filter(postaladdress__isnull=False)
 	elif (list == 'phone'):
-		phonenumbertype = AccountType(id=5)
-		agentlist = Agent.objects.filter(account__type=phonenumbertype)
+		agentlist = Agent.objects.filter(phonenumber__isnull=False)
 	elif (list == 'all'):
 		agentlist = Agent.objects.all()
 	else:
@@ -155,15 +153,13 @@ def agentindex(request, list):
 def agentdata(agent, currentagent, extended=False):
 
 	phonenums = []
-	phonenumbertype = AccountType(id=5)
-	for num in Account.objects.filter(type=phonenumbertype).filter(agent=agent):
-			phonenums.append(num.userid)
+	for num in PhoneNumber.objects.filter(agent=agent):
+			phonenums.append(num.number)
 	rawaddresses = []
 	formattedaddresses = []
-	addresstype = AccountType(id=10)
-	for address in Account.objects.filter(type=addresstype).filter(agent=agent):
-			rawaddresses.append(address.url)
-			formattedaddresses.append(address.url.replace(',', ',\n'))
+	for postaladdress in PostalAddress.objects.filter(agent=agent):
+			rawaddresses.append(postaladdress.address)
+			formattedaddresses.append(postaladdress.address.replace(',', ',\n'))
 	facebookaccounts = []
 	facebooktype = AccountType(id=2)
 	for facebookaccount in Account.objects.filter(type=facebooktype).filter(agent=agent):

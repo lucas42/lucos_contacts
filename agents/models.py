@@ -1,9 +1,14 @@
 from django.db import models
 from django.utils import translation
 
+def getCurrentLang():
+	cur_language = translation.get_language()
+	if cur_language is None:
+		return ""
+	return cur_language[:2]
+
 def getTranslated(obj, field):
-	cur_language = translation.get_language()[:2]
-	val = getattr(obj, field+'_'+cur_language, None)
+	val = getattr(obj, field+'_'+getCurrentLang(), None)
 	if val:
 		return val
 	langs = ['en', 'ga', 'gd', 'cy']
@@ -53,10 +58,14 @@ class AccountType(models.Model):
 
 	def __unicode__(self):
 		return self.getLabel()
-	
-class Account(models.Model):
-	type = models.ForeignKey(AccountType, blank=False)
+
+class BaseAccount(models.Model):
 	agent = models.ForeignKey(Agent, blank=False)
+	class Meta:
+		abstract = True
+	
+class Account(BaseAccount):
+	type = models.ForeignKey(AccountType, blank=False)
 	domain = models.CharField(max_length=255, blank=True, help_text='')
 	userid = models.CharField(max_length=255, blank=True, help_text='Must be unique for the given type in the given domain.  Usually persistant')
 	username = models.CharField(max_length=255, blank=True, help_text='Usually unique for the given type/domain.  Can change over time.')
@@ -65,10 +74,26 @@ class Account(models.Model):
 	imgurl = models.CharField(max_length=255, blank=True)
 	
 	def __unicode__(self):
-		cur_language = translation.get_language()[:2]
-		if cur_language == 'ga':
+		if getCurrentLang() == 'ga':
 			return 'Cuntas '+self.type.getLabel()+' '+self.agent.getName()
 		return self.agent.getName()+"'s "+self.type.getLabel()+" account"
+
+class PhoneNumber(BaseAccount):
+	number = models.PositiveIntegerField(blank=False)
+	def __unicode__(self):
+		if getCurrentLang() == 'ga':
+			return 'Uimhir guathan '+self.agent.getName()
+		return self.agent.getName()+"'s Phone Number"
+
+class PostalAddress(BaseAccount):
+	address = models.CharField(max_length=255, blank=False)
+	class Meta:
+		verbose_name_plural = "Postal Addresses"
+	def __unicode__(self):
+		if getCurrentLang() == 'ga':
+			return 'Seoladh '+self.agent.getName()
+		return self.agent.getName()+"'s Address"
+
 
 class RelationshipType(models.Model):
 	label_en = models.CharField(max_length=255, blank=True)

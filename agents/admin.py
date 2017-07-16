@@ -1,8 +1,19 @@
-from agents.models import Agent, ExternalAgent, AccountType, Account, RelationshipType, Relationship, RelationshipTypeConnection
+from agents.models import *
 from django.contrib import admin
 
 class AccountInline(admin.StackedInline):
-    model = Account
+	model = Account
+	extra = 0
+
+class PhoneInline(admin.TabularInline):
+	model = PhoneNumber
+	extra = 0
+	min_num = 1
+
+class AddressInline(admin.TabularInline):
+	model = PostalAddress
+	extra = 0
+	min_num = 1
 
 class RelationshipInline(admin.TabularInline):
 	model = Relationship
@@ -12,6 +23,8 @@ class RelationshipInline(admin.TabularInline):
 class AgentAdmin(admin.ModelAdmin):
     actions = ['merge']
     inlines = [
+    	PhoneInline,
+    	AddressInline,
     	AccountInline,
     	RelationshipInline
     ]
@@ -44,6 +57,8 @@ class RelationshipTypeConnectionAdmin(admin.ModelAdmin):
 
 admin.site.register(Agent, AgentAdmin)
 admin.site.register(Account)
+admin.site.register(PhoneNumber)
+admin.site.register(PostalAddress)
 admin.site.register(Relationship, RelationshipAdmin)
 admin.site.register(AccountType)
 admin.site.register(RelationshipType)
