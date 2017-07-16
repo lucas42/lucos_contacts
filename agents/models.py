@@ -94,6 +94,14 @@ class PostalAddress(BaseAccount):
 			return 'Seoladh '+self.agent.getName()
 		return self.agent.getName()+"'s Address"
 
+class FacebookAccount(BaseAccount):
+	userid = models.PositiveIntegerField(blank=False)
+	username = models.CharField(max_length=255, blank=True)
+	def __unicode__(self):
+		if getCurrentLang() == 'ga':
+			return 'Cuntas Facebook '+self.agent.getName()
+		return self.agent.getName()+"'s Facebook Account"
+
 
 class RelationshipType(models.Model):
 	label_en = models.CharField(max_length=255, blank=True)

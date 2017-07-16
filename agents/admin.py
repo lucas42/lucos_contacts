@@ -1,19 +1,24 @@
 from agents.models import *
 from django.contrib import admin
 
-class AccountInline(admin.StackedInline):
+class LegacyAccountInline(admin.StackedInline):
 	model = Account
 	extra = 0
+	verbose_name = "Legacy Account"
+	verbose_name_plural = "Legacy Accounts"
 
-class PhoneInline(admin.TabularInline):
+class AccountInline(admin.TabularInline):
+	extra = 1
+	min_num = 0
+
+class PhoneInline(AccountInline):
 	model = PhoneNumber
-	extra = 0
-	min_num = 1
 
-class AddressInline(admin.TabularInline):
+class AddressInline(AccountInline):
 	model = PostalAddress
-	extra = 0
-	min_num = 1
+
+class FacebookAccountInline(AccountInline):
+	model = FacebookAccount
 
 class RelationshipInline(admin.TabularInline):
 	model = Relationship
@@ -25,7 +30,8 @@ class AgentAdmin(admin.ModelAdmin):
     inlines = [
     	PhoneInline,
     	AddressInline,
-    	AccountInline,
+    	FacebookAccountInline,
+    	LegacyAccountInline,
     	RelationshipInline
     ]
     def merge(self, request, queryset):

@@ -161,8 +161,7 @@ def agentdata(agent, currentagent, extended=False):
 			rawaddresses.append(postaladdress.address)
 			formattedaddresses.append(postaladdress.address.replace(',', ',\n'))
 	facebookaccounts = []
-	facebooktype = AccountType(id=2)
-	for facebookaccount in Account.objects.filter(type=facebooktype).filter(agent=agent):
+	for facebookaccount in FacebookAccount.objects.filter(agent=agent):
 			facebookaccounts.append(facebookaccount.userid)
 	
 	agentdataobj = {
