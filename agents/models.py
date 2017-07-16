@@ -24,6 +24,8 @@ class Agent(models.Model):
 	name_gd = models.CharField(max_length=255, blank=True)
 	name_cy = models.CharField(max_length=255, blank=True)
 	relation = models.ManyToManyField('self', through='Relationship', symmetrical=False)
+	bio = models.TextField(blank=True)
+	notes = models.TextField(blank=True)
 	def getName(self):
 		return getTranslated(self, 'name')
 
