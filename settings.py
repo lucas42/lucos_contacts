@@ -48,11 +48,6 @@ STATICFILES_DIRS = [
     os.path.join(PROJECT_PATH, "templates/resources"),
 ]
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = [
-	'django.template.loaders.filesystem.Loader',
-	'django.template.loaders.app_directories.Loader',
-]
 
 MIDDLEWARE_CLASSES = (
 	'django.middleware.csrf.CsrfViewMiddleware',
