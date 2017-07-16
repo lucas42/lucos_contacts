@@ -1,15 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html> 
-<html xmlns="http://www.w3.org/1999/xhtml"> 
-	<head>
-		<meta name="viewport" content="initial-scale=1.0" />
-		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<link rel="apple-touch-icon" href="/icon"/>
-		<link rel="shortcut icon" href="/icon"/>
-		<script type='text/javascript' src='/bootloader'></script>
-		<title>LucOs - {{ name }}</title>
-	</head>
-	<body>
+{% extends "agents/base.html" %}
+
+{% block title %}LucOs - {{ name }}{% endblock %}
+{% block body %}
+		
 		<nav>
 			<a href="/agents" class='navback'>&lt;- Contact List</a>
 			<a href="{{ editurl }}" class='navedit'>Edit -&gt;</a>
@@ -28,5 +21,4 @@
         <h2>Relations</h2>
 			{% include "agents/agentlist.html" with agents=relations %}
 		{%endif%}
-	</body>
-</html>
+{% endblock %}
