@@ -4,10 +4,6 @@
 {% block title %}{{ name }}{% endblock %}
 {% block body %}
 		
-		<nav>
-			<a href="/agents" class='navback'>&lt;- Contact List</a>
-			<a href="{{ editurl }}" class='navedit'>Edit -&gt;</a>
-		</nav>
 		{%for num in phone %}
 			<a class='phonenum' href="tel:{{num}}">{{num}}</a>
 		{%endfor%}
@@ -21,4 +17,15 @@
         <h2>Relations</h2>
 			{% include "agents/agentlist.html" with agents=relations %}
 		{%endif%}
+{% endblock %}
+{% block subnav %}
+	<div class="breadcrumbs">
+		<span class="navswitch">
+		<a href="/">Contact List</a>
+		&rsaquo; {{ name }}
+		</span>
+	</div>
+	<nav class="tools">
+		<a href="{{ editurl }}" class='toollink navedit'>Edit</a>
+	</nav>
 {% endblock %}

@@ -3,13 +3,17 @@
 {% block headtitle %}LucOs - Contacts{% endblock %}
 {% block title %}Contacts{% endblock %}
 {% block body %}
-		<nav>
-			<span class='navswitch'>
-				<a href="/agents/all" class="{% if list == "all" %}current{% endif %}">All</a>
-				<a href="/agents/phone" class="{% if list == "phone" %}current{% endif %}">Phonebook</a>
-				<a href="/agents/postal" class="{% if list == "postal" %}current{% endif %}">Address Book</a>
-			</span>
-			<a href="{{addurl}}" class='navedit'>Add -&gt;</a>
-		</nav>
 		{% include "agents/agentlist.html" %}
+{% endblock %}
+{% block subnav %}
+	<div class="breadcrumbs">
+		<span class="navswitch">
+			<a href="/agents/all" class="{% if list == "all" %}current{% endif %}">All</a> |
+			<a href="/agents/phone" class="{% if list == "phone" %}current{% endif %}">Phonebook</a> |
+			<a href="/agents/postal" class="{% if list == "postal" %}current{% endif %}">Address Book</a>
+		</span>
+	</div>
+	<nav class="tools">
+		<a href="{{addurl}}" class='toollink navadd'>Add</a>
+	</nav>
 {% endblock %}
