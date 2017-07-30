@@ -81,7 +81,7 @@ class Account(BaseAccount):
 		return self.agent.getName()+"'s "+self.type.getLabel()+" account"
 
 class PhoneNumber(BaseAccount):
-	number = models.PositiveIntegerField(blank=False)
+	number = models.CharField(max_length=127, blank=False)
 	def __unicode__(self):
 		if getCurrentLang() == 'ga':
 			return 'Uimhir guathan '+self.agent.getName()
