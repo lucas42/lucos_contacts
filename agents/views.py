@@ -174,6 +174,8 @@ def agentdata(agent, currentagent, extended=False):
 		'formattedaddresses': formattedaddresses,
 		'facebookaccounts': facebookaccounts,
 		'editurl': urlresolvers.reverse('admin:agents_agent_change', args=(agent.id,)),
+		'bio': agent.bio,
+		'notes': agent.notes,
 	}
 
 	if extended:

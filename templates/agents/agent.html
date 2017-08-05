@@ -3,6 +3,11 @@
 {% block headtitle %}LucOs - {{ name }}{% endblock %}
 {% block title %}{{ name }}{% endblock %}
 {% block body %}
+		{%if bio %}
+			<div id="bio">
+				{{bio}}
+			</div>
+		{%endif%}
 		
 		{%for num in phone %}
 			<a class='phonenum' href="tel:{{num}}">{{num}}</a>
@@ -13,6 +18,12 @@
 		{%for userid in facebookaccounts %}
 			<span class='facebooklink'><a href="https://www.facebook.com/profile.php?id={{userid}}" target="_blank"><img src="https://graph.facebook.com/{{userid}}/picture" /> Facebook</a></span>
 		{%endfor%}
+		{%if notes %}
+			<div id="notes">
+				<h2>Notes</h2>
+				{{notes}}
+			</div>
+		{%endif%}
         {%if relations %}
         <h2>Relations</h2>
 			{% include "agents/agentlist.html" with agents=relations %}
