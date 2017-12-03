@@ -166,7 +166,7 @@ class Relationship(models.Model):
 				Relationship.objects.create(subject=self.object, object=self.subject, type=self.type.inverse)
 			#print "\t\t\t"+Relationship.objects.get(subject=self.object, object=self.subject, type=self.type.inverse).__unicode__()
 				
-		for connection in RelationshipTypeConnection.objects.filter(inferred_relation_type=self, reversible=True).exclude(relation_type_b=None):
+		for connection in RelationshipTypeConnection.objects.filter(inferred_relation_type=self.type, reversible=True).exclude(relation_type_b=None):
 			#print "\tConnection(infer): "+connection.__unicode__()
 			for relationship_a in Relationship.objects.filter(subject=self.subject, type=connection.relation_type_a):
 				#print "\t\texistingrel(a):"+relationship_a.__unicode__()
