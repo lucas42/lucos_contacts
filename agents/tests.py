@@ -118,3 +118,49 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(luke, auntuncle), [rachel])
 		self.failUnlessEqual(get_agents_by_relType(mark, auntuncle), [])
 		self.failUnlessEqual(get_agents_by_relType(rachel, auntuncle), [])
+
+	def test_complicated_relationship_inference(self):
+		luke = Agent.objects.create(name_en='Luke')
+		ruth = Agent.objects.create(name_en='Ruth')
+		felim = Agent.objects.create(name_en='Felim')
+		myra = Agent.objects.create(name_en='Myra')
+		brenda = Agent.objects.create(name_en='Brenda')
+		frances = Agent.objects.create(name_en='Frances')
+
+
+		parent = RelationshipType.objects.create(label_en='parent')
+		grandparent = RelationshipType.objects.create(label_en='Grandparent')
+		child = RelationshipType.objects.create(label_en='child')
+		child.inverse = parent
+		child.save()
+		grandchild = RelationshipType.objects.create(label_en='child')
+		grandchild.inverse = grandparent
+		grandchild.save()
+		sibling = RelationshipType.objects.create(label_en='sibling')
+		sibling.symmetrical = True
+		sibling.transitive = True
+		sibling.save()
+		auntuncle = RelationshipType.objects.create(label_en='aunt/uncle')
+		nibling = RelationshipType.objects.create(label_en='nibling')
+		auntuncle.inverse = nibling
+		auntuncle.save()
+		greatauntuncle = RelationshipType.objects.create(label_en='great aunt/uncle')
+
+
+		RelationshipTypeConnection.objects.create(relation_type_b=sibling, relation_type_a=parent, inferred_relation_type=parent)
+		RelationshipTypeConnection.objects.create(relation_type_b=grandparent, relation_type_a=sibling, inferred_relation_type=greatauntuncle)
+		RelationshipTypeConnection.objects.create(relation_type_b=parent, relation_type_a=parent, inferred_relation_type=grandparent)
+
+		Relationship.objects.create(subject=luke, object=ruth, type=parent)
+		Relationship.objects.create(subject=ruth, object=felim, type=sibling)
+		Relationship.objects.create(subject=myra, object=felim, type=sibling)
+		Relationship.objects.create(subject=brenda, object=myra, type=child)
+		Relationship.objects.create(subject=frances, object=brenda, type=sibling)
+
+		RelationshipTypeConnection.objects.create(relation_type_b=parent, relation_type_a=sibling, inferred_relation_type=auntuncle)
+
+
+		self.failUnlessEqual(get_agents_by_relType(luke, auntuncle), [felim, myra])
+		self.failUnlessEqual(get_agents_by_relType(frances, nibling), [myra, ruth, felim])
+		self.failUnlessEqual(get_agents_by_relType(luke, greatauntuncle), [frances])
+
