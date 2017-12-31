@@ -153,10 +153,20 @@ class Relationship(models.Model):
 			#print "\ttransitive"
 			others = Relationship.objects.filter(subject=self.object, type=self.type).exclude(object=self.subject)
 			for item in others:
+				if self.subject == item.object:
+					continue
 				try:
 					Relationship.objects.get(subject=self.subject, object=item.object, type=self.type)
 				except Relationship.DoesNotExist:
 					Relationship.objects.create(subject=self.subject, object=item.object, type=self.type)
+			others = Relationship.objects.filter(object=self.subject, type=self.type).exclude(object=self.object)
+			for item in others:
+				if item.subject == self.object:
+					continue
+				try:
+					Relationship.objects.get(subject=item.subject, object=self.object, type=self.type)
+				except Relationship.DoesNotExist:
+					Relationship.objects.create(subject=item.subject, object=self.object, type=self.type)
 				#print "\t\t\t"+Relationship.objects.get(subject=self.subject, object=item.object, type=self.type).__unicode__()
 		if self.type.inverse:
 			#print "\tinverse"
