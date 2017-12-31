@@ -14,7 +14,7 @@ def get_agents_by_relType(subject, relType):
 
 class RelationshipTest(TestCase):
 
-	def test_symmestrical_transitive_relationship(self):
+	def test_symmetrical_transitive_relationship(self):
 		sibling = RelationshipType.objects.create(label_en='sibling')
 		sibling.symmetrical = True
 		sibling.transitive = True
@@ -29,7 +29,7 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(luke, sibling), [rowan, roise])
 		self.failUnlessEqual(get_agents_by_relType(rowan, sibling), [luke, roise])
 		self.failUnlessEqual(get_agents_by_relType(roise, sibling), [luke, rowan])
-		
+
 	def test_transitive_relationship(self):
 		ancestor = RelationshipType.objects.create(label_en='sibling')
 		ancestor.symmetrical = False
@@ -46,7 +46,7 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(ruth, ancestor), [brenda])
 		self.failUnlessEqual(get_agents_by_relType(brenda, ancestor), [])
 
-	def test_symmestrical_relationship(self):
+	def test_symmetrical_relationship(self):
 		halfsibling = RelationshipType.objects.create(label_en='half sibling')
 		halfsibling.symmetrical = True
 		halfsibling.transitive = False
@@ -61,3 +61,22 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(luke, halfsibling), [james])
 		self.failUnlessEqual(get_agents_by_relType(james, halfsibling), [luke, roise])
 		self.failUnlessEqual(get_agents_by_relType(roise, halfsibling), [james])
+
+	def test_inverse_relationship(self):
+		auntuncle = RelationshipType.objects.create(label_en='aunt/uncle')
+		nibling = RelationshipType.objects.create(label_en='nibling')
+		auntuncle.inverse = nibling
+		auntuncle.save()
+
+		self.failUnlessEqual(nibling.inverse, auntuncle)
+
+		
+		luke = Agent.objects.create(name_en='Luke')
+		rachel = Agent.objects.create(name_en='Rachel')
+		Relationship.objects.create(subject=luke, object=rachel, type=auntuncle)
+
+
+		self.failUnlessEqual(get_agents_by_relType(luke, auntuncle), [rachel])
+		self.failUnlessEqual(get_agents_by_relType(luke, nibling), [])
+		self.failUnlessEqual(get_agents_by_relType(rachel, auntuncle), [])
+		self.failUnlessEqual(get_agents_by_relType(rachel, nibling), [luke])

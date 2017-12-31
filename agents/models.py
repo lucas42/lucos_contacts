@@ -120,10 +120,10 @@ class RelationshipType(models.Model):
 			self.inverse = self
 		self.symmetrical = self.inverse == self
 		if self.inverse and self.inverse.inverse != self:
-			print "inverse:"+self.inverse.__unicode__();
+			#print "inverse:"+self.inverse.__unicode__();
 			self.inverse.inverse = self
 			self.inverse.save()
-			print "inverseinverse:"+self.inverse.inverse.__unicode__();
+			#print "inverseinverse:"+self.inverse.inverse.__unicode__();
 		super(RelationshipType, self).save(*args, **kwargs)
 		self.inferRelationships()
 	
