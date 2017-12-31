@@ -80,3 +80,41 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(luke, nibling), [])
 		self.failUnlessEqual(get_agents_by_relType(rachel, auntuncle), [])
 		self.failUnlessEqual(get_agents_by_relType(rachel, nibling), [luke])
+
+	def test_inferred_relationship(self):
+		parent = RelationshipType.objects.create(label_en='parent')
+		sibling = RelationshipType.objects.create(label_en='sibling')
+		auntuncle = RelationshipType.objects.create(label_en='aunt/uncle')
+
+		# The use of a & b seem the wrong way round here, but will keep it like this for now to mantain backwards compatability.  (Need to write a DB migration to change it properly)
+		RelationshipTypeConnection.objects.create(relation_type_b=parent, relation_type_a=sibling, inferred_relation_type=auntuncle)
+
+		luke = Agent.objects.create(name_en='Luke')
+		mark = Agent.objects.create(name_en='Mark')
+		rachel = Agent.objects.create(name_en='Rachel')
+		Relationship.objects.create(subject=luke, object=mark, type=parent)
+		Relationship.objects.create(subject=mark, object=rachel, type=sibling)
+
+		self.failUnlessEqual(get_agents_by_relType(luke, auntuncle), [rachel])
+		self.failUnlessEqual(get_agents_by_relType(mark, auntuncle), [])
+		self.failUnlessEqual(get_agents_by_relType(rachel, auntuncle), [])
+
+
+	def test_inferred_relationship_on_existing_relationships(self):
+		parent = RelationshipType.objects.create(label_en='parent')
+		sibling = RelationshipType.objects.create(label_en='sibling')
+		auntuncle = RelationshipType.objects.create(label_en='aunt/uncle')
+
+		luke = Agent.objects.create(name_en='Luke')
+		mark = Agent.objects.create(name_en='Mark')
+		rachel = Agent.objects.create(name_en='Rachel')
+		Relationship.objects.create(subject=luke, object=mark, type=parent)
+		Relationship.objects.create(subject=mark, object=rachel, type=sibling)
+
+		self.failUnlessEqual(get_agents_by_relType(luke, auntuncle), [])
+
+		RelationshipTypeConnection.objects.create(relation_type_b=parent, relation_type_a=sibling, inferred_relation_type=auntuncle)
+
+		self.failUnlessEqual(get_agents_by_relType(luke, auntuncle), [rachel])
+		self.failUnlessEqual(get_agents_by_relType(mark, auntuncle), [])
+		self.failUnlessEqual(get_agents_by_relType(rachel, auntuncle), [])
