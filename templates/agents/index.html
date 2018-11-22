@@ -3,14 +3,15 @@
 {% block headtitle %}LucOs - Contacts{% endblock %}
 {% block title %}Contacts{% endblock %}
 {% block body %}
-		{% include "agents/agentlist.html" %}
+		{% include template %}
 {% endblock %}
 {% block subnav %}
 	<div class="breadcrumbs">
 		<span class="navswitch">
 			<a href="/agents/all" class="{% if list == "all" %}current{% endif %}">All</a> |
 			<a href="/agents/phone" class="{% if list == "phone" %}current{% endif %}">Phonebook</a> |
-			<a href="/agents/postal" class="{% if list == "postal" %}current{% endif %}">Address Book</a>
+			<a href="/agents/postal" class="{% if list == "postal" %}current{% endif %}">Address Book</a> |
+			<a href="/agents/gifts" class="{% if list == "gifts" %}current{% endif %}">Gift List</a>
 		</span>
 	</div>
 	<nav class="tools">

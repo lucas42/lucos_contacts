@@ -14,6 +14,9 @@
                         		<span class='phonenum'>{{num}}</span>
                 		{%endfor%}
 			{% endif %}
+			{% if list == "gifts" and agent.giftideas %}
+				<span class='gift_idea'>Ideas: {{agent.giftideas}}</span>
+			{% endif %}
 			</a></li>
 		{% endfor %}
 		</ul>

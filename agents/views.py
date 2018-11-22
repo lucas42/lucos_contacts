@@ -130,10 +130,14 @@ def array_diff(a, b):
 @login_required
 def agentindex(request, list):
 	agents = []
+	template = 'agents/agentlist.html'
 	if (list == 'postal'):
 		agentlist = Agent.objects.filter(postaladdress__isnull=False)
 	elif (list == 'phone'):
 		agentlist = Agent.objects.filter(phonenumber__isnull=False)
+	elif (list == 'gifts'):
+		agentlist = Agent.objects.filter(on_gift_list=True)
+		template = 'agents/agenttable.html'
 	elif (list == 'all'):
 		agentlist = Agent.objects.all()
 	else:
@@ -141,6 +145,7 @@ def agentindex(request, list):
 	for agent in agentlist.distinct().order_by('id'):
 		agents.append(agentdata(agent, request.user.agent))
 	return render_to_response('agents/index.html', {
+		'template': template,
 		'agents': agents,
 		'list': list,
 		'addurl': urlresolvers.reverse('admin:agents_agent_add'),

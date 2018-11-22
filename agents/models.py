@@ -23,9 +23,11 @@ class Agent(models.Model):
 	name_ga = models.CharField(max_length=255, blank=True)
 	name_gd = models.CharField(max_length=255, blank=True)
 	name_cy = models.CharField(max_length=255, blank=True)
+	starred = models.BooleanField(default=False)
 	relation = models.ManyToManyField('self', through='Relationship', symmetrical=False)
 	bio = models.TextField(blank=True)
 	notes = models.TextField(blank=True)
+	on_gift_list = models.BooleanField(default=False)
 	gift_ideas = models.TextField(blank=True)
 	def getName(self):
 		return getTranslated(self, 'name')

@@ -1,8 +1,15 @@
 .agentlist { list-style-type: none; max-width: 400px; margin: 0 auto; padding: 0; }
-.agentlist a { text-decoration: none; color: inherit; display:block; background: #FFE1CA; padding: 10px; margin: 1px;}
+.agentlist a, { text-decoration: none; color: inherit; display:block; background: #FFE1CA; padding: 10px; margin: 1px;}
 .agentlist a:hover { background-color: #612B00; color: #FFE1CA; }
 .agentlist h3 { margin: 0; }
 .agentlist .relation { font-style: italic; font-size: smaller; }
+
+.agenttable { margin: auto; }
+.agenttable thead { font-weight: bold; }
+.agenttable td { padding: 5px 10px; }
+.agenttable a { text-decoration: none; color: inherit; display:block;}
+.agenttable a:hover { text-decoration: underline; }
+
 .tools { float: right; margin: 5px;}
 .toollink { font-size: 1em; color: #010F00; background-color: #E5B5D1; border-radius: 4px; display: inline-block; max-width: 100px; text-decoration: none; margin-bottom: 5px; padding: 10px 15px; vertical-align: middle; font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif; font-weight: 400; font-size: 13px; }
 #subnav a { cursor: pointer; }

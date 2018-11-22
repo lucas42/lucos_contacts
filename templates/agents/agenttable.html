@@ -1,0 +1,27 @@
+
+		<table class='agenttable'>
+			<thead>
+				<td>
+					Name
+				</td>
+				{% if list == "gifts" %}
+				<td>
+					Gift Ideas
+				</td>
+				{% endif %}
+			</thead>
+		{%for agent in agents %}
+			<tr>
+				<td>
+					<a href="{{agent.url}}">
+					{% filter force_escape %}{{ agent.name }}{% endfilter %}
+					</a>
+				</td>
+				{% if list == "gifts" %}
+				<td>
+					{{agent.giftideas}}
+				</td>
+				{% endif %}
+			</tr>
+		{% endfor %}
+	</table>
