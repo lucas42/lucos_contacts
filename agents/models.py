@@ -26,6 +26,7 @@ class Agent(models.Model):
 	relation = models.ManyToManyField('self', through='Relationship', symmetrical=False)
 	bio = models.TextField(blank=True)
 	notes = models.TextField(blank=True)
+	gift_ideas = models.TextField(blank=True)
 	def getName(self):
 		return getTranslated(self, 'name')
 

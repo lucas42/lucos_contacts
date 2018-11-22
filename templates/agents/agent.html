@@ -24,6 +24,12 @@
 				{{notes}}
 			</div>
 		{%endif%}
+		{%if giftideas %}
+			<div id="gifts">
+				<h2>Gift Ideas</h2>
+				{{giftideas}}
+			</div>
+		{%endif%}
         {%if relations %}
         <h2>Relations</h2>
 			{% include "agents/agentlist.html" with agents=relations %}

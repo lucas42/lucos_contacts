@@ -176,6 +176,7 @@ def agentdata(agent, currentagent, extended=False):
 		'editurl': urlresolvers.reverse('admin:agents_agent_change', args=(agent.id,)),
 		'bio': agent.bio,
 		'notes': agent.notes,
+		'giftideas': agent.gift_ideas,
 	}
 
 	if extended:
