@@ -1,5 +1,5 @@
 .agentlist { list-style-type: none; max-width: 400px; margin: 0 auto; padding: 0; }
-.agentlist a, { text-decoration: none; color: inherit; display:block; background: #FFE1CA; padding: 10px; margin: 1px;}
+.agentlist a { text-decoration: none; color: inherit; display:block; background: #FFE1CA; padding: 10px; margin: 1px;}
 .agentlist a:hover { background-color: #612B00; color: #FFE1CA; }
 .agentlist h3 { margin: 0; }
 .agentlist .relation { font-style: italic; font-size: smaller; }
