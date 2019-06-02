@@ -10,8 +10,11 @@ class LucosAuthBackend(object):
 	def authenticate(self, token):
 		url = 'https://'+AUTH_DOMAIN+'/data?' + utils.http.urlencode({'token': token})
 		try:
-			data = json.load(urllib2.urlopen(url))
+			data = json.load(urllib2.urlopen(url, timeout=5))
 		except HTTPError:
+			return None
+		except urllib2.socket.sslerror as e:
+			print "Error fetching data from auth service: "+e.message+" "+url
 			return None
 		if (data['id'] == None):
 			print "No id returned by auth service; "+url

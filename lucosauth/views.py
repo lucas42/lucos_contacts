@@ -9,7 +9,7 @@ def loginview(request):
 	if ('token' in request.GET):
 		user = authenticate(token=request.GET['token'])
 	if user is None:
-		return redirect('http://'+AUTH_DOMAIN+'/authenticate?' + utils.http.urlencode({'redirect_uri': request.build_absolute_uri()}))
+		return redirect('https://'+AUTH_DOMAIN+'/authenticate?' + utils.http.urlencode({'redirect_uri': request.build_absolute_uri()}))
 	login(request, user)
 	if (request.GET['next'].startswith('/admin/') and user.is_staff is False):
 		return HttpResponse("<html><head><script type='text/javascript' src='/bootloader'></script><title>Access Denied</title></head><body>Your account doesn't have access to this page.<nav><a href='/'>&lt;- Home</a></nav></body></html>", status=403)
