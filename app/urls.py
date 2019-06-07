@@ -15,7 +15,6 @@ urlpatterns = [
     url(r'^agents/(?P<extid>(\d+|me|add))(/(?P<method>(edit|view|accounts)))?/?$', agents_views.agent),
     url(r'^agents/(?P<list>(phone|postal|gifts|all))$', agents_views.agentindex),
     url(r'^identify/?$', agents_views.identify),
-    url(r'^resources$', agents_views.resources),
     url(r'^(?:agents/?)?$', RedirectView.as_view(url='/agents/all')),
 	# Static files (icons, bootloader) are handled directly in apache using aliases
 

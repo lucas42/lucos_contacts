@@ -208,26 +208,4 @@ def identify(request):
 	except Account.DoesNotExist:
 		raise Http404
 	return redirect(account.agent)
-	
-def resources(request):
-	resourcefiles = {
-		'_lucos': { 'filename': "../core/lucos.js", 'type': 'js'},
-		'contacts': { 'filename': "templates/resources/script.js", 'type': 'js'},
-		'style': { 'filename': "templates/resources/style.css", 'type': 'css'}
-	};
-	output = {}
-	resources = {}
-	version = 0
-	for key, val in resourcefiles.iteritems():
-		filename = os.path.join(os.path.dirname(__file__), '..', val['filename'])
-		if (os.path.getmtime(filename) > version):
-			version = os.path.getmtime(filename)
-		file = open(filename)
-		text = ''
-		for line in file:
-			text += line
-		output[key] = text
-		resources[key] = val['type']
-	output['r'] = resources
-	output['v'] = version
-	return HttpResponse(json.dumps(output), 'application/json')
+
