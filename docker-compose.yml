@@ -1,0 +1,22 @@
+version: '3'
+services:
+  web:
+    build: ./web
+    container_name: contacts_web
+    ports:
+      - "8013:80"
+    image: lucas42/lucos_contacts_web
+    volumes:
+      - "staticfiles:/usr/share/nginx/html/resources"
+    depends_on:
+      - app
+  app:
+    build: ./app
+    container_name: contacts_app
+    image: lucas42/lucos_contacts_app
+    volumes:
+      - "staticfiles:/usr/src/app/static"
+    #extra_hosts:
+      #- "auth.l42.eu:10.0.0.8"
+volumes:
+  staticfiles:
