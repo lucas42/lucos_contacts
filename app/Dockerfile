@@ -14,14 +14,13 @@ RUN apk update \
     && pip install psycopg2 \
     && apk del build-deps
 
+# copy project
+COPY . /usr/src/app/
+
 # install dependencies
 RUN pip install --upgrade pip
 RUN pip install pipenv
-COPY ./Pipfile .
 RUN pipenv install --skip-lock --system
 
-# copy project
-COPY . /usr/src/app/
-RUN chmod +x startup.sh
 
 CMD ["./startup.sh"]
