@@ -2,9 +2,6 @@ import os
 import sys
 # Django settings for contacts project.
 
-# Include environment specific settings, such a DB credentials and API_KEY
-from local_settings import *
-
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 
 ADMINS = (
@@ -88,13 +85,24 @@ INSTALLED_APPS = (
     'django.contrib.messages',
 )
 
+SECRET_KEY = os.environ["SECRET_KEY"]
+
 AUTHENTICATION_BACKENDS = (
     'lucosauth.models.LucosAuthBackend',
 )
+AUTH_DOMAIN = 'auth.l42.eu'
+API_KEY = os.environ["API_KEY"]
 
 SECURE_PROXY_SSL_HEADER = (
 	'HTTP_X_FORWARDED_PROTO', 'https'
 )
+
+if os.environ.get("PRODUCTION"):
+    ALLOWED_HOSTS = ["contacts.l42.eu"]
+    DEBUG = False
+else:
+    ALLOWED_HOSTS = ["localhost"]
+    DEBUG = True
 
 DATABASES = {
     'default': {
@@ -104,7 +112,7 @@ DATABASES = {
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': 'db',                    # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-}
+    }
 }
 
 '''LOGGING = {

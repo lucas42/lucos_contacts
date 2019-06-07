@@ -5,11 +5,11 @@ A list of contacts
 * django
 * A database (and the relevant python libraries to use that database
 
-## Setup
-A file called local_settings.py needs to be added to the root of the project.  It should include:
-* standard django [DATABASE settings](https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DATABASES)
-* A variable called API_KEY used by other applications wanting to use the contacts API
-* A variable called AUTH_DOMAIN to indicate where to authenticate against
+## Environment Variables:
+
+* **SECRET_KEY** a secret used by django for lots of its security mechanisms
+* **API_KEY** used by other applications wanting to use the contacts API
+* **DEBUG** show detailed debug pages (Running with this setting in production can lead to security issues)
 
 ## Running
 The web server is designed to be run within lucos_services, but can be run standalone (see django documentation for details)
