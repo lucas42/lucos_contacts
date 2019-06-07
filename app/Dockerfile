@@ -22,5 +22,6 @@ RUN pipenv install --skip-lock --system
 
 # copy project
 COPY . /usr/src/app/
+RUN chmod +x startup.sh
 
-CMD ["gunicorn", "--bind", ":80", "--timeout", "30", "agents.wsgi:application", "--access-logfile=/dev/stdout", "--access-logformat=%(t)s %(h)s \"%(r)s\" %(s)s %(b)s \"%(a)s\" %(D)sμs"]
+CMD ["./startup.sh"]

@@ -47,7 +47,7 @@ STATIC_URL = '/resources/'
 STATICFILES_DIRS = [
     os.path.join(PROJECT_PATH, "templates/resources"),
 ]
-
+STATIC_ROOT = os.path.join(PROJECT_PATH, "static")
 
 MIDDLEWARE_CLASSES = (
 	'django.middleware.csrf.CsrfViewMiddleware',
