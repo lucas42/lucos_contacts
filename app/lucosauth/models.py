@@ -1,6 +1,6 @@
 from django.db import models
 from django import utils
-from local_settings import AUTH_DOMAIN
+from settings import AUTH_DOMAIN
 from urllib2 import HTTPError
 from django.contrib.auth.models import AbstractBaseUser
 from agents.models import Agent

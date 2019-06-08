@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render_to_response
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
-from local_settings import API_KEY, AUTH_DOMAIN
+from settings import API_KEY, AUTH_DOMAIN
 import json, time, urllib2, os
 
 # Returns a HttpResponse object
