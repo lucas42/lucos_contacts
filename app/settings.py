@@ -97,11 +97,11 @@ SECURE_PROXY_SSL_HEADER = (
 	'HTTP_X_FORWARDED_PROTO', 'https'
 )
 
+ALLOWED_HOSTS = ["contacts.l42.eu", "localhost"]
+
 if os.environ.get("PRODUCTION"):
-    ALLOWED_HOSTS = ["contacts.l42.eu"]
     DEBUG = False
 else:
-    ALLOWED_HOSTS = ["localhost"]
     DEBUG = True
 
 DATABASES = {
