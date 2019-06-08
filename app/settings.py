@@ -115,32 +115,21 @@ DATABASES = {
     }
 }
 
-'''LOGGING = {
+LOGGING = {
     'version': 1,
+    'disable_existing_loggers': False,
     'handlers': {
-        'null': {
-            'level':'ERROR',
-            'class':'django.utils.log.NullHandler',
-        },
         'console': {
-            'level':'ERROR',
-            'class':'logging.StreamHandler',
-            'stream': sys.stderr
+            'class': 'logging.StreamHandler'
         },
     },
-	'loggers': {
-        'django': {
-            'handlers': ['null'],
-            'propagate': False,
-            'level': 'CRITICAL',
+    'loggers': {
+        '': {  # 'catch all' loggers by referencing it with the empty string
+            'handlers': ['console'],
+            'level': 'DEBUG',
         },
-		'django.request': {
-			'level': 'CRITICAL',
-			'handlers': ['null'],
-			'propagate': False,
-		},
-    }
-}'''
+    },
+}
 
 # This prevents warning about old test runners
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
