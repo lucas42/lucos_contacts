@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
-from settings import API_KEY, AUTH_DOMAIN
+from settings import AUTH_DOMAIN
 from django.http import HttpResponse, Http404
 from django import utils
 

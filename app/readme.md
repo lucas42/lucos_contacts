@@ -8,8 +8,7 @@ A list of contacts
 ## Environment Variables:
 
 * **SECRET_KEY** a secret used by django for lots of its security mechanisms
-* **API_KEY** used by other applications wanting to use the contacts API
-* **DEBUG** show detailed debug pages (Running with this setting in production can lead to security issues)
+* **PRODUCTION** Set in a production environment, as it increases security protections.  Not setting it will give detailed debug pages on error.
 
 ## Running
 The web server is designed to be run within lucos_services, but can be run standalone (see django documentation for details)

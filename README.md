@@ -13,7 +13,7 @@ Has three components:
 * web - an nginx server for routing traffic to app and serving static files
 
 ## Running
-`PRODUCTION=true SECRET_KEY=<secret> API_KEY=<shared_secret> nice -19 docker-compose up -d --no-build`
+`PRODUCTION=true SECRET_KEY=<secret> nice -19 docker-compose up -d --no-build`
 
 ## Restoring from backup
 

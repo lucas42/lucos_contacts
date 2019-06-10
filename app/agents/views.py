@@ -6,48 +6,7 @@ from django.shortcuts import redirect, render_to_response
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
-from settings import API_KEY, AUTH_DOMAIN
 import json, time, urllib2, os
-
-# Returns a HttpResponse object
-# If auth has been successful the status will be 204, and the wrapper function can do it's own thing
-# Any other response should be returned to the client
-# @deprecated - use @login_required instead
-# NB: moving to login_required breaks API authentication - need to find a solution for that
-@csrf_exempt
-def authenticate(request):
-	
-	@csrf_protect
-	def needs_csrf_protection(request):
-		return HttpResponse(status=204)
-		
-	if ('agentid' in request.session and request.session['agentid']):
-		try:
-			agent = ExternalAgent.objects.get(pk=request.session['agentid']).agent
-		except ExternalAgent.DoesNotExist:
-			return HttpResponse(status=403)
-		
-		# Only end user requests require CSRF protection
-		response = needs_csrf_protection(request)
-		response.agent = agent
-		return response
-	if ('HTTP_AUTHORIZATION' in request.META):
-		
-		# TODO: support multiple keys
-		if (request.META['HTTP_AUTHORIZATION'] == "Key "+API_KEY):
-			request.session['agentid'] = None
-			return HttpResponse(status=204)
-		else:
-			return HttpResponse(status=403)
-	if ('token' in request.GET):
-		url = 'http://'+AUTH_DOMAIN+'/data?' + utils.http.urlencode({'token': request.GET['token']})
-		data = json.load(urllib2.urlopen(url))
-		if (data['id'] == None):
-			print "No id returned by auth service; "+url
-		else:
-			request.session['agentid'] = data['id']
-			return redirect(request.path)
-	return redirect('http://'+AUTH_DOMAIN+'/authenticate?' + utils.http.urlencode({'redirect_uri': request.build_absolute_uri()}))
 
 @csrf_exempt
 @api_auth
