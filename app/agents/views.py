@@ -1,4 +1,5 @@
 from agents.models import *
+from lucosauth.decorators import api_auth
 from django.http import HttpResponse, Http404
 from django import utils
 from django.shortcuts import redirect, render_to_response
@@ -49,6 +50,7 @@ def authenticate(request):
 	return redirect('http://'+AUTH_DOMAIN+'/authenticate?' + utils.http.urlencode({'redirect_uri': request.build_absolute_uri()}))
 
 @csrf_exempt
+@api_auth
 @login_required
 def agent(request, extid, method):
 	if (extid == 'me'):
@@ -188,12 +190,17 @@ def agentdata(agent, currentagent, extended=False):
 		agentdataobj['relations'] = []
 		for relation in Relationship.objects.filter(object=agent).order_by('subject'):
 			agentdataobj['relations'].append(agentdata(relation.subject, agent))
+
 	try:
-		rel = Relationship.objects.get(subject=agent.id, object=currentagent.id)
-		agentdataobj['rel'] = rel.type.getLabel()
+		if currentagent:
+			if (agent == currentagent):
+				agentdataobj['rel'] = 'me'
+			else:
+				rel = Relationship.objects.get(subject=agent.id, object=currentagent.id)
+				agentdataobj['rel'] = rel.type.getLabel()
 	except Relationship.DoesNotExist:
-		if (agent == currentagent):
-			agentdataobj['rel'] = 'me'
+		pass
+
 	return agentdataobj
 
 def identify(request):

@@ -45,12 +45,38 @@ class LucosUser(AbstractBaseUser):
 	def has_module_perms(self, app_label):
 		if (app_label == 'agents'):
 			return True
+		if (app_label == 'lucosauth'):
+			return True
 		return False
 	def has_perm(self, perm, obj=None):
 		if (perm.startswith('agents.')):
+			return True
+		if (perm.startswith('lucosauth.')):
 			return True
 		return False
 	def get_short_name(self):
 		return self.agent.getName()
 	def get_long_name(self):
 		return self.agent.getName()
+
+class ApiUser(AbstractBaseUser):
+	username = None
+	agent = None
+	system = models.CharField(max_length=128, blank=False, unique=True)
+	apikey = models.CharField(max_length=128, blank=False, unique=True)
+	USERNAME_FIELD = 'system'
+	REQUIRED_FIELDS = []
+	def is_staff(self):
+		return False
+	def has_module_perms(self, app_label):
+		if (app_label == 'agents'):
+			return True
+		return False
+	def has_perm(self, perm, obj=None):
+		if (perm.startswith('agents.')):
+			return True
+		return False
+	def get_short_name(self):
+		return self.system
+	def get_long_name(self):
+		return self.system
