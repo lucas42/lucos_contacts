@@ -91,13 +91,12 @@ AUTHENTICATION_BACKENDS = (
     'lucosauth.models.LucosAuthBackend',
 )
 AUTH_DOMAIN = 'auth.l42.eu'
-API_KEY = os.environ["API_KEY"]
 
 SECURE_PROXY_SSL_HEADER = (
 	'HTTP_X_FORWARDED_PROTO', 'https'
 )
 
-ALLOWED_HOSTS = ["contacts.l42.eu", "localhost"]
+ALLOWED_HOSTS = ["contacts.l42.eu", "localhost", "host.docker.internal"]
 
 if os.environ.get("PRODUCTION"):
     DEBUG = False

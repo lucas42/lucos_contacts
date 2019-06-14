@@ -16,7 +16,6 @@ services:
     image: lucas42/lucos_contacts_app
     environment:
       - SECRET_KEY
-      - API_KEY
       - PRODUCTION
     volumes:
       - "staticfiles:/usr/src/app/static"
