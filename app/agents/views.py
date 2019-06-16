@@ -164,11 +164,15 @@ def agentdata(agent, currentagent, extended=False):
 
 def identify(request):
 	try:
-		type = AccountType.objects.get(id=request.GET.get('type', ''))
-		if (request.GET.get('domain', False)):
-			account = Account.objects.get(type=type, domain=request.GET.get('domain', ''), userid=request.GET.get('id', ''))
+		typeid = request.GET.get('type', '')
+		if (typeid == "phone"):
+			account = PhoneNumber.objects.get(number=request.GET.get('number', ''))
 		else:
-			account = Account.objects.get(type=type, userid=request.GET.get('id', ''))
+			type = AccountType.objects.get(id=typeid)
+			if (request.GET.get('domain', False)):
+				account = Account.objects.get(type=type, domain=request.GET.get('domain', ''), userid=request.GET.get('id', ''))
+			else:
+				account = Account.objects.get(type=type, userid=request.GET.get('id', ''))
 	except AccountType.DoesNotExist:
 		raise Http404
 	except Account.DoesNotExist:

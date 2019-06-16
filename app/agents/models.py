@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.db import models
 from django.utils import translation
 
@@ -90,6 +91,15 @@ class PhoneNumber(BaseAccount):
 			return 'Uimhir guathan '+self.agent.getName()
 		return self.agent.getName()+"'s Phone Number"
 
+class EmailAddress(BaseAccount):
+	address = models.EmailField(max_length=255, blank=False)
+	class Meta:
+		verbose_name_plural = "Email Addresses"
+	def __unicode__(self):
+		if getCurrentLang() == 'ga':
+			return u'Seolodh Ríomhphost '+self.agent.getName()
+		return self.agent.getName()+"'s Email Address"
+
 class PostalAddress(BaseAccount):
 	address = models.CharField(max_length=255, blank=False)
 	class Meta:
@@ -107,6 +117,21 @@ class FacebookAccount(BaseAccount):
 			return 'Cuntas Facebook '+self.agent.getName()
 		return self.agent.getName()+"'s Facebook Account"
 
+# An actual google acount, which can be logged into by the user
+class GoogleAccount(BaseAccount):
+	userid = models.CharField(max_length=255, blank=False)
+	def __unicode__(self):
+		if getCurrentLang() == 'ga':
+			return 'Cuntas Google '+self.agent.getName()
+		return self.agent.getName()+"'s Google Account"
+
+# A contact from Google Contacts
+class GoogleContact(BaseAccount):
+	contactid = models.CharField(max_length=127, blank=False)
+	def __unicode__(self):
+		if getCurrentLang() == 'ga':
+			return 'Teagmháil Google '+self.agent.getName()
+		return self.agent.getName()+"'s Google Contact"
 
 class RelationshipType(models.Model):
 	label_en = models.CharField(max_length=255, blank=True)

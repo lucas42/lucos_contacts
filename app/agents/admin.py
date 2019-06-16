@@ -14,11 +14,20 @@ class AccountInline(admin.TabularInline):
 class PhoneInline(AccountInline):
 	model = PhoneNumber
 
+class EmailInline(AccountInline):
+	model = EmailAddress
+
 class AddressInline(AccountInline):
 	model = PostalAddress
 
 class FacebookAccountInline(AccountInline):
 	model = FacebookAccount
+
+class GoogleAccountInline(AccountInline):
+	model = GoogleAccount
+
+class GoogleContactInline(AccountInline):
+	model = GoogleContact
 
 class RelationshipInline(admin.TabularInline):
 	model = Relationship
@@ -26,15 +35,18 @@ class RelationshipInline(admin.TabularInline):
 	fields = ('type', 'subject')
 
 class AgentAdmin(admin.ModelAdmin):
-    actions = ['merge']
-    inlines = [
-    	PhoneInline,
-    	AddressInline,
-    	FacebookAccountInline,
-    	LegacyAccountInline,
-    	RelationshipInline
-    ]
-    def merge(self, request, queryset):
+	actions = ['merge']
+	inlines = [
+		PhoneInline,
+		EmailInline,
+		AddressInline,
+		FacebookAccountInline,
+		GoogleAccountInline,
+		GoogleContactInline,
+		LegacyAccountInline,
+		RelationshipInline
+	]
+	def merge(self, request, queryset):
 		agents = queryset.order_by('id')
 		if (agents.count() < 2):
 			#messages.error(request, "Merging a single object is futile") # requires django 1.2
@@ -50,13 +62,13 @@ class AgentAdmin(admin.ModelAdmin):
 				Account.objects.filter(agent=agent).update(agent=mainagent)
 				ExternalAgent.objects.filter(agent=agent).update(agent=mainagent)
 				agent.delete()
-    
+
 class RelationshipAdmin(admin.ModelAdmin):
 	fields = ('subject', 'type', 'object')
 	list_display = ('subject', 'type', 'object')
 	list_display_links = ('subject', 'type', 'object')
 	ordering = ['subject']
-	
+
 class RelationshipTypeConnectionAdmin(admin.ModelAdmin):
 	list_display = ('inferred_relation_type', 'relation_type_a', 'relation_type_b')
 	list_display_links = ['inferred_relation_type']
@@ -64,6 +76,8 @@ class RelationshipTypeConnectionAdmin(admin.ModelAdmin):
 admin.site.register(Agent, AgentAdmin)
 admin.site.register(Account)
 admin.site.register(PhoneNumber)
+admin.site.register(EmailAddress)
+admin.site.register(FacebookAccount)
 admin.site.register(PostalAddress)
 admin.site.register(Relationship, RelationshipAdmin)
 admin.site.register(AccountType)
