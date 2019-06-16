@@ -130,7 +130,7 @@ class GoogleContact(BaseAccount):
 	contactid = models.CharField(max_length=127, blank=False)
 	def __unicode__(self):
 		if getCurrentLang() == 'ga':
-			return 'Teagmháil Google '+self.agent.getName()
+			return u'Teagmháil Google '+self.agent.getName()
 		return self.agent.getName()+"'s Google Contact"
 
 class RelationshipType(models.Model):
