@@ -1,4 +1,4 @@
-#lucos Contacts
+# lucos Contacts - Django app
 A list of contacts
 
 ## Dependencies
