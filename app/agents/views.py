@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render_to_response
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
+from django.core.exceptions import MultipleObjectsReturned
 import json, time, urllib2, os
 
 @csrf_exempt
@@ -164,18 +165,10 @@ def agentdata(agent, currentagent, extended=False):
 
 def identify(request):
 	try:
-		typeid = request.GET.get('type', '')
-		if (typeid == "phone"):
-			account = PhoneNumber.objects.get(number=request.GET.get('number', ''))
-		else:
-			type = AccountType.objects.get(id=typeid)
-			if (request.GET.get('domain', False)):
-				account = Account.objects.get(type=type, domain=request.GET.get('domain', ''), userid=request.GET.get('id', ''))
-			else:
-				account = Account.objects.get(type=type, userid=request.GET.get('id', ''))
-	except AccountType.DoesNotExist:
-		raise Http404
-	except Account.DoesNotExist:
-		raise Http404
+		account = BaseAccount.getByParams(request.GET)
+	except ObjectDoesNotExist as e:
+		return HttpResponse(status=404, content=str(e)+"\n")
+	except MultipleObjectsReturned as e:
+		return HttpResponse(status=409, content=str(e)+"\n")
 	return redirect(account.agent)
 

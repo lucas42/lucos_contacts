@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 from django.utils import translation
+from django.core.exceptions import ObjectDoesNotExist
 
 def getCurrentLang():
 	cur_language = translation.get_language()
@@ -69,6 +70,21 @@ class BaseAccount(models.Model):
 	agent = models.ForeignKey(Agent, blank=False)
 	class Meta:
 		abstract = True
+	@staticmethod
+	def getByParams(params):
+		accountTypes = {
+			"facebook": FacebookAccount,
+			"google": GoogleAccount,
+			"phone": PhoneNumber,
+			"email": EmailAddress,
+			"googlecontact": GoogleContact,
+		}
+		accountArgs = params.dict()
+		typeid = accountArgs.pop("type")
+		accountType = accountTypes.get(typeid)
+		if accountType is None:
+			raise ObjectDoesNotExist("Can't find account of type "+params.get("type"))
+		return accountType.objects.get(**accountArgs)
 	
 class Account(BaseAccount):
 	type = models.ForeignKey(AccountType, blank=False)
