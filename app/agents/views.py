@@ -37,33 +37,7 @@ def agent(request, extid, method):
 		return redirect(agent)
 	
 	output = agentdata(agent, request.user.agent, True)
-	if (method == 'edit'):
-		template = 'agent-edit.html'
-		if (request.method == 'POST'):
-			new_numbers = filter(None, request.POST.getlist('telnum'))
-			to_delete = array_diff(output['phone'], new_numbers)
-			to_add = array_diff(new_numbers, output['phone'])
-			phonenumbertype = AccountType(id=5)
-			for i, v in enumerate(to_delete):
-				Account.objects.filter(type=phonenumbertype).filter(agent=agent).filter(userid=v).delete()
-			for i, v in enumerate(to_add):
-				num = Account(type=phonenumbertype, agent=agent, userid=v)
-				num.save()
-			output['phone'] = new_numbers
-
-			new_addresses = filter(None, request.POST.getlist('addresses'))
-			to_delete = array_diff(output['addresses'], new_addresses)
-			to_add = array_diff(new_addresses, output['addresses'])
-			addresstype = AccountType(id=10)
-			for i, v in enumerate(to_delete):
-				Account.objects.filter(type=addresstype).filter(agent=agent).filter(url=v).delete()
-			for i, v in enumerate(to_add):
-				address = Account(type=addresstype, agent=agent, url=v)
-				address.save()
-			output['addresses'] = new_addresses
-
-		output.update(csrf(request))
-	elif (method == 'accounts'):
+	if (method == 'accounts'):
 		
 		# TODO: handle domains
 		if (request.method == 'POST'):
