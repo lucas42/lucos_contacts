@@ -83,7 +83,7 @@ class BaseAccount(models.Model):
 		typeid = accountArgs.pop("type")
 		accountType = accountTypes.get(typeid)
 		if accountType is None:
-			raise ObjectDoesNotExist("Can't find account of type "+params.get("type"))
+			raise ObjectDoesNotExist("Can't find account of type "+typeid)
 		return accountType.objects.get(**accountArgs)
 	
 class Account(BaseAccount):
