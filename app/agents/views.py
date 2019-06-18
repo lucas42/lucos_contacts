@@ -38,19 +38,24 @@ def agent(request, extid, method):
 	
 	output = agentdata(agent, request.user.agent, True)
 	if (method == 'accounts'):
-		
-		# TODO: handle domains
 		if (request.method == 'POST'):
-			types = request.POST.getlist('type')
-			ids = request.POST.getlist('id')
-			for t, i in zip(types, ids):
+			accountlist = json.loads(request.body)
+			for accountData in accountlist:
+				accountTypes = {
+					"facebook": FacebookAccount,
+					"google": GoogleAccount,
+					"phone": PhoneNumber,
+					"email": EmailAddress,
+					"googlecontact": GoogleContact,
+				}
+				typeid = accountData.pop("type")
+				accountType = accountTypes.get(typeid)
+				if accountType is None:
+					return HttpResponse(status=404, content="Unknown account type \""+typeid+"\"\n")
 				try:
-					accounttype = AccountType.objects.get(id=t)
-					account = Account.objects.get(type=accounttype, userid=i, agent=agent)
-				except AccountType.DoesNotExist:
-					raise Http404
-				except Account.DoesNotExist:
-					account = Account(type=accounttype, userid=i, agent=agent)
+					account = accountType.objects.get(agent=agent, **accountData)
+				except ObjectDoesNotExist:
+					account = accountType(agent=agent, **accountData)
 				account.save()
 		return HttpResponse(status=204)
 	else:
