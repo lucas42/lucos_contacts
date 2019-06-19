@@ -53,19 +53,6 @@ class ExternalAgent(models.Model):
 	def __unicode__(self):
 		return self.agent.getName()
 
-class AccountType(models.Model):
-	label_en = models.CharField(max_length=255, blank=True)
-	label_ga = models.CharField(max_length=255, blank=True)
-	label_gd = models.CharField(max_length=255, blank=True)
-	label_cy = models.CharField(max_length=255, blank=True)
-	accounturi = models.CharField(max_length=255, blank=True)
-	
-	def getLabel(self):
-		return getTranslated(self, 'label')
-
-	def __unicode__(self):
-		return self.getLabel()
-
 class BaseAccount(models.Model):
 	agent = models.ForeignKey(Agent, blank=False)
 	class Meta:
@@ -85,20 +72,6 @@ class BaseAccount(models.Model):
 		if accountType is None:
 			raise ObjectDoesNotExist("Can't find account of type "+typeid)
 		return accountType.objects.get(**accountArgs)
-	
-class Account(BaseAccount):
-	type = models.ForeignKey(AccountType, blank=False)
-	domain = models.CharField(max_length=255, blank=True, help_text='')
-	userid = models.CharField(max_length=255, blank=True, help_text='Must be unique for the given type in the given domain.  Usually persistant')
-	username = models.CharField(max_length=255, blank=True, help_text='Usually unique for the given type/domain.  Can change over time.')
-	url = models.CharField(max_length=255, blank=True)
-	name = models.CharField(max_length=255, blank=True, help_text='Not guaranteed to be unique.')
-	imgurl = models.CharField(max_length=255, blank=True)
-	
-	def __unicode__(self):
-		if getCurrentLang() == 'ga':
-			return 'Cuntas '+self.type.getLabel()+' '+self.agent.getName()
-		return self.agent.getName()+"'s "+self.type.getLabel()+" account"
 
 class PhoneNumber(BaseAccount):
 	number = models.CharField(max_length=127, blank=False)

@@ -1,12 +1,6 @@
 from agents.models import *
 from django.contrib import admin
 
-class LegacyAccountInline(admin.StackedInline):
-	model = Account
-	extra = 0
-	verbose_name = "Legacy Account"
-	verbose_name_plural = "Legacy Accounts"
-
 class AccountInline(admin.TabularInline):
 	extra = 1
 	min_num = 0
@@ -43,7 +37,6 @@ class AgentAdmin(admin.ModelAdmin):
 		FacebookAccountInline,
 		GoogleAccountInline,
 		GoogleContactInline,
-		LegacyAccountInline,
 		RelationshipInline
 	]
 	def merge(self, request, queryset):
@@ -59,7 +52,6 @@ class AgentAdmin(admin.ModelAdmin):
 			else:
 				Relationship.objects.filter(subject=agent).update(subject=mainagent)
 				Relationship.objects.filter(object=agent).update(object=mainagent)
-				Account.objects.filter(agent=agent).update(agent=mainagent)
 				ExternalAgent.objects.filter(agent=agent).update(agent=mainagent)
 				agent.delete()
 
@@ -74,12 +66,10 @@ class RelationshipTypeConnectionAdmin(admin.ModelAdmin):
 	list_display_links = ['inferred_relation_type']
 
 admin.site.register(Agent, AgentAdmin)
-admin.site.register(Account)
 admin.site.register(PhoneNumber)
 admin.site.register(EmailAddress)
 admin.site.register(FacebookAccount)
 admin.site.register(PostalAddress)
 admin.site.register(Relationship, RelationshipAdmin)
-admin.site.register(AccountType)
 admin.site.register(RelationshipType)
 admin.site.register(RelationshipTypeConnection, RelationshipTypeConnectionAdmin)
