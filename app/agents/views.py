@@ -151,3 +151,29 @@ def identify(request):
 		return HttpResponse(status=409, content=str(e)+"\n")
 	return redirect(account.agent)
 
+def info(request):
+	output = {
+		'system': "lucos_contacts",
+		'checks': {
+			'db': {
+				'techDetail': "Looks up test user in database",
+			},
+		},
+		'metrics': {
+			'agentcount': {
+				'techDetail': "Counts the number of agents in the database",
+			}
+		},
+	}
+	try:
+		ext = ExternalAgent.objects.get(pk=1)
+		output['checks']['db']['ok'] = True
+	except Exception as e:
+		output['checks']['db']['ok'] = False
+		output['checks']['db']['debug'] = str(e)
+	try:
+		[output['metrics']['agentcount']['value']] = len(Agent.objects.all()),
+	except Exception as e:
+		output['metrics']['agentcount']['value'] = -1
+		output['metrics']['agentcount']['debug'] = str(e)
+	return HttpResponse(content=json.dumps(output))

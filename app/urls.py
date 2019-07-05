@@ -22,4 +22,5 @@ urlpatterns = [
 
 	url(r'^admin/', include(admin.site.urls)),
 	url(r'^accounts/login/', auth_views.loginview),
+	url(r'^_info$', agents_views.info)
 ]
