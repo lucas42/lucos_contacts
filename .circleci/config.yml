@@ -2,7 +2,7 @@ version: 2
 jobs:
   test-app:
     docker:
-      - image: circleci/python-2.7
+      - image: circleci/python:2.7
     steps:
       - checkout
       - run:
@@ -19,7 +19,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker image
-          command: docker-compose build.
+          command: docker-compose build
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
