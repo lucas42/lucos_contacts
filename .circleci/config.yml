@@ -3,7 +3,7 @@ jobs:
   test-app:
     docker:
       - image: circleci/python-2.7
-    step:
+    steps:
       - checkout
       - run:
           name: Run tests for django app
