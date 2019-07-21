@@ -15,7 +15,7 @@ jobs:
           working_directory: app
   build:
     environment:
-      COMPOSE_PROJECT_NAME: $CIRCLE_PROJECT_REPONAME
+      COMPOSE_PROJECT_NAME: lucos_contacts
     docker:
       - image: circleci/buildpack-deps:buster
     steps:
@@ -31,7 +31,7 @@ jobs:
             docker-compose push
   deploy:
     environment:
-      COMPOSE_PROJECT_NAME: $CIRCLE_PROJECT_REPONAME
+      COMPOSE_PROJECT_NAME: lucos_contacts
       PRODUCTION: true
     docker:
       - image: circleci/buildpack-deps:buster
