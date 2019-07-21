@@ -175,8 +175,8 @@ def info(request):
 		output['checks']['db']['ok'] = False
 		output['checks']['db']['debug'] = str(e)
 	try:
-		[output['metrics']['agentcount']['value']] = len(Agent.objects.all()),
+		[output['metrics']['agent-count']['value']] = len(Agent.objects.all()),
 	except Exception as e:
-		output['metrics']['agentcount']['value'] = -1
-		output['metrics']['agentcount']['debug'] = str(e)
+		output['metrics']['agent-count']['value'] = -1
+		output['metrics']['agent-count']['debug'] = str(e)
 	return HttpResponse(content=json.dumps(output))
