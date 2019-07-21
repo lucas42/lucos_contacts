@@ -28,6 +28,7 @@ jobs:
   deploy:
     environment:
       COMPOSE_PROJECT_NAME: $CIRCLE_PROJECT_REPONAME
+      PRODUCTION: true
     docker:
       - image: circleci/buildpack-deps:buster
     steps:
