@@ -164,6 +164,9 @@ def info(request):
 				'techDetail': "Counts the number of agents in the database",
 			}
 		},
+		'ci': {
+			'circle': "gh/lucas42/lucos_media_metadata_api",
+		}
 	}
 	try:
 		ext = ExternalAgent.objects.get(pk=1)
