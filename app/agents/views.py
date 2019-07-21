@@ -165,7 +165,7 @@ def info(request):
 			}
 		},
 		'ci': {
-			'circle': "gh/lucas42/lucos_media_metadata_api",
+			'circle': "gh/lucas42/lucos_contacts",
 		}
 	}
 	try:
