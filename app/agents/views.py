@@ -160,7 +160,7 @@ def info(request):
 			},
 		},
 		'metrics': {
-			'agentcount': {
+			'agent-count': {
 				'techDetail': "Counts the number of agents in the database",
 			}
 		},
