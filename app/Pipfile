@@ -7,7 +7,7 @@ name = "pypi"
 
 [packages]
 
-django = "==1.11.23"
+django = "==1.11.24"
 gunicorn= "==19.9.0"
 
 
