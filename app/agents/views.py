@@ -12,7 +12,7 @@ import json, time, os
 @csrf_exempt
 @api_auth
 @login_required
-def agent(request, extid, method):
+def agent(request, extid, method=None):
 	if (extid == 'me'):
 		# API requests have no concept of 'me'
 		if (request.user.agent == None):
