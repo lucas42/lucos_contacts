@@ -6,7 +6,8 @@ from agents.models import Agent
 import json, time, urllib.request, urllib.error, os
 
 class LucosAuthBackend(object):
-	def authenticate(self, token):
+	def authenticate(self, request, token):
+		print("LucosAuthBackend token:"+str(token))
 		url = 'https://'+AUTH_DOMAIN+'/data?' + utils.http.urlencode({'token': token})
 		try:
 			data = json.load(urllib.request.urlopen(url, timeout=5))
@@ -21,7 +22,7 @@ class LucosAuthBackend(object):
 		try:
 			agent = Agent.objects.get(id=data['id'])
 		except Agent.DoesNotExist:
-			print("Unknown id returned by auth service; "+url)
+			print("Unknown id ("+str(data['id'])+") returned by auth service; "+url)
 			return None
 		try:
 			user = LucosUser.objects.get(agent=agent)
@@ -38,7 +39,7 @@ class LucosAuthBackend(object):
 			return None
 
 class LucosUser(AbstractBaseUser):
-	agent = models.OneToOneField(Agent)
+	agent = models.OneToOneField(Agent, on_delete=models.CASCADE)
 	def is_staff(self):
 		return self.agent.id == 2
 	def has_module_perms(self, app_label):

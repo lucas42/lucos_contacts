@@ -6,7 +6,7 @@ def api_auth(func):
 	@wraps(func)
 	def _decorator(request, *args, **kwargs):
 		from django.contrib.auth import login
-		if request.META.has_key('HTTP_AUTHORIZATION'):
+		if 'HTTP_AUTHORIZATION' in request.META:
 			authmeth, auth = request.META['HTTP_AUTHORIZATION'].split(' ', 1)
 			if authmeth.lower() == 'key':
 				try:

@@ -2,17 +2,17 @@ from agents.models import *
 from lucosauth.decorators import api_auth
 from django.http import HttpResponse, Http404
 from django import utils
-from django.shortcuts import redirect, render_to_response
+from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.decorators import login_required
-from django.core import urlresolvers
+from django.urls import reverse
 from django.core.exceptions import MultipleObjectsReturned
 import json, time, os
 
 @csrf_exempt
 @api_auth
 @login_required
-def agent(request, extid, method):
+def agent(request, extid, method=None):
 	if (extid == 'me'):
 		# API requests have no concept of 'me'
 		if (request.user.agent == None):
@@ -27,7 +27,7 @@ def agent(request, extid, method):
 			template = 'agent-add.html'
 			output = {}
 			output.update(csrf(request))
-			return render_to_response('agents/'+template, output)
+			return render(None, 'agents/'+template, output)
 	try:
 		ext = ExternalAgent.objects.get(pk=extid)
 		agent = ext.agent
@@ -60,7 +60,7 @@ def agent(request, extid, method):
 		return HttpResponse(status=204)
 	else:
 		template = 'agent.html'
-	return render_to_response('agents/'+template, output)
+	return render(None, 'agents/'+template, output)
 	
 	
 def array_diff(a, b):
@@ -85,11 +85,11 @@ def agentindex(request, list):
 		agentlist = Agent.objects.filter(id=0)
 	for agent in agentlist.distinct().order_by('id'):
 		agents.append(agentdata(agent, request.user.agent))
-	return render_to_response('agents/index.html', {
+	return render(None, 'agents/index.html', {
 		'template': template,
 		'agents': agents,
 		'list': list,
-		'addurl': urlresolvers.reverse('admin:agents_agent_add'),
+		'addurl': reverse('admin:agents_agent_add'),
 	})
 
 # Get a bunch of data abount an agent
@@ -119,7 +119,7 @@ def agentdata(agent, currentagent, extended=False):
 		'addresses': rawaddresses,
 		'formattedaddresses': formattedaddresses,
 		'facebookaccounts': facebookaccounts,
-		'editurl': urlresolvers.reverse('admin:agents_agent_change', args=(agent.id,)),
+		'editurl': reverse('admin:agents_agent_change', args=(agent.id,)),
 		'bio': agent.bio,
 		'notes': agent.notes,
 		'giftideas': agent.gift_ideas,
