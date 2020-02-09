@@ -49,12 +49,12 @@ class Agent(models.Model):
 		return "/agents/%i" % self.id
 	
 class ExternalAgent(models.Model):
-	agent = models.ForeignKey(Agent, blank=False)
+	agent = models.ForeignKey(Agent, blank=False, on_delete=models.CASCADE)
 	def __unicode__(self):
 		return self.agent.getName()
 
 class BaseAccount(models.Model):
-	agent = models.ForeignKey(Agent, blank=False)
+	agent = models.ForeignKey(Agent, blank=False, on_delete=models.CASCADE)
 	class Meta:
 		abstract = True
 	@staticmethod
@@ -129,7 +129,7 @@ class RelationshipType(models.Model):
 	label_cy = models.CharField(max_length=255, blank=True)
 	symmetrical = models.BooleanField(default=False)
 	transitive = models.BooleanField(default=False)
-	inverse = models.OneToOneField('self', null=True, blank=True)
+	inverse = models.OneToOneField('self', null=True, blank=True, on_delete=models.CASCADE)
 	
 	
 	def save(self, *args, **kwargs):
@@ -156,9 +156,9 @@ class RelationshipType(models.Model):
 		return self.getLabel()
 
 class Relationship(models.Model):
-	subject = models.ForeignKey(Agent, related_name='subject', blank=False)
-	object = models.ForeignKey(Agent, related_name='object', blank=False)
-	type = models.ForeignKey(RelationshipType, blank=False, help_text='Subject is a $type of object')
+	subject = models.ForeignKey(Agent, related_name='subject', blank=False, on_delete=models.CASCADE)
+	object = models.ForeignKey(Agent, related_name='object', blank=False, on_delete=models.CASCADE)
+	type = models.ForeignKey(RelationshipType, blank=False, help_text='Subject is a $type of object', on_delete=models.CASCADE)
 	def save(self, *args, **kwargs):
 		super(Relationship, self).save(*args, **kwargs)
 		self.inferRelationships()
@@ -237,9 +237,9 @@ class Relationship(models.Model):
 		return self.subject.getName()+" - "+self.type.getLabel()+" - "+self.object.getName()
 
 class RelationshipTypeConnection(models.Model):
-	relation_type_a = models.ForeignKey(RelationshipType, related_name='a', blank=False)
-	relation_type_b = models.ForeignKey(RelationshipType, related_name='b', blank=True, null=True)
-	inferred_relation_type = models.ForeignKey(RelationshipType, related_name='inferred', blank=False)
+	relation_type_a = models.ForeignKey(RelationshipType, related_name='a', blank=False, on_delete=models.CASCADE)
+	relation_type_b = models.ForeignKey(RelationshipType, related_name='b', blank=True, null=True, on_delete=models.CASCADE)
+	inferred_relation_type = models.ForeignKey(RelationshipType, related_name='inferred', blank=False, on_delete=models.CASCADE)
 	reversible = models.BooleanField(default=False)
 	def __unicode__(self):
 		return "a="+self.relation_type_a.getLabel()+" b="+self.relation_type_b.getLabel()+" infer="+self.inferred_relation_type.getLabel()

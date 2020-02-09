@@ -38,7 +38,7 @@ class LucosAuthBackend(object):
 			return None
 
 class LucosUser(AbstractBaseUser):
-	agent = models.OneToOneField(Agent)
+	agent = models.OneToOneField(Agent, on_delete=models.CASCADE)
 	def is_staff(self):
 		return self.agent.id == 2
 	def has_module_perms(self, app_label):
