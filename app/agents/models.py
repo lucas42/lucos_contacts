@@ -34,7 +34,7 @@ class Agent(models.Model):
 	def getName(self):
 		return getTranslated(self, 'name')
 
-	def __unicode__(self):
+	def __str__(self):
 		return self.getName()
 		
 	def save(self, *args, **kwargs):
@@ -50,7 +50,7 @@ class Agent(models.Model):
 	
 class ExternalAgent(models.Model):
 	agent = models.ForeignKey(Agent, blank=False, on_delete=models.CASCADE)
-	def __unicode__(self):
+	def __str__(self):
 		return self.agent.getName()
 
 class BaseAccount(models.Model):
@@ -75,7 +75,7 @@ class BaseAccount(models.Model):
 
 class PhoneNumber(BaseAccount):
 	number = models.CharField(max_length=127, blank=False)
-	def __unicode__(self):
+	def __str__(self):
 		if getCurrentLang() == 'ga':
 			return 'Uimhir guathan '+self.agent.getName()
 		return self.agent.getName()+"'s Phone Number"
@@ -84,7 +84,7 @@ class EmailAddress(BaseAccount):
 	address = models.EmailField(max_length=255, blank=False)
 	class Meta:
 		verbose_name_plural = "Email Addresses"
-	def __unicode__(self):
+	def __str__(self):
 		if getCurrentLang() == 'ga':
 			return u'Seolodh Ríomhphost '+self.agent.getName()
 		return self.agent.getName()+"'s Email Address"
@@ -93,7 +93,7 @@ class PostalAddress(BaseAccount):
 	address = models.CharField(max_length=255, blank=False)
 	class Meta:
 		verbose_name_plural = "Postal Addresses"
-	def __unicode__(self):
+	def __str__(self):
 		if getCurrentLang() == 'ga':
 			return 'Seoladh '+self.agent.getName()
 		return self.agent.getName()+"'s Address"
@@ -101,7 +101,7 @@ class PostalAddress(BaseAccount):
 class FacebookAccount(BaseAccount):
 	userid = models.PositiveIntegerField(blank=False)
 	username = models.CharField(max_length=255, blank=True)
-	def __unicode__(self):
+	def __str__(self):
 		if getCurrentLang() == 'ga':
 			return 'Cuntas Facebook '+self.agent.getName()
 		return self.agent.getName()+"'s Facebook Account"
@@ -109,7 +109,7 @@ class FacebookAccount(BaseAccount):
 # An actual google acount, which can be logged into by the user
 class GoogleAccount(BaseAccount):
 	userid = models.CharField(max_length=255, blank=False)
-	def __unicode__(self):
+	def __str__(self):
 		if getCurrentLang() == 'ga':
 			return 'Cuntas Google '+self.agent.getName()
 		return self.agent.getName()+"'s Google Account"
@@ -117,7 +117,7 @@ class GoogleAccount(BaseAccount):
 # A contact from Google Contacts
 class GoogleContact(BaseAccount):
 	contactid = models.CharField(max_length=127, blank=False)
-	def __unicode__(self):
+	def __str__(self):
 		if getCurrentLang() == 'ga':
 			return u'Teagmháil Google '+self.agent.getName()
 		return self.agent.getName()+"'s Google Contact"
@@ -137,10 +137,10 @@ class RelationshipType(models.Model):
 			self.inverse = self
 		self.symmetrical = self.inverse == self
 		if self.inverse and self.inverse.inverse != self:
-			#print "inverse:"+self.inverse.__unicode__();
+			#print "inverse:"+self.inverse.__str__();
 			self.inverse.inverse = self
 			self.inverse.save()
-			#print "inverseinverse:"+self.inverse.inverse.__unicode__();
+			#print "inverseinverse:"+self.inverse.inverse.__str__();
 		super(RelationshipType, self).save(*args, **kwargs)
 		self.inferRelationships()
 	
@@ -152,7 +152,7 @@ class RelationshipType(models.Model):
 		for relationship in Relationship.objects.filter(type=self):
 			relationship.inferRelationships()
 
-	def __unicode__(self):
+	def __str__(self):
 		return self.getLabel()
 
 class Relationship(models.Model):
@@ -164,7 +164,7 @@ class Relationship(models.Model):
 		self.inferRelationships()
 
 	def inferRelationships(self):
-		#print "--Saved "+self.__unicode__()
+		#print "--Saved "+self.__str__()
 		# Set inferred relationships
 		if self.type.transitive:
 			#print "\ttransitive"
@@ -184,56 +184,56 @@ class Relationship(models.Model):
 					Relationship.objects.get(subject=item.subject, object=self.object, type=self.type)
 				except Relationship.DoesNotExist:
 					Relationship.objects.create(subject=item.subject, object=self.object, type=self.type)
-				#print "\t\t\t"+Relationship.objects.get(subject=self.subject, object=item.object, type=self.type).__unicode__()
+				#print "\t\t\t"+Relationship.objects.get(subject=self.subject, object=item.object, type=self.type).__str__()
 		if self.type.inverse:
 			#print "\tinverse"
 			try:
 				Relationship.objects.get(subject=self.object, object=self.subject, type=self.type.inverse)
 			except Relationship.DoesNotExist:
 				Relationship.objects.create(subject=self.object, object=self.subject, type=self.type.inverse)
-			#print "\t\t\t"+Relationship.objects.get(subject=self.object, object=self.subject, type=self.type.inverse).__unicode__()
+			#print "\t\t\t"+Relationship.objects.get(subject=self.object, object=self.subject, type=self.type.inverse).__str__()
 				
 		for connection in RelationshipTypeConnection.objects.filter(inferred_relation_type=self.type, reversible=True).exclude(relation_type_b=None):
-			#print "\tConnection(infer): "+connection.__unicode__()
+			#print "\tConnection(infer): "+connection.__str__()
 			for relationship_a in Relationship.objects.filter(subject=self.subject, type=connection.relation_type_a):
-				#print "\t\texistingrel(a):"+relationship_a.__unicode__()
+				#print "\t\texistingrel(a):"+relationship_a.__str__()
 				try:
 					Relationship.objects.get(subject=relationship_a.object, object=self.object, type=connection.relation_type_b)
 				except Relationship.DoesNotExist:
 					Relationship.objects.create(subject=relationship_a.object, object=self.object, type=connection.relation_type_b)
-				#print "\t\t\t"+Relationship.objects.get(subject=relationship_a.object, object=self.object, type=connection.relation_type_b).__unicode__()
+				#print "\t\t\t"+Relationship.objects.get(subject=relationship_a.object, object=self.object, type=connection.relation_type_b).__str__()
 			for relationship_b in Relationship.objects.filter(object=self.object, type=connection.relation_type_b):
-				#print "\t\texistingrel(b):"+relationship_b.__unicode__()
+				#print "\t\texistingrel(b):"+relationship_b.__str__()
 				try:
 					Relationship.objects.get(subject=self.subject, object=relationship_b.subject, type=connection.relation_type_a)
 				except Relationship.DoesNotExist:
 					Relationship.objects.create(subject=self.subject, object=relationship_b.subject, type=connection.relation_type_a)
-				#print "\t\t\t"+Relationship.objects.get().__unicode__()
+				#print "\t\t\t"+Relationship.objects.get().__str__()
 			
 		for connection in RelationshipTypeConnection.objects.filter(relation_type_a=self.type).exclude(relation_type_b=None):
-			#print "\tConnection(a): "+connection.__unicode__()
-			#print "\tSelf.subject: "+self.subject.__unicode__()
+			#print "\tConnection(a): "+connection.__str__()
+			#print "\tSelf.subject: "+self.subject.__str__()
 			for relationship_b in Relationship.objects.filter(object=self.subject, type=connection.relation_type_b):
-				#print "\trelationship_b.object: "+relationship_b.object.__unicode__()
-				#print "\t\texistingrel(b):"+relationship_b.__unicode__()
+				#print "\trelationship_b.object: "+relationship_b.object.__str__()
+				#print "\t\texistingrel(b):"+relationship_b.__str__()
 				try:
 					Relationship.objects.get(subject=relationship_b.subject, object=self.object, type=connection.inferred_relation_type)
 				except Relationship.DoesNotExist:
 					Relationship.objects.create(subject=relationship_b.subject, object=self.object, type=connection.inferred_relation_type)
-				#print "\t\t\t"+Relationship.objects.get(subject=relationship_b.subject, object=self.object, type=connection.inferred_relation_type).__unicode__()
+				#print "\t\t\t"+Relationship.objects.get(subject=relationship_b.subject, object=self.object, type=connection.inferred_relation_type).__str__()
 						
 		for connection in RelationshipTypeConnection.objects.filter(relation_type_b=self.type):
-			#print "\tConnection(b): "+connection.__unicode__()
+			#print "\tConnection(b): "+connection.__str__()
 			for relationship_a in Relationship.objects.filter(subject=self.object, type=connection.relation_type_a):
-				#print "\t\texistingrel(a):"+relationship_a.__unicode__()
+				#print "\t\texistingrel(a):"+relationship_a.__str__()
 				try:
 					Relationship.objects.get(subject=self.subject, object=relationship_a.object, type=connection.inferred_relation_type)
 				except Relationship.DoesNotExist:
 					Relationship.objects.create(subject=self.subject, object=relationship_a.object, type=connection.inferred_relation_type)
-				#print "\t\t\t"+Relationship.objects.get(subject=self.subject, object=relationship_a.object, type=connection.inferred_relation_type).__unicode__()
-		#print "--Done "+self.__unicode__()
+				#print "\t\t\t"+Relationship.objects.get(subject=self.subject, object=relationship_a.object, type=connection.inferred_relation_type).__str__()
+		#print "--Done "+self.__str__()
 			
-	def __unicode__(self):
+	def __str__(self):
 		return self.subject.getName()+" - "+self.type.getLabel()+" - "+self.object.getName()
 
 class RelationshipTypeConnection(models.Model):
@@ -241,7 +241,7 @@ class RelationshipTypeConnection(models.Model):
 	relation_type_b = models.ForeignKey(RelationshipType, related_name='b', blank=True, null=True, on_delete=models.CASCADE)
 	inferred_relation_type = models.ForeignKey(RelationshipType, related_name='inferred', blank=False, on_delete=models.CASCADE)
 	reversible = models.BooleanField(default=False)
-	def __unicode__(self):
+	def __str__(self):
 		return "a="+self.relation_type_a.getLabel()+" b="+self.relation_type_b.getLabel()+" infer="+self.inferred_relation_type.getLabel()
 
 
