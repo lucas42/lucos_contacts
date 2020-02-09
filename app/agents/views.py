@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
 from django.core.exceptions import MultipleObjectsReturned
-import json, time, urllib2, os
+import json, time, os
 
 @csrf_exempt
 @api_auth
@@ -33,7 +33,7 @@ def agent(request, extid, method):
 		agent = ext.agent
 	except ExternalAgent.DoesNotExist:
 		raise Http404
-	if (agent.id <> ext.id):
+	if (agent.id != ext.id):
 		return redirect(agent)
 	
 	output = agentdata(agent, request.user.agent, True)

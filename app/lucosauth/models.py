@@ -1,28 +1,27 @@
 from django.db import models
 from django import utils
 from settings import AUTH_DOMAIN
-from urllib2 import HTTPError
 from django.contrib.auth.models import AbstractBaseUser
 from agents.models import Agent
-import json, time, urllib2, os
+import json, time, urllib.request, urllib.error, os
 
 class LucosAuthBackend(object):
 	def authenticate(self, token):
 		url = 'https://'+AUTH_DOMAIN+'/data?' + utils.http.urlencode({'token': token})
 		try:
-			data = json.load(urllib2.urlopen(url, timeout=5))
-		except HTTPError:
+			data = json.load(urllib.request.urlopen(url, timeout=5))
+		except urllib.error.HTTPError:
 			return None
-		except urllib2.socket.sslerror as e:
-			print "Error fetching data from auth service: "+e.message+" "+url
+		except urllib.error.URLError as e:
+			print("Error fetching data from auth service: "+e.message+" "+url)
 			return None
 		if (data['id'] == None):
-			print "No id returned by auth service; "+url
+			print("No id returned by auth service; "+url)
 			return None
 		try:
 			agent = Agent.objects.get(id=data['id'])
 		except Agent.DoesNotExist:
-			print "Unknown id returned by auth service; "+url
+			print("Unknown id returned by auth service; "+url)
 			return None
 		try:
 			user = LucosUser.objects.get(agent=agent)
