@@ -11,7 +11,21 @@ A list of contacts
 * **PRODUCTION** Set in a production environment, as it increases security protections.  Not setting it will give detailed debug pages on error.
 
 ## Running
-The web server is designed to be run within lucos_services, but can be run standalone (see django documentation for details)
+Requires [docker-compose](https://docs.docker.com/compose/)
+Run the following:
+
+`SECRET_KEY=changeme docker-compose up --build`
+
+This will spin up docker containers for the django app, database and web proxy.
+
+## Running tests locally
+Requires [pipenv](https://pipenv.kennethreitz.org/en/latest/).  Run the following:
+
+* `cd app`
+* `pipenv install`
+* `CI=true SECRET_KEY=test pipenv run python manage.py test`
+
+The tests also get run in circleCI - test failures there block deployment.
 
 ## Language support
 Some fields support having values in different languages.  Currently this is limited to:
