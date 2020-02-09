@@ -20,7 +20,7 @@ urlpatterns = [
 	# to INSTALLED_APPS to enable admin documentation:
 	# url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-	url(r'^admin/', include(admin.site.urls)),
+	url(r'^admin/', admin.site.urls),
 	url(r'^accounts/login/', auth_views.loginview),
 	url(r'^_info$', agents_views.info)
 ]

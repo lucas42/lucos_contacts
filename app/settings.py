@@ -46,7 +46,7 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(PROJECT_PATH, "static")
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
 	'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
