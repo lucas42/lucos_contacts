@@ -1,5 +1,6 @@
 from agents.models import *
 from django.contrib import admin
+from django.shortcuts import redirect
 
 class AccountInline(admin.TabularInline):
 	extra = 1
@@ -54,6 +55,12 @@ class AgentAdmin(admin.ModelAdmin):
 				Relationship.objects.filter(object=agent).update(object=mainagent)
 				ExternalAgent.objects.filter(agent=agent).update(agent=mainagent)
 				agent.delete()
+	def response_add(self, request, agent):
+		res = super(AgentAdmin, self).response_add(request, agent)
+		return redirect(agent.get_absolute_url())
+	def response_change(self, request, agent):
+		res = super(AgentAdmin, self).response_change(request, agent)
+		return redirect(agent.get_absolute_url())
 
 class RelationshipAdmin(admin.ModelAdmin):
 	fields = ('subject', 'type', 'object')
