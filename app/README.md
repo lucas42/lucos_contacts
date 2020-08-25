@@ -39,7 +39,7 @@ These are hardcoded values, so can only be change by make source code changes in
 
 * Upgrade the approprite `models.py` files
 * `docker-compose exec app python manage.py makemigrations`
-* `docker cp contacts_app:/usr/src/app/lucosauth/migrations/ app/lucosauth/migrations/`
+* `docker cp contacts_app:/usr/src/app/lucosauth/migrations/ app/lucosauth/`
 * `docker cp contacts_app:/usr/src/app/agents/migrations/ app/agents/`
 * Commit the new migration files to git
 * Rebuild & restart the container for the migrations to take effect.

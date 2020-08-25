@@ -55,6 +55,7 @@ class ExternalAgent(models.Model):
 
 class BaseAccount(models.Model):
 	agent = models.ForeignKey(Agent, blank=False, on_delete=models.CASCADE)
+	active = models.BooleanField(default=True)
 	class Meta:
 		abstract = True
 	@staticmethod
