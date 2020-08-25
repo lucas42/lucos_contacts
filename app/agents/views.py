@@ -99,15 +99,15 @@ def agentindex(request, list):
 def agentdata(agent, currentagent, extended=False):
 
 	phonenums = []
-	for num in PhoneNumber.objects.filter(agent=agent):
+	for num in PhoneNumber.objects.filter(agent=agent, active=True):
 			phonenums.append(num.number)
 	rawaddresses = []
 	formattedaddresses = []
-	for postaladdress in PostalAddress.objects.filter(agent=agent):
+	for postaladdress in PostalAddress.objects.filter(agent=agent, active=True):
 			rawaddresses.append(postaladdress.address)
 			formattedaddresses.append(postaladdress.address.replace(',', ',\n'))
 	facebookaccounts = []
-	for facebookaccount in FacebookAccount.objects.filter(agent=agent):
+	for facebookaccount in FacebookAccount.objects.filter(agent=agent, active=True):
 			facebookaccounts.append(facebookaccount.userid)
 	
 	agentdataobj = {
