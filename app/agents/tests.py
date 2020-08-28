@@ -63,9 +63,9 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(roise, halfsibling), [james])
 
 	def test_inverse_relationship(self):
-		auntuncle = RelationshipType.objects.create(label_en='aunt/uncle')
 		nibling = RelationshipType.objects.create(label_en='nibling')
-		auntuncle.inverse = nibling
+		nibling.save()
+		auntuncle = RelationshipType.objects.create(label_en='aunt/uncle', inverse=nibling)
 		auntuncle.save()
 
 		self.failUnlessEqual(nibling.inverse, auntuncle)
