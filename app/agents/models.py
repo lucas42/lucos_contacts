@@ -134,15 +134,16 @@ class RelationshipType(models.Model):
 	
 	
 	def save(self, *args, **kwargs):
+		super(RelationshipType, self).save(*args, **kwargs)
 		if self.symmetrical:
 			self.inverse = self
 		self.symmetrical = self.inverse == self
-		super(RelationshipType, self).save(*args, **kwargs)
 		if self.inverse and self.inverse.inverse != self:
 			#print "inverse:"+self.inverse.__str__();
 			self.inverse.inverse = self
 			self.inverse.save()
 			#print "inverseinverse:"+self.inverse.inverse.__str__();
+		super(RelationshipType, self).save()
 		self.inferRelationships()
 	
 	def getLabel(self):

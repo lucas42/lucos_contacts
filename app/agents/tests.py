@@ -47,9 +47,7 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(brenda, ancestor), [])
 
 	def test_symmetrical_relationship(self):
-		halfsibling = RelationshipType.objects.create(label_en='half sibling')
-		halfsibling.symmetrical = True
-		halfsibling.transitive = False
+		halfsibling = RelationshipType.objects.create(label_en='half sibling', symmetrical=True, transitive=False)
 		halfsibling.save()
 		
 		luke = Agent.objects.create(name_en='Luke')
