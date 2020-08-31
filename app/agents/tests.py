@@ -8,6 +8,7 @@ Replace these with more appropriate tests for your application.
 
 from django.test import TestCase
 from agents.models import *
+from agents.relationshipTypes import *
 
 def get_agents_by_relType(subject, relType):
 	return [rel.object for rel in Relationship.objects.filter(subject=subject, type=relType)]
@@ -162,3 +163,11 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(frances, nibling), [myra, ruth, felim])
 		self.failUnlessEqual(get_agents_by_relType(luke, greatauntuncle), [frances])
 
+class RelationshipTypeTest(TestCase):
+
+	def test_inverse_relationship(self):
+		forward = BaseRelationshipType()
+		self.failUnlessEqual(forward.getInverse(), None)
+		backward = BaseRelationshipType(forward)
+		self.failUnlessEqual(forward.getInverse(), backward)
+		self.failUnlessEqual(backward.getInverse(), forward)
