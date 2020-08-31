@@ -5,3 +5,7 @@ class BaseRelationshipType:
 			inverse.inverse = self
 	def getInverse(self):
 		return self.inverse
+
+class SymmetricalRelationshipType(BaseRelationshipType):
+	def __init__(self):
+		self.inverse = self

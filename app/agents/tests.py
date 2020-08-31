@@ -171,3 +171,8 @@ class RelationshipTypeTest(TestCase):
 		backward = BaseRelationshipType(forward)
 		self.failUnlessEqual(forward.getInverse(), backward)
 		self.failUnlessEqual(backward.getInverse(), forward)
+
+	def test_symmetrical_relationship(self):
+		symmetrical = SymmetricalRelationshipType()
+
+		self.failUnlessEqual(symmetrical.getInverse(), symmetrical)
