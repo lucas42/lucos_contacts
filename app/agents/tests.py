@@ -165,14 +165,14 @@ class RelationshipTest(TestCase):
 
 class RelationshipTypeTest(TestCase):
 
-	def test_inverse_relationship(self):
-		forward = BaseRelationshipType()
-		self.failUnlessEqual(forward.getInverse(), None)
-		backward = BaseRelationshipType(forward)
-		self.failUnlessEqual(forward.getInverse(), backward)
-		self.failUnlessEqual(backward.getInverse(), forward)
+	def test_parent_relationship(self):
+		parent = Parent("luke", "ruth")
+		self.failUnlessEqual(parent.getInverse(), Child)
 
-	def test_symmetrical_relationship(self):
-		symmetrical = SymmetricalRelationshipType()
+	def test_child_relationship(self):
+		child = Child("ruth", "luke")
+		self.failUnlessEqual(child.getInverse(), Parent)
 
-		self.failUnlessEqual(symmetrical.getInverse(), symmetrical)
+	def test_sibling_relationships(self):
+		sibling = Sibling("luke", "rowan")
+		self.failUnlessEqual(sibling.getInverse(), Sibling)

@@ -1,11 +1,32 @@
 class BaseRelationshipType:
-	def __init__(self, inverse = None):
-		self.inverse = inverse
-		if inverse:
-			inverse.inverse = self
+	inverse = None
+	def __init__(self, subject, object):
+		self.subject = subject
+		self.object = object
+
 	def getInverse(self):
 		return self.inverse
 
-class SymmetricalRelationshipType(BaseRelationshipType):
-	def __init__(self):
-		self.inverse = self
+def setInverse(typeA, typeB):
+	if typeA.inverse or typeB.inverse:
+		raise Exception("Inverse already set")
+	typeA.inverse = typeB
+	typeB.inverse = typeA
+
+def setSymmetrical(relType):
+	if relType.inverse:
+		raise Exception("Inverse already set")
+	relType.inverse = relType
+
+class Child(BaseRelationshipType):
+	pass
+
+class Parent(BaseRelationshipType):
+	pass
+
+setInverse(Parent, Child)
+
+class Sibling(BaseRelationshipType):
+	pass
+
+setSymmetrical(Sibling)
