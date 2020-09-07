@@ -11,112 +11,74 @@ from agents.models import *
 from agents.relationshipTypes import *
 
 def get_agents_by_relType(subject, relType):
-	return [rel.object for rel in Relationship.objects.filter(subject=subject, type=relType)]
+	return [rel.object for rel in Relationship.objects.filter(subject=subject, relationshipType=relType)]
 
 class RelationshipTest(TestCase):
 
 	def test_symmetrical_transitive_relationship(self):
-		sibling = RelationshipType.objects.create(label_en='sibling')
-		sibling.symmetrical = True
-		sibling.transitive = True
-		sibling.save()
-		
 		luke = Agent.objects.create(name_en='Luke')
 		rowan = Agent.objects.create(name_en='Rowan')
 		roise = Agent.objects.create(name_en='Róise')
-		Relationship.objects.create(subject=luke, object=rowan, type=sibling)
-		Relationship.objects.create(subject=rowan, object=roise, type=sibling)
+		Relationship.objects.create(subject=luke, object=rowan, relationshipType='sibling')
+		Relationship.objects.create(subject=rowan, object=roise, relationshipType='sibling')
 
-		self.failUnlessEqual(get_agents_by_relType(luke, sibling), [rowan, roise])
-		self.failUnlessEqual(get_agents_by_relType(rowan, sibling), [luke, roise])
-		self.failUnlessEqual(get_agents_by_relType(roise, sibling), [luke, rowan])
+		self.failUnlessEqual(get_agents_by_relType(luke, 'sibling'), [rowan, roise])
+		self.failUnlessEqual(get_agents_by_relType(rowan, 'sibling'), [luke, roise])
+		self.failUnlessEqual(get_agents_by_relType(roise, 'sibling'), [luke, rowan])
 
 	def test_transitive_relationship(self):
-		ancestor = RelationshipType.objects.create(label_en='sibling')
-		ancestor.symmetrical = False
-		ancestor.transitive = True
-		ancestor.save()
-		
 		luke = Agent.objects.create(name_en='Luke')
 		ruth = Agent.objects.create(name_en='Ruth')
 		brenda = Agent.objects.create(name_en='Brenda')
-		Relationship.objects.create(subject=luke, object=ruth, type=ancestor)
-		Relationship.objects.create(subject=ruth, object=brenda, type=ancestor)
+		Relationship.objects.create(subject=luke, object=ruth, relationshipType='ancestor')
+		Relationship.objects.create(subject=ruth, object=brenda, relationshipType='ancestor')
 
-		self.failUnlessEqual(get_agents_by_relType(luke, ancestor), [ruth, brenda])
-		self.failUnlessEqual(get_agents_by_relType(ruth, ancestor), [brenda])
-		self.failUnlessEqual(get_agents_by_relType(brenda, ancestor), [])
+		self.failUnlessEqual(get_agents_by_relType(luke, 'ancestor'), [ruth, brenda])
+		self.failUnlessEqual(get_agents_by_relType(ruth, 'ancestor'), [brenda])
+		self.failUnlessEqual(get_agents_by_relType(brenda, 'ancestor'), [])
 
 	def test_symmetrical_relationship(self):
-		halfsibling = RelationshipType.objects.create(label_en='half sibling', symmetrical=True, transitive=False)
-		halfsibling.save()
-		
 		luke = Agent.objects.create(name_en='Luke')
 		james = Agent.objects.create(name_en='James')
 		roise = Agent.objects.create(name_en='Róise')
-		Relationship.objects.create(subject=luke, object=james, type=halfsibling)
-		Relationship.objects.create(subject=james, object=roise, type=halfsibling)
+		Relationship.objects.create(subject=luke, object=james, relationshipType='half-sibling')
+		Relationship.objects.create(subject=james, object=roise, relationshipType='half-sibling')
 
-		self.failUnlessEqual(get_agents_by_relType(luke, halfsibling), [james])
-		self.failUnlessEqual(get_agents_by_relType(james, halfsibling), [luke, roise])
-		self.failUnlessEqual(get_agents_by_relType(roise, halfsibling), [james])
+		self.failUnlessEqual(get_agents_by_relType(luke, 'half-sibling'), [james])
+		self.failUnlessEqual(get_agents_by_relType(james, 'half-sibling'), [luke, roise])
+		self.failUnlessEqual(get_agents_by_relType(roise, 'half-sibling'), [james])
 
 	def test_inverse_relationship(self):
-		nibling = RelationshipType.objects.create(label_en='nibling')
-		nibling.save()
-		auntuncle = RelationshipType.objects.create(label_en='aunt/uncle', inverse=nibling)
-		auntuncle.save()
-
-		self.failUnlessEqual(nibling.inverse, auntuncle)
-
-		
 		luke = Agent.objects.create(name_en='Luke')
 		rachel = Agent.objects.create(name_en='Rachel')
-		Relationship.objects.create(subject=luke, object=rachel, type=auntuncle)
+		Relationship.objects.create(subject=luke, object=rachel, relationshipType='aunt/uncle')
 
+		self.failUnlessEqual(get_agents_by_relType(luke, 'aunt/uncle'), [rachel])
+		self.failUnlessEqual(get_agents_by_relType(luke, 'nibling'), [])
+		self.failUnlessEqual(get_agents_by_relType(rachel, 'aunt/uncle'), [])
+		self.failUnlessEqual(get_agents_by_relType(rachel, 'nibling'), [luke])
 
-		self.failUnlessEqual(get_agents_by_relType(luke, auntuncle), [rachel])
-		self.failUnlessEqual(get_agents_by_relType(luke, nibling), [])
-		self.failUnlessEqual(get_agents_by_relType(rachel, auntuncle), [])
-		self.failUnlessEqual(get_agents_by_relType(rachel, nibling), [luke])
-
-	def test_inferred_relationship(self):
-		parent = RelationshipType.objects.create(label_en='parent')
-		sibling = RelationshipType.objects.create(label_en='sibling')
-		auntuncle = RelationshipType.objects.create(label_en='aunt/uncle')
-
-		# The use of a & b seem the wrong way round here, but will keep it like this for now to mantain backwards compatability.  (Need to write a DB migration to change it properly)
-		RelationshipTypeConnection.objects.create(relation_type_b=parent, relation_type_a=sibling, inferred_relation_type=auntuncle)
-
+	def test_inferred_relationship_subject_rel_first(self):
 		luke = Agent.objects.create(name_en='Luke')
 		mark = Agent.objects.create(name_en='Mark')
 		rachel = Agent.objects.create(name_en='Rachel')
-		Relationship.objects.create(subject=luke, object=mark, type=parent)
-		Relationship.objects.create(subject=mark, object=rachel, type=sibling)
+		Relationship.objects.create(subject=luke, object=mark, relationshipType='parent')
+		Relationship.objects.create(subject=mark, object=rachel, relationshipType='sibling')
 
-		self.failUnlessEqual(get_agents_by_relType(luke, auntuncle), [rachel])
-		self.failUnlessEqual(get_agents_by_relType(mark, auntuncle), [])
-		self.failUnlessEqual(get_agents_by_relType(rachel, auntuncle), [])
+		self.failUnlessEqual(get_agents_by_relType(luke, 'aunt/uncle'), [rachel])
+		self.failUnlessEqual(get_agents_by_relType(mark, 'aunt/uncle'), [])
+		self.failUnlessEqual(get_agents_by_relType(rachel, 'aunt/uncle'), [])
 
-
-	def test_inferred_relationship_on_existing_relationships(self):
-		parent = RelationshipType.objects.create(label_en='parent')
-		sibling = RelationshipType.objects.create(label_en='sibling')
-		auntuncle = RelationshipType.objects.create(label_en='aunt/uncle')
-
+	def test_inferred_relationship_object_rel_first(self):
 		luke = Agent.objects.create(name_en='Luke')
 		mark = Agent.objects.create(name_en='Mark')
 		rachel = Agent.objects.create(name_en='Rachel')
-		Relationship.objects.create(subject=luke, object=mark, type=parent)
-		Relationship.objects.create(subject=mark, object=rachel, type=sibling)
+		Relationship.objects.create(subject=mark, object=rachel, relationshipType='sibling')
+		Relationship.objects.create(subject=luke, object=mark, relationshipType='parent')
 
-		self.failUnlessEqual(get_agents_by_relType(luke, auntuncle), [])
-
-		RelationshipTypeConnection.objects.create(relation_type_b=parent, relation_type_a=sibling, inferred_relation_type=auntuncle)
-
-		self.failUnlessEqual(get_agents_by_relType(luke, auntuncle), [rachel])
-		self.failUnlessEqual(get_agents_by_relType(mark, auntuncle), [])
-		self.failUnlessEqual(get_agents_by_relType(rachel, auntuncle), [])
+		self.failUnlessEqual(get_agents_by_relType(luke, 'aunt/uncle'), [rachel])
+		self.failUnlessEqual(get_agents_by_relType(mark, 'aunt/uncle'), [])
+		self.failUnlessEqual(get_agents_by_relType(rachel, 'aunt/uncle'), [])
 
 	def test_complicated_relationship_inference(self):
 		luke = Agent.objects.create(name_en='Luke')
@@ -126,53 +88,26 @@ class RelationshipTest(TestCase):
 		brenda = Agent.objects.create(name_en='Brenda')
 		frances = Agent.objects.create(name_en='Frances')
 
+		Relationship.objects.create(subject=luke, object=ruth, relationshipType='parent')
+		Relationship.objects.create(subject=ruth, object=felim, relationshipType='sibling')
+		Relationship.objects.create(subject=myra, object=felim, relationshipType='sibling')
+		Relationship.objects.create(subject=brenda, object=myra, relationshipType='child')
+		Relationship.objects.create(subject=frances, object=brenda, relationshipType='sibling')
 
-		parent = RelationshipType.objects.create(label_en='parent')
-		grandparent = RelationshipType.objects.create(label_en='Grandparent')
-		child = RelationshipType.objects.create(label_en='child')
-		child.inverse = parent
-		child.save()
-		grandchild = RelationshipType.objects.create(label_en='child')
-		grandchild.inverse = grandparent
-		grandchild.save()
-		sibling = RelationshipType.objects.create(label_en='sibling')
-		sibling.symmetrical = True
-		sibling.transitive = True
-		sibling.save()
-		auntuncle = RelationshipType.objects.create(label_en='aunt/uncle')
-		nibling = RelationshipType.objects.create(label_en='nibling')
-		auntuncle.inverse = nibling
-		auntuncle.save()
-		greatauntuncle = RelationshipType.objects.create(label_en='great aunt/uncle')
-
-
-		RelationshipTypeConnection.objects.create(relation_type_b=sibling, relation_type_a=parent, inferred_relation_type=parent)
-		RelationshipTypeConnection.objects.create(relation_type_b=grandparent, relation_type_a=sibling, inferred_relation_type=greatauntuncle)
-		RelationshipTypeConnection.objects.create(relation_type_b=parent, relation_type_a=parent, inferred_relation_type=grandparent)
-
-		Relationship.objects.create(subject=luke, object=ruth, type=parent)
-		Relationship.objects.create(subject=ruth, object=felim, type=sibling)
-		Relationship.objects.create(subject=myra, object=felim, type=sibling)
-		Relationship.objects.create(subject=brenda, object=myra, type=child)
-		Relationship.objects.create(subject=frances, object=brenda, type=sibling)
-
-		RelationshipTypeConnection.objects.create(relation_type_b=parent, relation_type_a=sibling, inferred_relation_type=auntuncle)
-
-
-		self.failUnlessEqual(get_agents_by_relType(luke, auntuncle), [felim, myra])
-		self.failUnlessEqual(get_agents_by_relType(frances, nibling), [myra, ruth, felim])
-		self.failUnlessEqual(get_agents_by_relType(luke, greatauntuncle), [frances])
+		self.failUnlessEqual(get_agents_by_relType(luke, 'aunt/uncle'), [felim, myra])
+		self.failUnlessEqual(get_agents_by_relType(frances, 'nibling'), [myra, ruth, felim])
+		self.failUnlessEqual(get_agents_by_relType(luke, 'great aunt/uncle'), [frances])
 
 class RelationshipTypeTest(TestCase):
 
 	def test_parent_relationship(self):
 		parent = Parent("luke", "ruth")
-		self.failUnlessEqual(parent.getInverse(), Child)
+		self.failUnlessEqual(parent.inverse, Child)
 
 	def test_child_relationship(self):
 		child = Child("ruth", "luke")
-		self.failUnlessEqual(child.getInverse(), Parent)
+		self.failUnlessEqual(child.inverse, Parent)
 
 	def test_sibling_relationships(self):
 		sibling = Sibling("luke", "rowan")
-		self.failUnlessEqual(sibling.getInverse(), Sibling)
+		self.failUnlessEqual(sibling.inverse, Sibling)

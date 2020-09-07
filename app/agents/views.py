@@ -136,7 +136,7 @@ def agentdata(agent, currentagent, extended=False):
 				agentdataobj['rel'] = 'me'
 			else:
 				rel = Relationship.objects.get(subject=agent.id, object=currentagent.id)
-				agentdataobj['rel'] = rel.type.getLabel()
+				agentdataobj['rel'] = rel.relationshipType
 	except Relationship.DoesNotExist:
 		pass
 

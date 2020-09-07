@@ -2,6 +2,7 @@
 from django.db import models
 from django.utils import translation
 from django.core.exceptions import ObjectDoesNotExist
+from agents.relationshipTypes import RELATIONSHIP_TYPE_CHOICES, getRelationshipByTypeKey
 
 def getCurrentLang():
 	cur_language = translation.get_language()
@@ -123,135 +124,36 @@ class GoogleContact(BaseAccount):
 			return u'Teagmháil Google '+self.agent.getName()
 		return self.agent.getName()+"'s Google Contact"
 
-class RelationshipType(models.Model):
-	label_en = models.CharField(max_length=255, blank=True)
-	label_ga = models.CharField(max_length=255, blank=True)
-	label_gd = models.CharField(max_length=255, blank=True)
-	label_cy = models.CharField(max_length=255, blank=True)
-	symmetrical = models.BooleanField(default=False)
-	transitive = models.BooleanField(default=False)
-	inverse = models.OneToOneField('self', null=True, blank=True, on_delete=models.CASCADE)
-	
-	
-	def save(self, *args, **kwargs):
-		super(RelationshipType, self).save(*args, **kwargs)
-		if self.symmetrical:
-			self.inverse = self
-		self.symmetrical = self.inverse == self
-		if self.inverse and self.inverse.inverse != self:
-			#print "inverse:"+self.inverse.__str__();
-			self.inverse.inverse = self
-			self.inverse.save()
-			#print "inverseinverse:"+self.inverse.inverse.__str__();
-		super(RelationshipType, self).save()
-		self.inferRelationships()
-	
-	def getLabel(self):
-		return getTranslated(self, 'label')
-
-	# Infer Relationships for all relationships of this type
-	def inferRelationships(self):
-		for relationship in Relationship.objects.filter(type=self):
-			relationship.inferRelationships()
-
-	def __str__(self):
-		return self.getLabel()
-
 class Relationship(models.Model):
 	subject = models.ForeignKey(Agent, related_name='subject', blank=False, on_delete=models.CASCADE)
 	object = models.ForeignKey(Agent, related_name='object', blank=False, on_delete=models.CASCADE)
-	type = models.ForeignKey(RelationshipType, blank=False, help_text='Subject is a $type of object', on_delete=models.CASCADE)
+	relationshipType = models.CharField(choices=RELATIONSHIP_TYPE_CHOICES, blank=False, max_length=127)
+	inverse = None
+	dbKey = 'missing'
+	transitive = False
+	incomingRels = []
+	outgoingRels = []
 	def save(self, *args, **kwargs):
 		super(Relationship, self).save(*args, **kwargs)
 		self.inferRelationships()
 
 	def inferRelationships(self):
-		#print "--Saved "+self.__str__()
-		# Set inferred relationships
-		if self.type.transitive:
-			#print "\ttransitive"
-			others = Relationship.objects.filter(subject=self.object, type=self.type).exclude(object=self.subject)
+		relationship = getRelationshipByTypeKey(self.relationshipType, self.subject, self.object)
+		if relationship.transitive:
+			others = Relationship.objects.filter(subject=self.object, relationshipType=relationship.dbKey).exclude(object=self.subject)
 			for item in others:
-				if self.subject == item.object:
-					continue
-				try:
-					Relationship.objects.get(subject=self.subject, object=item.object, type=self.type)
-				except Relationship.DoesNotExist:
-					Relationship.objects.create(subject=self.subject, object=item.object, type=self.type)
-			others = Relationship.objects.filter(object=self.subject, type=self.type).exclude(object=self.object)
+				Relationship.objects.get_or_create(subject=self.subject, object=item.object, relationshipType=relationship.dbKey)
+			others = Relationship.objects.filter(object=self.subject, relationshipType=relationship.dbKey).exclude(subject=self.object)
 			for item in others:
-				if item.subject == self.object:
-					continue
-				try:
-					Relationship.objects.get(subject=item.subject, object=self.object, type=self.type)
-				except Relationship.DoesNotExist:
-					Relationship.objects.create(subject=item.subject, object=self.object, type=self.type)
-				#print "\t\t\t"+Relationship.objects.get(subject=self.subject, object=item.object, type=self.type).__str__()
-		if self.type.inverse:
-			#print "\tinverse"
-			try:
-				Relationship.objects.get(subject=self.object, object=self.subject, type=self.type.inverse)
-			except Relationship.DoesNotExist:
-				Relationship.objects.create(subject=self.object, object=self.subject, type=self.type.inverse)
-			#print "\t\t\t"+Relationship.objects.get(subject=self.object, object=self.subject, type=self.type.inverse).__str__()
-				
-		for connection in RelationshipTypeConnection.objects.filter(inferred_relation_type=self.type, reversible=True).exclude(relation_type_b=None):
-			#print "\tConnection(infer): "+connection.__str__()
-			for relationship_a in Relationship.objects.filter(subject=self.subject, type=connection.relation_type_a):
-				#print "\t\texistingrel(a):"+relationship_a.__str__()
-				try:
-					Relationship.objects.get(subject=relationship_a.object, object=self.object, type=connection.relation_type_b)
-				except Relationship.DoesNotExist:
-					Relationship.objects.create(subject=relationship_a.object, object=self.object, type=connection.relation_type_b)
-				#print "\t\t\t"+Relationship.objects.get(subject=relationship_a.object, object=self.object, type=connection.relation_type_b).__str__()
-			for relationship_b in Relationship.objects.filter(object=self.object, type=connection.relation_type_b):
-				#print "\t\texistingrel(b):"+relationship_b.__str__()
-				try:
-					Relationship.objects.get(subject=self.subject, object=relationship_b.subject, type=connection.relation_type_a)
-				except Relationship.DoesNotExist:
-					Relationship.objects.create(subject=self.subject, object=relationship_b.subject, type=connection.relation_type_a)
-				#print "\t\t\t"+Relationship.objects.get().__str__()
-			
-		for connection in RelationshipTypeConnection.objects.filter(relation_type_a=self.type).exclude(relation_type_b=None):
-			#print "\tConnection(a): "+connection.__str__()
-			#print "\tSelf.subject: "+self.subject.__str__()
-			for relationship_b in Relationship.objects.filter(object=self.subject, type=connection.relation_type_b):
-				#print "\trelationship_b.object: "+relationship_b.object.__str__()
-				#print "\t\texistingrel(b):"+relationship_b.__str__()
-				try:
-					Relationship.objects.get(subject=relationship_b.subject, object=self.object, type=connection.inferred_relation_type)
-				except Relationship.DoesNotExist:
-					Relationship.objects.create(subject=relationship_b.subject, object=self.object, type=connection.inferred_relation_type)
-				#print "\t\t\t"+Relationship.objects.get(subject=relationship_b.subject, object=self.object, type=connection.inferred_relation_type).__str__()
-						
-		for connection in RelationshipTypeConnection.objects.filter(relation_type_b=self.type):
-			#print "\tConnection(b): "+connection.__str__()
-			for relationship_a in Relationship.objects.filter(subject=self.object, type=connection.relation_type_a):
-				#print "\t\texistingrel(a):"+relationship_a.__str__()
-				try:
-					Relationship.objects.get(subject=self.subject, object=relationship_a.object, type=connection.inferred_relation_type)
-				except Relationship.DoesNotExist:
-					Relationship.objects.create(subject=self.subject, object=relationship_a.object, type=connection.inferred_relation_type)
-				#print "\t\t\t"+Relationship.objects.get(subject=self.subject, object=relationship_a.object, type=connection.inferred_relation_type).__str__()
-		#print "--Done "+self.__str__()
+				Relationship.objects.get_or_create(subject=item.subject, object=self.object, relationshipType=relationship.dbKey)
+		if relationship.inverse:
+			Relationship.objects.get_or_create(subject=self.object, object=self.subject, relationshipType=relationship.inverse.dbKey)
+		for connection in relationship.outgoingRels:
+			for existingRel in Relationship.objects.filter(subject=self.object, relationshipType=connection.existingRel.dbKey):
+				Relationship.objects.get_or_create(subject=self.subject, object=existingRel.object, relationshipType=connection.inferredRel.dbKey)
+		for connection in relationship.incomingRels:
+			for existingRel in Relationship.objects.filter(object=self.subject, relationshipType=connection.existingRel.dbKey):
+				Relationship.objects.get_or_create(subject=existingRel.subject, object=self.object, relationshipType=connection.inferredRel.dbKey)
 			
 	def __str__(self):
-		return self.subject.getName()+" - "+self.type.getLabel()+" - "+self.object.getName()
-
-class RelationshipTypeConnection(models.Model):
-	relation_type_a = models.ForeignKey(RelationshipType, related_name='a', blank=False, on_delete=models.CASCADE)
-	relation_type_b = models.ForeignKey(RelationshipType, related_name='b', blank=True, null=True, on_delete=models.CASCADE)
-	inferred_relation_type = models.ForeignKey(RelationshipType, related_name='inferred', blank=False, on_delete=models.CASCADE)
-	reversible = models.BooleanField(default=False)
-	def __str__(self):
-		return "a="+self.relation_type_a.getLabel()+" b="+self.relation_type_b.getLabel()+" infer="+self.inferred_relation_type.getLabel()
-
-
-	def save(self, *args, **kwargs):
-		super(RelationshipTypeConnection, self).save(*args, **kwargs)
-
-		# Find any existing relationships which may be affected by this new connection
-		self.relation_type_a.inferRelationships()
-		self.relation_type_b.inferRelationships()
-		if self.reversible:
-			self.inferred_relation_type.inferRelationships()
+		return self.subject.getName()+" - "+self.relationshipType+" - "+self.object.getName()
