@@ -83,10 +83,6 @@ class GreatAuntOrGreatUncle(BaseRelationshipType):
 
 setInference(Grandparent, Sibling, GreatAuntOrGreatUncle)
 
-# only used in tests
-class Ancestor(BaseRelationshipType):
-	dbKey='ancestor'
-	transitive=True
 
 RELATIONSHIP_TYPES = {
 	'child': Child,
@@ -95,7 +91,6 @@ RELATIONSHIP_TYPES = {
 	'grandparent': Grandparent,
 	'aunt/uncle': AuntOrUncle,
 	'nibling': Nibling,
-	'ancestor': Ancestor,
 	'great-aunt/uncle': GreatAuntOrGreatUncle,
 	'half-sibling': HalfSibling,
 }
@@ -106,7 +101,6 @@ RELATIONSHIP_TYPES = [
 	Grandparent,
 	AuntOrUncle,
 	Nibling,
-	Ancestor,
 	GreatAuntOrGreatUncle,
 	HalfSibling,
 ]

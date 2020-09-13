@@ -26,17 +26,6 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(rowan, 'sibling'), [luke, roise])
 		self.failUnlessEqual(get_agents_by_relType(roise, 'sibling'), [luke, rowan])
 
-	def test_transitive_relationship(self):
-		luke = Agent.objects.create(name_en='Luke')
-		ruth = Agent.objects.create(name_en='Ruth')
-		brenda = Agent.objects.create(name_en='Brenda')
-		Relationship.objects.create(subject=luke, object=ruth, relationshipType='ancestor')
-		Relationship.objects.create(subject=ruth, object=brenda, relationshipType='ancestor')
-
-		self.failUnlessEqual(get_agents_by_relType(luke, 'ancestor'), [ruth, brenda])
-		self.failUnlessEqual(get_agents_by_relType(ruth, 'ancestor'), [brenda])
-		self.failUnlessEqual(get_agents_by_relType(brenda, 'ancestor'), [])
-
 	def test_symmetrical_relationship(self):
 		luke = Agent.objects.create(name_en='Luke')
 		james = Agent.objects.create(name_en='James')
