@@ -128,11 +128,6 @@ class Relationship(models.Model):
 	subject = models.ForeignKey(Agent, related_name='subject', blank=False, on_delete=models.CASCADE)
 	object = models.ForeignKey(Agent, related_name='object', blank=False, on_delete=models.CASCADE)
 	relationshipType = models.CharField(choices=RELATIONSHIP_TYPE_CHOICES, blank=False, max_length=127)
-	inverse = None
-	dbKey = 'missing'
-	transitive = False
-	incomingRels = []
-	outgoingRels = []
 	def save(self, *args, **kwargs):
 		super(Relationship, self).save(*args, **kwargs)
 		self.inferRelationships()

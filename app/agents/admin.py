@@ -26,8 +26,8 @@ class GoogleContactInline(AccountInline):
 
 class RelationshipInline(admin.TabularInline):
 	model = Relationship
-	fk_name = 'object'
-	fields = ('relationshipType', 'subject')
+	fk_name = 'subject'
+	fields = ('relationshipType', 'object')
 
 class AgentAdmin(admin.ModelAdmin):
 	actions = ['merge']
