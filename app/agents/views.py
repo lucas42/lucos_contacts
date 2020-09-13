@@ -135,8 +135,10 @@ def agentdata(agent, currentagent, extended=False):
 			if (agent == currentagent):
 				agentdataobj['rel'] = 'me'
 			else:
-				rel = Relationship.objects.get(subject=agent.id, object=currentagent.id)
-				agentdataobj['rel'] = rel.relationshipType
+				combinedrels = ''
+				for rel in Relationship.objects.filter(subject=agent.id, object=currentagent.id):
+					combinedrels += rel.relationshipType + "/"
+				agentdataobj['rel'] = combinedrels.strip('/')
 	except Relationship.DoesNotExist:
 		pass
 
