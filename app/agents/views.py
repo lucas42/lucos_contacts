@@ -135,7 +135,7 @@ def agentdata(agent, currentagent, extended=False):
 		else:
 			combinedrels = ''
 			for rel in Relationship.objects.filter(object=agent.id, subject=currentagent.id):
-				combinedrels += rel.relationshipType + "/"
+				combinedrels += rel.get_relationshipType_display() + "/"
 			agentdataobj['rel'] = combinedrels.strip('/')
 
 	return agentdataobj

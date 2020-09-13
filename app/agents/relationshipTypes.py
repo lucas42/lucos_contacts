@@ -9,6 +9,8 @@ class BaseRelationshipType:
 	transitive = False
 	incomingRels = []
 	outgoingRels = []
+	label_ga = None
+	label_en = None
 
 def setInverse(typeA, typeB):
 	if typeA.inverse or typeB.inverse:
@@ -43,9 +45,13 @@ def setInference(rel1, rel2, inferred):
 
 class Child(BaseRelationshipType):
 	dbKey='child'
+	label_en='child'
+	label_ga='páiste'
 
 class Parent(BaseRelationshipType):
 	dbKey='parent'
+	label_en='parent'
+	label_ga='tuismitheoir'
 
 setInverse(Parent, Child)
 
@@ -54,60 +60,81 @@ setInverse(Parent, Child)
 class Sibling(BaseRelationshipType):
 	dbKey='sibling'
 	transitive=True
+	label_en='sibling'
+	label_ga='siblín'
 class HalfSibling(BaseRelationshipType):
 	dbKey='half-sibling'
+	label_en='half-sibling'
+	label_ga='leath-siblín'
 
 setSymmetrical(Sibling)
 setSymmetrical(HalfSibling)
 
 setInference(Sibling, Parent, Parent)
+setInference(Sibling, HalfSibling, HalfSibling)
 
-
+class Grandchild(BaseRelationshipType):
+	dbKey='grandchild'
+	label_en='grandchild'
+	label_ga='garpháiste'
 class Grandparent(BaseRelationshipType):
 	dbKey='grandparent'
+	label_en='grandparent'
+	label_ga='seantuismitheoir'
+
+setInverse(Grandparent, Grandchild)
 
 setInference(Parent, Parent, Grandparent)
 
 class AuntOrUncle(BaseRelationshipType):
 	dbKey='aunt/uncle'
+	label_en='aunt/uncle'
 
 setInference(Parent, Sibling, AuntOrUncle)
+setInference(Sibling, AuntOrUncle, AuntOrUncle)
 
 class Nibling(BaseRelationshipType):
 	dbKey='nibling'
+	label_en='nibling'
 
 setInverse(AuntOrUncle, Nibling)
 
 class GreatAuntOrGreatUncle(BaseRelationshipType):
 	dbKey='great aunt/uncle'
+	label_en="great aunt/uncle"
 
 setInference(Grandparent, Sibling, GreatAuntOrGreatUncle)
+setInference(Sibling, GreatAuntOrGreatUncle, GreatAuntOrGreatUncle)
 
+class GreatNibling(BaseRelationshipType):
+	dbKey='great nibling'
+	label_en='great nibling'
 
-RELATIONSHIP_TYPES = {
-	'child': Child,
-	'parent': Parent,
-	'sibling': Sibling,
-	'grandparent': Grandparent,
-	'aunt/uncle': AuntOrUncle,
-	'nibling': Nibling,
-	'great-aunt/uncle': GreatAuntOrGreatUncle,
-	'half-sibling': HalfSibling,
-}
+setInverse(GreatAuntOrGreatUncle, GreatNibling)
+
+class FirstCousin(BaseRelationshipType):
+	dbKey='first cousin'
+	label_en='cousin'
+	label_ga='col ceathrair'
+setInference(AuntOrUncle, Child, FirstCousin)
+
 RELATIONSHIP_TYPES = [
 	Child,
 	Parent,
 	Sibling,
+	HalfSibling,
+	Grandchild,
 	Grandparent,
 	AuntOrUncle,
 	Nibling,
 	GreatAuntOrGreatUncle,
-	HalfSibling,
+	GreatNibling,
+	FirstCousin,
 ]
 RELATIONSHIP_TYPE_CHOICES = []
 for reltypeclass in RELATIONSHIP_TYPES:
 	RELATIONSHIP_TYPE_CHOICES.append(
-		(reltypeclass.dbKey, reltypeclass.__name__)
+		(reltypeclass.dbKey, (reltypeclass.label_ga or reltypeclass.label_en).title())
 	)
 
 def getRelationshipTypeByKey(key):

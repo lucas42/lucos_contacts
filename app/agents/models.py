@@ -151,4 +151,4 @@ class Relationship(models.Model):
 				Relationship.objects.get_or_create(subject=existingRel.subject, object=self.object, relationshipType=connection.inferredRel.dbKey)
 			
 	def __str__(self):
-		return self.subject.getName()+" - "+self.relationshipType+" - "+self.object.getName()
+		return self.subject.getName()+" - "+self.get_relationshipType_display()+" - "+self.object.getName()
