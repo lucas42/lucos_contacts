@@ -9,9 +9,6 @@ class BaseRelationshipType:
 	transitive = False
 	incomingRels = []
 	outgoingRels = []
-	def __init__(self, subject, object):
-		self.subject = subject
-		self.object = object
 
 def setInverse(typeA, typeB):
 	if typeA.inverse or typeB.inverse:
@@ -119,8 +116,8 @@ for reltypeclass in RELATIONSHIP_TYPES:
 		(reltypeclass.dbKey, reltypeclass.__name__)
 	)
 
-def getRelationshipByTypeKey(key, subject, object):
+def getRelationshipTypeByKey(key):
 	for reltypeclass in RELATIONSHIP_TYPES:
 		if key == reltypeclass.dbKey:
-			return reltypeclass(subject, object)
+			return reltypeclass()
 	raise Exception("Can't find relationship key "+key)

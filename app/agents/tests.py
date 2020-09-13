@@ -101,13 +101,13 @@ class RelationshipTest(TestCase):
 class RelationshipTypeTest(TestCase):
 
 	def test_parent_relationship(self):
-		parent = Parent("luke", "ruth")
+		parent = Parent()
 		self.failUnlessEqual(parent.inverse, Child)
 
 	def test_child_relationship(self):
-		child = Child("ruth", "luke")
+		child = Child()
 		self.failUnlessEqual(child.inverse, Parent)
 
 	def test_sibling_relationships(self):
-		sibling = Sibling("luke", "rowan")
+		sibling = Sibling()
 		self.failUnlessEqual(sibling.inverse, Sibling)

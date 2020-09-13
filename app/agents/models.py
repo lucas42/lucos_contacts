@@ -2,7 +2,7 @@
 from django.db import models
 from django.utils import translation
 from django.core.exceptions import ObjectDoesNotExist
-from agents.relationshipTypes import RELATIONSHIP_TYPE_CHOICES, getRelationshipByTypeKey
+from agents.relationshipTypes import RELATIONSHIP_TYPE_CHOICES, getRelationshipTypeByKey
 
 def getCurrentLang():
 	cur_language = translation.get_language()
@@ -138,20 +138,20 @@ class Relationship(models.Model):
 		self.inferRelationships()
 
 	def inferRelationships(self):
-		relationship = getRelationshipByTypeKey(self.relationshipType, self.subject, self.object)
-		if relationship.transitive:
-			others = Relationship.objects.filter(subject=self.object, relationshipType=relationship.dbKey).exclude(object=self.subject)
+		relationshipType = getRelationshipTypeByKey(self.relationshipType)
+		if relationshipType.transitive:
+			others = Relationship.objects.filter(subject=self.object, relationshipType=relationshipType.dbKey).exclude(object=self.subject)
 			for item in others:
-				Relationship.objects.get_or_create(subject=self.subject, object=item.object, relationshipType=relationship.dbKey)
-			others = Relationship.objects.filter(object=self.subject, relationshipType=relationship.dbKey).exclude(subject=self.object)
+				Relationship.objects.get_or_create(subject=self.subject, object=item.object, relationshipType=relationshipType.dbKey)
+			others = Relationship.objects.filter(object=self.subject, relationshipType=relationshipType.dbKey).exclude(subject=self.object)
 			for item in others:
-				Relationship.objects.get_or_create(subject=item.subject, object=self.object, relationshipType=relationship.dbKey)
-		if relationship.inverse:
-			Relationship.objects.get_or_create(subject=self.object, object=self.subject, relationshipType=relationship.inverse.dbKey)
-		for connection in relationship.outgoingRels:
+				Relationship.objects.get_or_create(subject=item.subject, object=self.object, relationshipType=relationshipType.dbKey)
+		if relationshipType.inverse:
+			Relationship.objects.get_or_create(subject=self.object, object=self.subject, relationshipType=relationshipType.inverse.dbKey)
+		for connection in relationshipType.outgoingRels:
 			for existingRel in Relationship.objects.filter(subject=self.object, relationshipType=connection.existingRel.dbKey):
 				Relationship.objects.get_or_create(subject=self.subject, object=existingRel.object, relationshipType=connection.inferredRel.dbKey)
-		for connection in relationship.incomingRels:
+		for connection in relationshipType.incomingRels:
 			for existingRel in Relationship.objects.filter(object=self.subject, relationshipType=connection.existingRel.dbKey):
 				Relationship.objects.get_or_create(subject=existingRel.subject, object=self.object, relationshipType=connection.inferredRel.dbKey)
 			
