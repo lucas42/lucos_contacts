@@ -40,6 +40,7 @@ class AgentAdmin(admin.ModelAdmin):
 		GoogleContactInline,
 		RelationshipInline
 	]
+	list_max_show_all = 1000
 	def merge(self, request, queryset):
 		agents = queryset.order_by('id')
 		if (agents.count() < 2):
