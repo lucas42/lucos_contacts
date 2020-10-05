@@ -115,7 +115,6 @@ def agentdata(agent, currentagent, extended=False):
 		'name': agent.getName(),
 		'phone': phonenums,
 		'url': agent.get_absolute_url(),
-		'isme': agent == currentagent,
 		'addresses': rawaddresses,
 		'formattedaddresses': formattedaddresses,
 		'facebookaccounts': facebookaccounts,
@@ -127,18 +126,17 @@ def agentdata(agent, currentagent, extended=False):
 
 	if extended:
 		agentdataobj['relations'] = []
-		for relation in Relationship.objects.filter(object=agent).order_by('subject'):
-			agentdataobj['relations'].append(agentdata(relation.subject, agent))
+		for relation in Relationship.objects.filter(subject=agent).order_by('object'):
+			agentdataobj['relations'].append(agentdata(relation.object, agent))
 
-	try:
-		if currentagent:
-			if (agent == currentagent):
-				agentdataobj['rel'] = 'me'
-			else:
-				rel = Relationship.objects.get(subject=agent.id, object=currentagent.id)
-				agentdataobj['rel'] = rel.type.getLabel()
-	except Relationship.DoesNotExist:
-		pass
+	if currentagent:
+		if (agent == currentagent):
+			agentdataobj['rel'] = 'me'
+		else:
+			combinedrels = ''
+			for rel in Relationship.objects.filter(object=agent.id, subject=currentagent.id):
+				combinedrels += rel.get_relationshipType_display() + "/"
+			agentdataobj['rel'] = combinedrels.strip('/')
 
 	return agentdataobj
 

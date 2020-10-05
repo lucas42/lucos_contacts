@@ -26,8 +26,8 @@ class GoogleContactInline(AccountInline):
 
 class RelationshipInline(admin.TabularInline):
 	model = Relationship
-	fk_name = 'object'
-	fields = ('type', 'subject')
+	fk_name = 'subject'
+	fields = ('relationshipType', 'object')
 
 class AgentAdmin(admin.ModelAdmin):
 	actions = ['merge']
@@ -63,14 +63,10 @@ class AgentAdmin(admin.ModelAdmin):
 		return redirect(agent.get_absolute_url())
 
 class RelationshipAdmin(admin.ModelAdmin):
-	fields = ('subject', 'type', 'object')
-	list_display = ('subject', 'type', 'object')
-	list_display_links = ('subject', 'type', 'object')
+	fields = ('subject', 'relationshipType', 'object')
+	list_display = ('subject', 'relationshipType', 'object')
+	list_display_links = ('subject', 'relationshipType', 'object')
 	ordering = ['subject']
-
-class RelationshipTypeConnectionAdmin(admin.ModelAdmin):
-	list_display = ('inferred_relation_type', 'relation_type_a', 'relation_type_b')
-	list_display_links = ['inferred_relation_type']
 
 admin.site.register(Agent, AgentAdmin)
 admin.site.register(PhoneNumber)
@@ -78,5 +74,3 @@ admin.site.register(EmailAddress)
 admin.site.register(FacebookAccount)
 admin.site.register(PostalAddress)
 admin.site.register(Relationship, RelationshipAdmin)
-admin.site.register(RelationshipType)
-admin.site.register(RelationshipTypeConnection, RelationshipTypeConnectionAdmin)
