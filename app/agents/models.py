@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import translation
 from django.core.exceptions import ObjectDoesNotExist
 from agents.relationshipTypes import RELATIONSHIP_TYPE_CHOICES, getRelationshipTypeByKey
+import datetime
 
 def getCurrentLang():
 	cur_language = translation.get_language()
@@ -21,6 +22,18 @@ def getTranslated(obj, field):
 			return val
 	return "unknown"
 
+def dayChoices():
+	choices = []
+	for day in range(1,32):
+		choices.append((day, day))
+	return choices
+
+def monthChoices():
+	choices = []
+	for month in range(1,13):
+		choices.append((month, datetime.date(1970, month, 1).strftime('%B')))
+	return choices
+
 class Agent(models.Model):
 	name_en = models.CharField(max_length=255, blank=True)
 	name_ga = models.CharField(max_length=255, blank=True)
@@ -28,6 +41,9 @@ class Agent(models.Model):
 	name_cy = models.CharField(max_length=255, blank=True)
 	starred = models.BooleanField(default=False)
 	relation = models.ManyToManyField('self', through='Relationship', symmetrical=False)
+	day_of_birth = models.IntegerField(choices=dayChoices(), blank=True, null=True)
+	month_of_birth = models.IntegerField(choices=monthChoices(), blank=True, null=True)
+	year_of_birth = models.IntegerField(blank=True, null=True)
 	bio = models.TextField(blank=True)
 	notes = models.TextField(blank=True)
 	on_gift_list = models.BooleanField(default=False)

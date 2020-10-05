@@ -18,6 +18,11 @@
 		{%for userid in facebookaccounts %}
 			<span class='facebooklink'><a href="https://www.facebook.com/profile.php?id={{userid}}" target="_blank"><img src="https://graph.facebook.com/{{userid}}/picture" /> Facebook</a></span>
 		{%endfor%}
+		{%if formattedBirthday %}
+			<div id="birthday" {%if birthday %}data-birthday="{{birthday}}"{%endif%}>
+				<span class="label">Birthday:</span> {{formattedBirthday}}
+			</div>
+		{%endif%}
 		{%if notes %}
 			<div id="notes">
 				<h2>Notes</h2>

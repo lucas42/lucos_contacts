@@ -109,7 +109,20 @@ def agentdata(agent, currentagent, extended=False):
 	facebookaccounts = []
 	for facebookaccount in FacebookAccount.objects.filter(agent=agent, active=True):
 			facebookaccounts.append(facebookaccount.userid)
-	
+	birthday = None
+	formattedBirthday = None
+	if (agent.day_of_birth and agent.month_of_birth and agent.year_of_birth):
+		birthday = str(agent.year_of_birth)+"-"+str(agent.month_of_birth)+"-"+str(agent.day_of_birth)
+		formattedBirthday = str(agent.day_of_birth)+"/"+str(agent.month_of_birth)+"/"+str(agent.year_of_birth)
+	elif (agent.year_of_birth):
+		formattedBirthday = str(agent.year_of_birth)
+	elif (agent.day_of_birth and agent.month_of_birth):
+		formattedBirthday = str(agent.day_of_birth)+"/"+str(agent.month_of_birth)
+	elif (agent.month_of_birth):
+		formattedBirthday = "Sometime in month "+str(agent.month_of_birth)
+	elif (agent.day_of_birth):
+		formattedBirthday = str(agent.day_of_birth)+" of something"
+
 	agentdataobj = {
 		'agent': agent,
 		'name': agent.getName(),
@@ -122,6 +135,8 @@ def agentdata(agent, currentagent, extended=False):
 		'bio': agent.bio,
 		'notes': agent.notes,
 		'giftideas': agent.gift_ideas,
+		'birthday': birthday,
+		'formattedBirthday': formattedBirthday,
 	}
 
 	if extended:
