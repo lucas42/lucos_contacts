@@ -126,8 +126,8 @@ def agentdata(agent, currentagent, extended=False):
 
 	if extended:
 		agentdataobj['relations'] = []
-		for relation in Relationship.objects.filter(object=agent).order_by('subject'):
-			agentdataobj['relations'].append(agentdata(relation.subject, agent))
+		for relation in Relationship.objects.filter(subject=agent).order_by('object'):
+			agentdataobj['relations'].append(agentdata(relation.object, agent))
 
 	if currentagent:
 		if (agent == currentagent):
