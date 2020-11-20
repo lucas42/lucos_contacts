@@ -40,6 +40,7 @@ h2 { text-align: center; }
 .facebooklink a { display: block; margin: 10px auto; max-width: 428px; overflow: hidden; border: outset #3b5998 4px; text-decoration: inherit; color: #3b5998; font-weight: bold; line-height: 50px; text-align: center; background: #dfe3ee; font-size: 20px;}
 .facebooklink a:active { border-style: inset; }
 #bio, #notes, #gifts, #birthday { max-width: 428px; margin: 10px auto; }
+#gifts { white-space: pre-line; }
 #birthday .label { font-weight: bold; }
 
 #lucos_navbar { height: 30px; z-index:1000; color: #FFF; position: absolute; left: 0; right: 0; top: 0; font-size: 18px; background-color: #044E00; background-image: -webkit-gradient(linear, 0 100%, 0 0, color-stop(0, transparent), color-stop(0.15, transparent), color-stop(0.9, rgba(255, 255, 255, 0.4))); font-family: Georgia, serif }
