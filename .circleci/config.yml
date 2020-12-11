@@ -1,69 +1,16 @@
-version: 2
-jobs:
-  test-app:
-    docker:
-      - image: circleci/python:2.7
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: pipenv install
-          working_directory: app
-      - run:
-          name: Run tests for django app
-          command: pipenv run python manage.py test
-          working_directory: app
-  build:
-    environment:
-      COMPOSE_PROJECT_NAME: lucos_contacts
-    docker:
-      - image: circleci/buildpack-deps:buster
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build Docker image
-          command: docker-compose build
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-            docker-compose push
-  deploy:
-    environment:
-      COMPOSE_PROJECT_NAME: lucos_contacts
-      PRODUCTION: true
-    docker:
-      - image: circleci/buildpack-deps:buster
-    steps:
-      - checkout
-      - run:
-          name: Check $PRODUCTION_HOST is set
-          command: echo "Deploying onto host \"$PRODUCTION_HOST\""
-      - add_ssh_keys:
-          fingerprints:
-            - "3b:d2:84:bc:c8:2e:09:b7:2f:e7:50:23:46:41:cf:23"
-      - run:
-          name: Populate known_hosts
-          command: ssh-keyscan -H $PRODUCTION_HOST >> ~/.ssh/known_hosts
-      - run:
-          name: Pull container onto remote box
-          command: DOCKER_HOST="ssh://$DEPLOY_USERNAME@$PRODUCTION_HOST" docker-compose pull
-      - run:
-          name: Deploy using docker-compose
-          command: DOCKER_HOST="ssh://$DEPLOY_USERNAME@$PRODUCTION_HOST" docker-compose up -d --no-build
+version: 2.1
+orbs:
+  lucos: lucos/deploy@0
 workflows:
   version: 2
   build-deploy:
     jobs:
-      - test-app
-      - build:
+      - lucos/build-amd64:
           context: docker
-      - deploy:
+      - lucos/deploy-valen:
           context: docker
           requires:
-            - test-app
-            - build
+            - lucos/build-amd64
           filters:
             branches:
               only:
