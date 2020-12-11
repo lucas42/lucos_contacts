@@ -1,15 +1,31 @@
 version: 2.1
 orbs:
   lucos: lucos/deploy@0
+jobs:
+  test-app:
+    docker:
+      - image: circleci/python:2.7
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: pipenv install
+          working_directory: app
+      - run:
+          name: Run tests for django app
+          command: pipenv run python manage.py test
+          working_directory: app
 workflows:
   version: 2
   build-deploy:
     jobs:
+      - test-app
       - lucos/build-amd64:
           context: docker
       - lucos/deploy-valen:
           context: docker
           requires:
+            - test-app
             - lucos/build-amd64
           filters:
             branches:
