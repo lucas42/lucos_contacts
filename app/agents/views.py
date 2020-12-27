@@ -84,7 +84,13 @@ def agentindex(request, list):
 	else:
 		agentlist = Agent.objects.filter(id=0)
 	for agent in agentlist.distinct().order_by('id'):
-		agents.append(agentdata(agent, request.user.agent))
+		data = agentdata(agent, request.user.agent)
+
+		# Hide any agents who only have inactive postal addresses
+		# (the above filter only excludes agents with no postal addresses at all)
+		if (list == 'postal' and not data['addresses']):
+			continue
+		agents.append(data)
 	return render(None, 'agents/index.html', {
 		'template': template,
 		'agents': agents,
