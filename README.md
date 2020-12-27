@@ -15,8 +15,19 @@ Has three components:
 ## Running
 `PRODUCTION=true SECRET_KEY=<secret> nice -19 docker-compose up -d --no-build`
 
-## Restoring from backup
 
+## Database commands
+### Manually creating a backup
+(on machine with docker installed)
+* `docker exec lucos_contacts_db_1 pg_dump --user postgres postgres > /tmp/contacts.sql`
+
+### Wiping database clean so restore doesn't cause any conflicts
+(on machine with docker & docker-compose installed)
+* `docker-compose exec db dropdb --user postgres postgres`
+* `docker-compose exec db createdb --user postgres postgres`
+
+### Restoring from backup
+(on machine with docker & docker-compose installed)
 Assuming the backup file is available over ssh on another machine, run the following commands:
 
 * `docker-compose exec db apk add openssh-client`
