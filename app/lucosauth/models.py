@@ -45,11 +45,15 @@ class LucosUser(AbstractBaseUser):
 	def has_module_perms(self, app_label):
 		if (app_label == 'agents'):
 			return True
+		if (app_label == 'comms'):
+			return True
 		if (app_label == 'lucosauth'):
 			return True
 		return False
 	def has_perm(self, perm, obj=None):
 		if (perm.startswith('agents.')):
+			return True
+		if (perm.startswith('comms.')):
 			return True
 		if (perm.startswith('lucosauth.')):
 			return True
@@ -71,9 +75,13 @@ class ApiUser(AbstractBaseUser):
 	def has_module_perms(self, app_label):
 		if (app_label == 'agents'):
 			return True
+		if (app_label == 'comms'):
+			return True
 		return False
 	def has_perm(self, perm, obj=None):
 		if (perm.startswith('agents.')):
+			return True
+		if (perm.startswith('comms.')):
 			return True
 		return False
 	def get_short_name(self):

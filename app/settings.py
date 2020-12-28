@@ -80,6 +80,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'agents',
     'lucosauth',
+    'comms',
     'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.messages',
