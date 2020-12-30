@@ -96,6 +96,7 @@ setInference(Sibling, AuntOrUncle, AuntOrUncle)
 class Nibling(BaseRelationshipType):
 	dbKey='nibling'
 	label_en='nibling'
+	label_ga='niblín'
 
 setInverse(AuntOrUncle, Nibling)
 
