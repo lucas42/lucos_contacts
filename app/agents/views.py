@@ -100,14 +100,19 @@ def agentindex(request, list):
 
 # Formats a date given the year, month of day - any selection of which may be missing
 def formatDate(year, month, day):
+	monthname = None
+	if month:
+		monthname = datetime.date(1970, month, 1).strftime('%B')
 	if (day and month and year):
 		return str(day)+"/"+str(month)+"/"+str(year)
+	elif (monthname and year):
+		return str(monthname)+" "+str(year)
 	elif (year):
 		return str(year)
 	elif (day and month):
 		return str(day)+"/"+str(month)
-	elif (month):
-		return "Sometime in month "+str(month)
+	elif (monthname):
+		return "Sometime in "+str(monthname)
 	elif (day):
 		return str(day)+" of something"
 	else:
