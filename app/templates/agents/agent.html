@@ -3,6 +3,14 @@
 {% block headtitle %}LucOs - {{ name }}{% endblock %}
 {% block title %}{{ name }}{% endblock %}
 {% block body %}
+		{%if isDead %}
+			<div id="dead">
+				<span class="rest-in-peace">Rest In Peace</span>
+				{%if formattedDeathDate %}
+					<span class="label">Date of Death:</span> {{formattedDeathDate}}
+				{%endif%}
+			</div>
+		{%endif%}
 		{%if bio %}
 			<div id="bio">
 				{{bio}}
@@ -19,7 +27,7 @@
 			<span class='facebooklink'><a href="https://www.facebook.com/profile.php?id={{userid}}" target="_blank"><img src="https://graph.facebook.com/{{userid}}/picture" /> Facebook</a></span>
 		{%endfor%}
 		{%if formattedBirthday %}
-			<div id="birthday" {%if birthday %}data-birthday="{{birthday}}"{%endif%}>
+			<div id="birthday">
 				<span class="label">Birthday:</span> {{formattedBirthday}}
 			</div>
 		{%endif%}

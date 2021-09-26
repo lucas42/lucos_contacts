@@ -98,6 +98,22 @@ def agentindex(request, list):
 		'addurl': reverse('admin:agents_agent_add'),
 	})
 
+# Formats a date given the year, month of day - any selection of which may be missing
+def formatDate(year, month, day):
+	if (day and month and year):
+		return str(day)+"/"+str(month)+"/"+str(year)
+	elif (year):
+		return str(year)
+	elif (day and month):
+		return str(day)+"/"+str(month)
+	elif (month):
+		return "Sometime in month "+str(month)
+	elif (day):
+		return str(day)+" of something"
+	else:
+		return None
+
+
 # Get a bunch of data abount an agent
 # agent: the Agent in to get info about
 # currentagent: The Agent that relationships should be relative to
@@ -115,19 +131,9 @@ def agentdata(agent, currentagent, extended=False):
 	facebookaccounts = []
 	for facebookaccount in FacebookAccount.objects.filter(agent=agent, active=True):
 			facebookaccounts.append(facebookaccount.userid)
-	birthday = None
-	formattedBirthday = None
-	if (agent.day_of_birth and agent.month_of_birth and agent.year_of_birth):
-		birthday = str(agent.year_of_birth)+"-"+str(agent.month_of_birth)+"-"+str(agent.day_of_birth)
-		formattedBirthday = str(agent.day_of_birth)+"/"+str(agent.month_of_birth)+"/"+str(agent.year_of_birth)
-	elif (agent.year_of_birth):
-		formattedBirthday = str(agent.year_of_birth)
-	elif (agent.day_of_birth and agent.month_of_birth):
-		formattedBirthday = str(agent.day_of_birth)+"/"+str(agent.month_of_birth)
-	elif (agent.month_of_birth):
-		formattedBirthday = "Sometime in month "+str(agent.month_of_birth)
-	elif (agent.day_of_birth):
-		formattedBirthday = str(agent.day_of_birth)+" of something"
+
+	formattedBirthday = formatDate(agent.year_of_birth, agent.month_of_birth, agent.day_of_birth)
+	formattedDeathDate = formatDate(agent.year_of_death, agent.month_of_death, agent.day_of_death)
 
 	agentdataobj = {
 		'agent': agent,
@@ -141,8 +147,9 @@ def agentdata(agent, currentagent, extended=False):
 		'bio': agent.bio,
 		'notes': agent.notes,
 		'giftideas': agent.gift_ideas,
-		'birthday': birthday,
 		'formattedBirthday': formattedBirthday,
+		'formattedDeathDate': formattedDeathDate,
+		'isDead': agent.is_dead,
 	}
 
 	if extended:
