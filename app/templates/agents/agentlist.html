@@ -1,7 +1,7 @@
 
 		<ul class='agentlist'>
 		{%for agent in agents %}
-			<li><a href="{{agent.url}}">
+			<li><a href="{{agent.url}}" {% if agent.isDead %}class="isdead"{% endif %}>
 				<h3>{% filter force_escape %}{{ agent.name }}{% endfilter %}</h3>
 				<span class='relation'>{% filter force_escape %}{{agent.rel}}{% endfilter %}</span>
 			{% if list == "postal" %}
