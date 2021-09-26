@@ -100,3 +100,19 @@ class RelationshipTypeTest(TestCase):
 	def test_sibling_relationships(self):
 		sibling = Sibling()
 		self.failUnlessEqual(sibling.inverse, Sibling)
+
+class DeathTest(TestCase):
+	def test_death_date_sets_is_dead(self):
+		jacqui = Agent.objects.create(name_en="Jacqui")
+		jacqui.year_of_death = 2021
+		jacqui.save()
+		self.assertTrue(jacqui.is_dead)
+	def test_is_dead_stays_without_death_date(self):
+		jim = Agent.objects.create(name_en="Jim")
+		jim.is_dead = True
+		jim.save()
+		self.assertTrue(jim.is_dead)
+	def test_staying_alive(self):
+		luke = Agent.objects.create(name_en="Luke")
+		luke.is_dead =False
+		self.assertFalse(luke.is_dead)

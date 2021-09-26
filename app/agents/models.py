@@ -44,6 +44,10 @@ class Agent(models.Model):
 	day_of_birth = models.IntegerField(choices=dayChoices(), blank=True, null=True)
 	month_of_birth = models.IntegerField(choices=monthChoices(), blank=True, null=True)
 	year_of_birth = models.IntegerField(blank=True, null=True)
+	day_of_death = models.IntegerField(choices=dayChoices(), blank=True, null=True)
+	month_of_death = models.IntegerField(choices=monthChoices(), blank=True, null=True)
+	year_of_death = models.IntegerField(blank=True, null=True)
+	is_dead = models.BooleanField(default=False)
 	bio = models.TextField(blank=True)
 	notes = models.TextField(blank=True)
 	on_gift_list = models.BooleanField(default=False)
@@ -55,6 +59,10 @@ class Agent(models.Model):
 		return self.getName()
 		
 	def save(self, *args, **kwargs):
+		# If there's any details about their death, it's reasonable to assume the person is dead
+		if self.year_of_death is not None or self.month_of_death is not None or self.day_of_death is not None:
+			self.is_dead = True
+
 		super(Agent, self).save(*args, **kwargs)
 		try:
 			ext = ExternalAgent.objects.get(id=self.id)
