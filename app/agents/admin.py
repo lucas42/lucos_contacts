@@ -2,6 +2,14 @@ from agents.models import *
 from django.contrib import admin
 from django.shortcuts import redirect
 
+class NameInline(admin.TabularInline):
+	model = AgentName
+	extra = 1
+	min_num = 1
+	verobse_name = "Name"
+	verbose_name_plural = "Names"
+	show_first = True
+
 class AccountInline(admin.TabularInline):
 	extra = 1
 	min_num = 0
@@ -32,6 +40,7 @@ class RelationshipInline(admin.TabularInline):
 class AgentAdmin(admin.ModelAdmin):
 	actions = ['merge']
 	inlines = [
+		NameInline,
 		PhoneInline,
 		EmailInline,
 		AddressInline,

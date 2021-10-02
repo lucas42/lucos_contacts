@@ -50,6 +50,15 @@
     {{ adminform.form.non_field_errors }}
 {% endif %}
 
+{# Custom block for inline field sets which should be shown before field sets #}
+{% block first_inline_field_sets %}
+{% for inline_admin_formset in inline_admin_formsets %}
+    {% if inline_admin_formset.opts.show_first %}
+        {% include inline_admin_formset.opts.template %}
+    {% endif %}
+{% endfor %}
+{% endblock %}
+
 {% block field_sets %}
 {% for fieldset in adminform %}
   {% include "admin/includes/fieldset.html" %}
@@ -60,7 +69,9 @@
 
 {% block inline_field_sets %}
 {% for inline_admin_formset in inline_admin_formsets %}
-    {% include inline_admin_formset.opts.template %}
+    {% if not inline_admin_formset.opts.show_first %}
+        {% include inline_admin_formset.opts.template %}
+    {% endif %}
 {% endfor %}
 {% endblock %}
 

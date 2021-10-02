@@ -78,6 +78,22 @@ class ExternalAgent(models.Model):
 	def __str__(self):
 		return self.agent.getName()
 
+class AgentName(models.Model):
+	agent = models.ForeignKey(Agent, blank=False, on_delete=models.CASCADE)
+	name = models.CharField(max_length=255, blank=False)
+	is_primary = models.BooleanField(default=False)
+	def save(self, *args, **kwargs):
+
+		#  If this is the primary name, ensure none of the other names for that agent are primary any more
+		if self.is_primary:
+			queryset = AgentName.objects.filter(agent=self.agent)
+			if self.pk:
+				queryset = queryset.exclude(pk=self.pk)
+			queryset.update(is_primary=False)
+		super(AgentName, self).save(*args, **kwargs)
+	def __str__(self):
+		return self.name
+
 class BaseAccount(models.Model):
 	agent = models.ForeignKey(Agent, blank=False, on_delete=models.CASCADE)
 	active = models.BooleanField(default=True)
