@@ -11,17 +11,6 @@ def getCurrentLang():
 		return ""
 	return cur_language[:2]
 
-def getTranslated(obj, field):
-	val = getattr(obj, field+'_'+getCurrentLang(), None)
-	if val:
-		return val
-	langs = ['en', 'ga', 'gd', 'cy']
-	for ii in langs:	
-		val = getattr(obj, field+'_'+ii, None)
-		if val:
-			return val
-	return "unknown"
-
 def dayChoices():
 	choices = []
 	for day in range(1,32):
@@ -35,10 +24,7 @@ def monthChoices():
 	return choices
 
 class Agent(models.Model):
-	name_en = models.CharField(max_length=255, blank=True)
-	name_ga = models.CharField(max_length=255, blank=True)
-	name_gd = models.CharField(max_length=255, blank=True)
-	name_cy = models.CharField(max_length=255, blank=True)
+	_name = models.CharField(max_length=255, blank=True) #denormalised field - automatically updated by AgentName when is_primary
 	starred = models.BooleanField(default=False)
 	relation = models.ManyToManyField('self', through='Relationship', symmetrical=False)
 	day_of_birth = models.IntegerField(choices=dayChoices(), blank=True, null=True)
@@ -53,7 +39,7 @@ class Agent(models.Model):
 	on_gift_list = models.BooleanField(default=False)
 	gift_ideas = models.TextField(blank=True)
 	def getName(self):
-		return getTranslated(self, 'name')
+		return self._name or "Unnamed"
 
 	def __str__(self):
 		return self.getName()
@@ -84,12 +70,19 @@ class AgentName(models.Model):
 	is_primary = models.BooleanField(default=False)
 	def save(self, *args, **kwargs):
 
+		# If this agent has no primary name, make this the primary
+		primaryCount = AgentName.objects.filter(agent=self.agent, is_primary=True).count()
+		if primaryCount == 0:
+			self.is_primary = True
+
 		#  If this is the primary name, ensure none of the other names for that agent are primary any more
 		if self.is_primary:
 			queryset = AgentName.objects.filter(agent=self.agent)
 			if self.pk:
 				queryset = queryset.exclude(pk=self.pk)
 			queryset.update(is_primary=False)
+			self.agent._name = self.name
+			self.agent.save()
 		super(AgentName, self).save(*args, **kwargs)
 	def __str__(self):
 		return self.name
