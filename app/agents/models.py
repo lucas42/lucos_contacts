@@ -24,7 +24,7 @@ def monthChoices():
 	return choices
 
 class Agent(models.Model):
-	_name = models.CharField(max_length=255, blank=True) #denormalised field - automatically updated by AgentName when is_primary
+	_name = models.CharField(max_length=255, blank=True, editable=False) #denormalised field - automatically updated by AgentName when is_primary
 	starred = models.BooleanField(default=False)
 	relation = models.ManyToManyField('self', through='Relationship', symmetrical=False)
 	day_of_birth = models.IntegerField(choices=dayChoices(), blank=True, null=True)
