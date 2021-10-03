@@ -16,9 +16,9 @@ def get_agents_by_relType(subject, relType):
 class RelationshipTest(TestCase):
 
 	def test_symmetrical_transitive_relationship(self):
-		luke = Agent.objects.create(name_en='Luke')
-		rowan = Agent.objects.create(name_en='Rowan')
-		roise = Agent.objects.create(name_en='Róise')
+		luke = Agent.objects.create()
+		rowan = Agent.objects.create()
+		roise = Agent.objects.create()
 		Relationship.objects.create(subject=luke, object=rowan, relationshipType='sibling')
 		Relationship.objects.create(subject=rowan, object=roise, relationshipType='sibling')
 
@@ -27,9 +27,9 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(roise, 'sibling'), [luke, rowan])
 
 	def test_symmetrical_relationship(self):
-		luke = Agent.objects.create(name_en='Luke')
-		james = Agent.objects.create(name_en='James')
-		roise = Agent.objects.create(name_en='Róise')
+		luke = Agent.objects.create()
+		james = Agent.objects.create()
+		roise = Agent.objects.create()
 		Relationship.objects.create(subject=luke, object=james, relationshipType='half-sibling')
 		Relationship.objects.create(subject=james, object=roise, relationshipType='half-sibling')
 
@@ -38,8 +38,8 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(roise, 'half-sibling'), [james])
 
 	def test_inverse_relationship(self):
-		luke = Agent.objects.create(name_en='Luke')
-		rachel = Agent.objects.create(name_en='Rachel')
+		luke = Agent.objects.create()
+		rachel = Agent.objects.create()
 		Relationship.objects.create(subject=luke, object=rachel, relationshipType='aunt/uncle')
 
 		self.failUnlessEqual(get_agents_by_relType(luke, 'aunt/uncle'), [rachel])
@@ -48,9 +48,9 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(rachel, 'nibling'), [luke])
 
 	def test_inferred_relationship_subject_rel_first(self):
-		luke = Agent.objects.create(name_en='Luke')
-		mark = Agent.objects.create(name_en='Mark')
-		rachel = Agent.objects.create(name_en='Rachel')
+		luke = Agent.objects.create()
+		mark = Agent.objects.create()
+		rachel = Agent.objects.create()
 		Relationship.objects.create(subject=luke, object=mark, relationshipType='parent')
 		Relationship.objects.create(subject=mark, object=rachel, relationshipType='sibling')
 
@@ -59,9 +59,9 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(rachel, 'aunt/uncle'), [])
 
 	def test_inferred_relationship_object_rel_first(self):
-		luke = Agent.objects.create(name_en='Luke')
-		mark = Agent.objects.create(name_en='Mark')
-		rachel = Agent.objects.create(name_en='Rachel')
+		luke = Agent.objects.create()
+		mark = Agent.objects.create()
+		rachel = Agent.objects.create()
 		Relationship.objects.create(subject=mark, object=rachel, relationshipType='sibling')
 		Relationship.objects.create(subject=luke, object=mark, relationshipType='parent')
 
@@ -70,12 +70,12 @@ class RelationshipTest(TestCase):
 		self.failUnlessEqual(get_agents_by_relType(rachel, 'aunt/uncle'), [])
 
 	def test_complicated_relationship_inference(self):
-		luke = Agent.objects.create(name_en='Luke')
-		ruth = Agent.objects.create(name_en='Ruth')
-		felim = Agent.objects.create(name_en='Felim')
-		myra = Agent.objects.create(name_en='Myra')
-		brenda = Agent.objects.create(name_en='Brenda')
-		frances = Agent.objects.create(name_en='Frances')
+		luke = Agent.objects.create()
+		ruth = Agent.objects.create()
+		felim = Agent.objects.create()
+		myra = Agent.objects.create()
+		brenda = Agent.objects.create()
+		frances = Agent.objects.create()
 
 		Relationship.objects.create(subject=luke, object=ruth, relationshipType='parent')
 		Relationship.objects.create(subject=ruth, object=felim, relationshipType='sibling')
@@ -103,16 +103,16 @@ class RelationshipTypeTest(TestCase):
 
 class DeathTest(TestCase):
 	def test_death_date_sets_is_dead(self):
-		jacqui = Agent.objects.create(name_en="Jacqui")
+		jacqui = Agent.objects.create()
 		jacqui.year_of_death = 2021
 		jacqui.save()
 		self.assertTrue(jacqui.is_dead)
 	def test_is_dead_stays_without_death_date(self):
-		jim = Agent.objects.create(name_en="Jim")
+		jim = Agent.objects.create()
 		jim.is_dead = True
 		jim.save()
 		self.assertTrue(jim.is_dead)
 	def test_staying_alive(self):
-		luke = Agent.objects.create(name_en="Luke")
+		luke = Agent.objects.create()
 		luke.is_dead =False
 		self.assertFalse(luke.is_dead)
