@@ -100,6 +100,9 @@ class BaseAccount(models.Model):
 			"phone": PhoneNumber,
 			"email": EmailAddress,
 			"googlecontact": GoogleContact,
+
+			# HACK:Technically not an account, but also has an `.agent` relationship, so works for now
+			"name": AgentName,
 		}
 		accountArgs = params.dict()
 		typeid = accountArgs.pop("type")
