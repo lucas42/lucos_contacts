@@ -134,7 +134,7 @@ class PostalAddress(BaseAccount):
 		return self.agent.getName()+"'s Address"
 
 class FacebookAccount(BaseAccount):
-	userid = models.PositiveIntegerField(blank=False)
+	userid = models.PositiveBigIntegerField(blank=False)
 	username = models.CharField(max_length=255, blank=True)
 	def __str__(self):
 		if getCurrentLang() == 'ga':
