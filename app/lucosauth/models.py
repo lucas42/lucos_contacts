@@ -23,7 +23,11 @@ class LucosAuthBackend(object):
 			agent = Agent.objects.get(id=data['id'])
 		except Agent.DoesNotExist:
 			print("Unknown id ("+str(data['id'])+") returned by auth service; "+url)
-			return None
+			if os.environ.get("PRODUCTION"):
+				return None
+			else:
+				print("Non-production environment; creating user "+str(data['id']))
+				agent = Agent.objects.create(id=data['id'])
 		try:
 			user = LucosUser.objects.get(agent=agent)
 		except LucosUser.DoesNotExist:
