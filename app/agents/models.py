@@ -185,6 +185,12 @@ class Relationship(models.Model):
 		for connection in relationshipType.incomingRels:
 			for existingRel in Relationship.objects.filter(object=self.subject, relationshipType=connection.existingRel.dbKey):
 				Relationship.objects.get_or_create(subject=existingRel.subject, object=self.object, relationshipType=connection.inferredRel.dbKey)
-			
+
+	def getPriority(self):
+		for index, choice in enumerate(RELATIONSHIP_TYPE_CHOICES):
+			if choice[0] == self.relationshipType:
+				return index
+		return -1
+
 	def __str__(self):
 		return self.subject.getName()+" - "+self.get_relationshipType_display()+" - "+self.object.getName()

@@ -129,9 +129,9 @@ RELATIONSHIP_TYPES = [
 	Grandparent,
 	AuntOrUncle,
 	Nibling,
+	FirstCousin,
 	GreatAuntOrGreatUncle,
 	GreatNibling,
-	FirstCousin,
 ]
 RELATIONSHIP_TYPE_CHOICES = []
 for reltypeclass in RELATIONSHIP_TYPES:

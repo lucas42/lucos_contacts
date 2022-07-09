@@ -118,6 +118,16 @@ def formatDate(year, month, day):
 	else:
 		return None
 
+# Returns a string which can be used in a .sort() function given a year, month and day
+def sortableDate(year, month, day):
+	if (year is None):
+		year = 9999
+	if (month is None):
+		month = 13
+	if (day is None):
+		day = 32
+	return str(year).zfill(4)+'-'+str(month).zfill(2)+'-'+str(day).zfill(2)
+
 
 # Get a bunch of data abount an agent
 # agent: the Agent in to get info about
@@ -138,6 +148,7 @@ def agentdata(agent, currentagent, extended=False):
 			facebookaccounts.append(facebookaccount.userid)
 
 	formattedBirthday = formatDate(agent.year_of_birth, agent.month_of_birth, agent.day_of_birth)
+	sortableBirthday = sortableDate(agent.year_of_birth, agent.month_of_birth, agent.day_of_birth)
 	formattedDeathDate = formatDate(agent.year_of_death, agent.month_of_death, agent.day_of_death)
 
 	agentdataobj = {
@@ -153,22 +164,26 @@ def agentdata(agent, currentagent, extended=False):
 		'notes': agent.notes,
 		'giftideas': agent.gift_ideas,
 		'formattedBirthday': formattedBirthday,
+		'sortableBirthday': sortableBirthday,
 		'formattedDeathDate': formattedDeathDate,
 		'isDead': agent.is_dead,
 	}
 
 	if extended:
 		agentdataobj['relations'] = []
-		for relation in Relationship.objects.filter(subject=agent).order_by('object'):
+		for relation in Relationship.objects.filter(subject=agent):
 			agentdataobj['relations'].append(agentdata(relation.object, agent))
+		agentdataobj['relations'].sort(key=lambda data: (data['sortableRel'], data['sortableBirthday']))
 
 	if currentagent:
+		agentdataobj['sortableRel'] = -1
 		if (agent == currentagent):
 			agentdataobj['rel'] = 'me'
 		else:
 			combinedrels = ''
 			for rel in Relationship.objects.filter(object=agent.id, subject=currentagent.id):
 				combinedrels += rel.get_relationshipType_display() + "/"
+				agentdataobj['sortableRel'] = rel.getPriority()
 			agentdataobj['rel'] = combinedrels.strip('/')
 
 	return agentdataobj
