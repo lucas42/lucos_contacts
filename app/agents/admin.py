@@ -38,7 +38,7 @@ class RelationshipInline(admin.TabularInline):
 	fields = ('relationshipType', 'object')
 
 class AgentAdmin(admin.ModelAdmin):
-	actions = ['merge']
+	actions = ['merge','delete_all_relationships']
 	inlines = [
 		NameInline,
 		PhoneInline,
@@ -65,6 +65,11 @@ class AgentAdmin(admin.ModelAdmin):
 				Relationship.objects.filter(object=agent).update(object=mainagent)
 				ExternalAgent.objects.filter(agent=agent).update(agent=mainagent)
 				agent.delete()
+	def delete_all_relationships(self, request, queryset):
+		agents = queryset.order_by('id')
+		for agent in agents:
+			Relationship.objects.filter(subject=agent).delete()
+			Relationship.objects.filter(object=agent).delete()
 	def response_add(self, request, agent):
 		res = super(AgentAdmin, self).response_add(request, agent)
 		return redirect(agent.get_absolute_url())
