@@ -1,7 +1,7 @@
 from django.db import models
 from django import utils
 from settings import AUTH_DOMAIN
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import AbstractBaseUser, User
 from agents.models import Agent
 import json, time, urllib.request, urllib.error, os
 
@@ -31,8 +31,12 @@ class LucosAuthBackend(object):
 		try:
 			user = LucosUser.objects.get(agent=agent)
 		except LucosUser.DoesNotExist:
-			user = LucosUser(agent=agent)
-			user.save()
+			print("Creating auth user for agent "+str(agent.id))
+			user = LucosUser.objects.create(agent=agent)
+
+			# HACK: Also create a django native User object with the same ID
+			# So that django_admin_log doesn't error
+			User.objects.create(id=user.id)
 		return user
 
 	def get_user(self, user_id):
@@ -65,6 +69,8 @@ class LucosUser(AbstractBaseUser):
 	def get_short_name(self):
 		return self.agent.getName()
 	def get_long_name(self):
+		return self.agent.getName()
+	def get_username(self):
 		return self.agent.getName()
 
 class ApiUser(AbstractBaseUser):
