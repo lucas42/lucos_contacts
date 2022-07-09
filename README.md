@@ -37,4 +37,5 @@ Assuming the backup file is available over ssh on another machine, run the follo
 
 * `docker-compose exec db apk add openssh-client`
 * `docker-compose exec db scp <user@hostname>:/tmp/contacts.sql /tmp/contacts.sql`
+* `docker-compose exec db sh -c 'dropdb --user postgres postgres && createdb --user postgres postgres'` (To wipe data, if there's an existing DB)
 * `docker-compose exec db sh -c 'psql --user postgres postgres < /tmp/contacts.sql'`
