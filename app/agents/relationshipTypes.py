@@ -102,7 +102,7 @@ setInverse(AuntOrUncle, Nibling)
 
 class GreatAuntOrGreatUncle(BaseRelationshipType):
 	dbKey='great aunt/uncle'
-	label_en="great aunt/uncle"
+	label_en='great aunt/uncle'
 
 setInference(Grandparent, Sibling, GreatAuntOrGreatUncle)
 setInference(Sibling, GreatAuntOrGreatUncle, GreatAuntOrGreatUncle)
@@ -110,6 +110,7 @@ setInference(Sibling, GreatAuntOrGreatUncle, GreatAuntOrGreatUncle)
 class GreatNibling(BaseRelationshipType):
 	dbKey='great nibling'
 	label_en='great nibling'
+	label_ga='garniblín'
 
 setInverse(GreatAuntOrGreatUncle, GreatNibling)
 
