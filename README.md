@@ -12,14 +12,19 @@ Has three components:
 * app - a Django app served using gunicorn
 * web - an nginx server for routing traffic to app and serving static files
 
-## Running
+## Running in Production
 `PRODUCTION=true SECRET_KEY=<secret> nice -19 docker-compose up -d --no-build`
 
+## Running locally
+`docker-compose up --build`
+
+## Running tests
+`docker run -e SECRET_KEY=test -e CI=true lucas42/lucos_contacts_app ./manage.py test`
 
 ## Database commands
 ### Manually creating a backup
 (on machine with docker installed)
-* `docker exec lucos_contacts_db_1 pg_dump --user postgres postgres > /tmp/contacts.sql`
+* `docker exec lucos_contacts-db-1 pg_dump --user postgres postgres > /tmp/contacts.sql`
 
 ### Wiping database clean so restore doesn't cause any conflicts
 (on machine with docker & docker-compose installed)
