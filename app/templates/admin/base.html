@@ -23,16 +23,11 @@
 
     {% if not is_popup %}
     <!-- Navbar -->
-    <div id="lucos_navbar">
-        <a href="https://l42.eu/">
-            <img src="https://l42.eu/logo.png" alt="lucOS" style="">
-        </a>
-        <h1 id="lucos_navbar_title">
-         {% block branding %}{% endblock %}
-        </h1>
+    <lucos-navbar bg-colour="#044E00">
+        <a href="/">{% block branding %}{% endblock %}</a>
         {% block usertools %}
         {% if has_permission %}
-        <div id="username">
+        <div id="username" style="float: right; font-size: smaller; font-weight: normal;">
             {% block welcome-msg %}
                 {% firstof user.get_short_name user.get_username %}
             {% endblock %}
@@ -40,7 +35,7 @@
         {% endif %}
         {% endblock %}
         {% block nav-global %}{% endblock %}
-    </div>
+    </lucos-navbar>
     <!-- END Navbar -->
     {% block breadcrumbs %}
     <div class="breadcrumbs">
@@ -76,5 +71,6 @@
 
     {% block footer %}<div id="footer"></div>{% endblock %}
 
+    <script src="/resources/lucos_navbar.js" type="text/javascript"></script>
 </body>
 </html>

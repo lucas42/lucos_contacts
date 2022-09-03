@@ -47,13 +47,6 @@ h2 { text-align: center; }
 #dead { background-color: #333340; color: #fff; font-family: Brush Script Std, cursive; padding: 0.7em; text-align: center; margin: 0.5em auto; }
 #dead .rest-in-peace { display: block; font-size: 2em; font-family: Snell Roundhand, Brush Script MT, Brush Script Std, cursive; }
 
-#lucos_navbar { height: 30px; z-index:1000; color: #FFF; position: absolute; left: 0; right: 0; top: 0; font-size: 18px; background-color: #044E00; background-image: -webkit-gradient(linear, 0 100%, 0 0, color-stop(0, transparent), color-stop(0.15, transparent), color-stop(0.9, rgba(255, 255, 255, 0.4))); font-family: Georgia, serif }
-#lucos_navbar img { float: left; height: 25px; padding: 2.5px 2%; cursor: pointer; max-width: 20%; border: none; }
-#lucos_navbar_title { text-align: center; display: block; line-height: 30px; font-weight: bold; position: absolute; width: 50%; margin: 0 25%; z-index: -1; overflow: hidden; height: 30px; text-overflow: ellipsis; white-space: nowrap; font-size: 1em; color: inherit; }
-body { padding-top: 30px; margin: 0; }
-#lucos_navbar a { color: #612B00; border: none; }
-#lucos_navbar a:hover { background: inherit; color: #B98E6C; }
-
 /* Admin site */
 div.breadcrumbs { background: none; color: #612B00; float: left; padding: 5px; border: none; font-size: 14px; text-align: left; margin: 5px; }
 div.breadcrumbs a { color: #B98E6C; }
@@ -64,7 +57,6 @@ a.section:link, a.section:visited { color: #612B00; }
 .module a:hover { background: inherit; }
 .button, input[type=submit], input[type=button], .submit-row input, a.button { background: #E5B5D1; color: #010F00; }
 .button.default, input[type=submit].default, .submit-row input.default { background: #732352; color: #E5B5D1;}
-#username { float: right; margin: 5px; font-size: smaller; }
 
 /* Colour Palette guide */
 

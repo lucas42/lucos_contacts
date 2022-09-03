@@ -1,3 +1,4 @@
+FROM lucas42/lucos_navbar:latest as navbar
 FROM python:3.11.0rc1-alpine
 
 # set work directory
@@ -23,5 +24,6 @@ RUN pipenv install --skip-lock --system
 
 # Copy project after dependencies, so cached dependencies can be used if unchanged
 COPY . .
+COPY --from=navbar lucos_navbar.js templates/resources/
 
 CMD ["./startup.sh"]
