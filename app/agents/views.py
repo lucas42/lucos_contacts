@@ -212,7 +212,9 @@ def info(request):
 		},
 		'ci': {
 			'circle': "gh/lucas42/lucos_contacts",
-		}
+		},
+		'icon': "/resources/logo-highres.png",
+		'network_only': True
 	}
 	try:
 		ext = ExternalAgent.objects.get(pk=1)
