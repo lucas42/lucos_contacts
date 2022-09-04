@@ -214,7 +214,9 @@ def info(request):
 			'circle': "gh/lucas42/lucos_contacts",
 		},
 		'icon': "/resources/logo-highres.png",
-		'network_only': True
+		'network_only': True,
+		'title': "Contacts",
+		'show_on_homepage': True
 	}
 	try:
 		ext = ExternalAgent.objects.get(pk=1)
