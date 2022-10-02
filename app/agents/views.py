@@ -154,6 +154,10 @@ def agentdata(agent, currentagent, extended=False):
 	for facebookaccount in FacebookAccount.objects.filter(agent=agent, active=True):
 			facebookaccounts.append(facebookaccount.userid)
 
+	altnames = []
+	for agentname in AgentName.objects.filter(agent=agent, is_primary=False):
+		altnames.append(agentname.name)
+
 	formattedBirthday = formatDate(agent.year_of_birth, agent.month_of_birth, agent.day_of_birth)
 	sortableBirthday = sortableDate(agent.year_of_birth, agent.month_of_birth, agent.day_of_birth)
 	formattedDeathDate = formatDate(agent.year_of_death, agent.month_of_death, agent.day_of_death)
@@ -161,6 +165,7 @@ def agentdata(agent, currentagent, extended=False):
 	agentdataobj = {
 		'agent': agent,
 		'name': agent.getName(),
+		'altnames': altnames,
 		'phone': phonenums,
 		'url': agent.get_absolute_url(),
 		'addresses': rawaddresses,

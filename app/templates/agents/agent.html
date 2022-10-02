@@ -11,6 +11,16 @@
 				{%endif%}
 			</div>
 		{%endif%}
+		{%if altnames %}
+			<div id="altnames">
+				<h4>Also Known As</h4>
+				<ul>
+				{%for altname in altnames %}
+					<li>{{altname}}</li>
+				{%endfor%}
+				</ul>
+			</div>
+		{%endif%}
 		{%if bio %}
 			<div id="bio">
 				{{bio}}

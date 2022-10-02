@@ -46,7 +46,28 @@ h2 { text-align: center; }
 #birthday .label { font-weight: bold; }
 #dead { background-color: #333340; color: #fff; font-family: Brush Script Std, cursive; padding: 0.7em; text-align: center; margin: 0.5em auto; }
 #dead .rest-in-peace { display: block; font-size: 2em; font-family: Snell Roundhand, Brush Script MT, Brush Script Std, cursive; }
-
+#altnames {
+	max-width: 428px;
+	margin: 15px auto;
+	border: solid thin grey;
+}
+#altnames h4 {
+	margin: 0;
+	background: #612b00;
+	color: #fafafa;
+	padding: 1px 10px 4px;
+	font-family: 'Lucida', monospace;
+}
+#altnames ul {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+#altnames li {
+	padding: 5px 10px;
+	background: #B9E7B7;
+	color: #612B00;
+}
 .star {
 	color: #740acf;
 	font-weight: bold;
