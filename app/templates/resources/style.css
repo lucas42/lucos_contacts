@@ -47,6 +47,61 @@ h2 { text-align: center; }
 #dead { background-color: #333340; color: #fff; font-family: Brush Script Std, cursive; padding: 0.7em; text-align: center; margin: 0.5em auto; }
 #dead .rest-in-peace { display: block; font-size: 2em; font-family: Snell Roundhand, Brush Script MT, Brush Script Std, cursive; }
 
+.star {
+	color: #740acf;
+	font-weight: bold;
+	float: left;
+	margin-right: 10px;
+	margin-top: -2px;
+	text-shadow: 0 0 1px #ffffff;
+	width: 1em;
+	height: 1.5em;
+}
+.star:before {
+	position: absolute;
+}
+.star.changed:before {
+	font-size: 5em;
+	margin-left: -0.4em;
+	margin-top: -0.6em;
+	color: #ffcf00;
+	transition: font-size 0.5s, margin 0.5s;
+}
+.star.changed-transition:not(.changed):before {
+	transition: font-size 2s, margin 2s, color 4s ease-in;
+}
+.star:hover {
+	color: #00b9ff;
+	text-shadow: none;
+}
+.star[data-starred=True]:before {
+	content: "★";
+}
+.star[data-starred=True]:not(.changed-transition):hover:before {
+	content: "☆";
+}
+.star[data-starred=False]:before {
+	content: "☆";
+}
+.star[data-starred=False]:not(.changed-transition):hover:before {
+	content: "★";
+}
+.star.loading {
+	animation: rotation 2s infinite linear;
+}
+.star.failed {
+	color: #cc0033;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}
+
 /* Admin site */
 div.breadcrumbs { background: none; color: #612B00; float: left; padding: 5px; border: none; font-size: 14px; text-align: left; margin: 5px; }
 div.breadcrumbs a { color: #B98E6C; }

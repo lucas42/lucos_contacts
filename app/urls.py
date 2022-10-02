@@ -10,8 +10,8 @@ admin.autodiscover()
 admin.site.login = user_passes_test(lambda u:u.is_staff, login_url='/accounts/login/')(admin.site.login)
 
 urlpatterns = [
-	url(r'^agents/(?P<extid>(\d+|me|add))(/(?P<method>(view|accounts)))?/?$', agents_views.agent),
-	url(r'^agents/(?P<list>(phone|postal|gifts|all))$', agents_views.agentindex),
+	url(r'^agents/(?P<extid>(\d+|me|add))(/(?P<method>(view|accounts|starred)))?/?$', agents_views.agent),
+	url(r'^agents/(?P<list>(phone|postal|gifts|starred|all))$', agents_views.agentindex),
 	url(r'^identify/?$', agents_views.identify),
 	url(r'^(?:agents/?)?$', RedirectView.as_view(url='/agents/all')),
 	# Static files (icons, bootloader) are handled by nginx

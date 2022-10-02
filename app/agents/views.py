@@ -58,6 +58,11 @@ def agent(request, extid, method=None):
 					account = accountType(agent=agent, **accountData)
 				account.save()
 		return HttpResponse(status=204)
+	elif (method == 'starred'):
+		if (request.method == 'PUT'):
+			agent.starred = (request.body.decode('utf-8').lower() == "true")
+			agent.save()
+		return HttpResponse(content=str(agent.starred))
 	else:
 		template = 'agent.html'
 	return render(None, 'agents/'+template, output)
@@ -79,6 +84,8 @@ def agentindex(request, list):
 	elif (list == 'gifts'):
 		agentlist = Agent.objects.filter(on_gift_list=True)
 		template = 'agents/agenttable.html'
+	elif (list == 'starred'):
+		agentlist = Agent.objects.filter(starred=True)
 	elif (list == 'all'):
 		agentlist = Agent.objects.all()
 	else:
@@ -167,6 +174,7 @@ def agentdata(agent, currentagent, extended=False):
 		'sortableBirthday': sortableBirthday,
 		'formattedDeathDate': formattedDeathDate,
 		'isDead': agent.is_dead,
+		'starred': agent.starred,
 	}
 
 	if extended:
