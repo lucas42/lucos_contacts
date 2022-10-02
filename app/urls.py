@@ -13,7 +13,7 @@ urlpatterns = [
 	url(r'^agents/(?P<extid>(\d+|me|add))(/(?P<method>(view|accounts|starred)))?/?$', agents_views.agent),
 	url(r'^agents/(?P<list>(phone|postal|gifts|starred|all))$', agents_views.agentindex),
 	url(r'^identify/?$', agents_views.identify),
-	url(r'^(?:agents/?)?$', RedirectView.as_view(url='/agents/all')),
+	url(r'^(?:agents/?)?$', RedirectView.as_view(url='/agents/starred')),
 	# Static files (icons, bootloader) are handled by nginx
 
 	# Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
