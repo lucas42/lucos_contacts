@@ -1,6 +1,7 @@
 from agents.models import *
 from django.contrib import admin
 from django.shortcuts import redirect
+from agents.loganne import contactCreated, contactUpdated, contactDeleted
 
 class NameInline(admin.TabularInline):
 	model = AgentName
@@ -72,10 +73,16 @@ class AgentAdmin(admin.ModelAdmin):
 			Relationship.objects.filter(object=agent).delete()
 	def response_add(self, request, agent):
 		res = super(AgentAdmin, self).response_add(request, agent)
+		contactCreated(agent)
 		return redirect(agent.get_absolute_url())
 	def response_change(self, request, agent):
 		res = super(AgentAdmin, self).response_change(request, agent)
+		contactUpdated(agent)
 		return redirect(agent.get_absolute_url())
+	def response_delete(self, request, agent_name, agent_id):
+		res = super(AgentAdmin, self).response_delete(request, agent_name, agent_id)
+		contactDeleted(agent_name, agent_id)
+		return res
 
 class RelationshipAdmin(admin.ModelAdmin):
 	fields = ('subject', 'relationshipType', 'object')

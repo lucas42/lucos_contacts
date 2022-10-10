@@ -2,7 +2,7 @@
 		<ul class='agentlist'>
 		{%for agent in agents %}
 			<li><a href="{{agent.url}}" {% if agent.isDead %}class="isdead"{% endif %}>
-				<span class="star" data-agentid="{{agent.agent.id}}" data-starred="{{agent.starred}}"></span>
+				<span class="star" data-agentid="{{agent.id}}" data-starred="{{agent.starred}}"></span>
 				<h3>{{ agent.name }}</h3>
 				<span class='relation'>{{agent.rel}}</span>
 			{% if list == "postal" %}
