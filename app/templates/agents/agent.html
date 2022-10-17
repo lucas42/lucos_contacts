@@ -48,10 +48,10 @@
 			</div>
 		{%endif%}
 		{%if giftideas %}
-			<div id="gifts">
-				<h2>Gift Ideas</h2>
-				{{giftideas}}
-			</div>
+			<details id="giftideas">
+				<summary>Gift Ideas</summary>
+				<span class='content'>{{giftideas}}</span>
+			</details>
 		{%endif%}
         {%if relations %}
         <h2>Relations</h2>

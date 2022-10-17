@@ -41,8 +41,25 @@ h2 { text-align: center; }
 .facebooklink img { float: left; height: 50px; margin-right: 10px;}
 .facebooklink a { display: block; margin: 10px auto; max-width: 428px; overflow: hidden; border: outset #3b5998 4px; text-decoration: inherit; color: #3b5998; font-weight: bold; line-height: 50px; text-align: center; background: #dfe3ee; font-size: 20px;}
 .facebooklink a:active { border-style: inset; }
-#bio, #notes, #gifts, #birthday { max-width: 428px; margin: 10px auto; }
-#gifts { white-space: pre-line; }
+#bio, #notes, #giftideas, #birthday { max-width: 428px; margin: 10px auto; }
+#giftideas {
+	border: solid #612b00;
+	border-radius: 3px 10px;
+}
+#giftideas summary {
+	font-size: 1.5em;
+	font-weight: bold;
+	background: #612b00;
+	color: #ffe1ca;
+	padding: 5px;
+	cursor: pointer;
+}
+#giftideas .content {
+	display: block;
+	margin: 9px;
+	white-space: pre-line;
+	font-size: 1.1em;
+}
 #birthday .label { font-weight: bold; }
 #dead { background-color: #333340; color: #fff; font-family: Brush Script Std, cursive; padding: 0.7em; text-align: center; margin: 0.5em auto; }
 #dead .rest-in-peace { display: block; font-size: 2em; font-family: Snell Roundhand, Brush Script MT, Brush Script Std, cursive; }
