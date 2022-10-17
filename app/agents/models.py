@@ -4,6 +4,7 @@ from django.utils import translation
 from django.core.exceptions import ObjectDoesNotExist
 from agents.relationshipTypes import RELATIONSHIP_TYPE_CHOICES, getRelationshipTypeByKey
 from django.urls import reverse
+from phonenumber_field.modelfields import PhoneNumberField
 import datetime
 
 def getCurrentLang():
@@ -95,7 +96,9 @@ class Agent(models.Model):
 
 		phonenums = []
 		for num in PhoneNumber.objects.filter(agent=self, active=True):
-				phonenums.append(num.number)
+				phonenums.append(str(num.number)
+					.replace('+44','0') # Display UK numbers as local.  TODO: don't hardcode this
+				)
 		rawaddresses = []
 		formattedaddresses = []
 		for postaladdress in PostalAddress.objects.filter(agent=self, active=True):
@@ -205,7 +208,7 @@ class BaseAccount(models.Model):
 		return accountType.objects.get(**accountArgs)
 
 class PhoneNumber(BaseAccount):
-	number = models.CharField(max_length=127, blank=False)
+	number = PhoneNumberField(blank=False)
 	def __str__(self):
 		if getCurrentLang() == 'ga':
 			return 'Uimhir guathan '+self.agent.getName()

@@ -81,6 +81,7 @@ INSTALLED_APPS = (
     'agents',
     'lucosauth',
     'comms',
+    'phonenumber_field',
     'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.messages',
@@ -142,3 +143,9 @@ LOGGING = {
 
 # This prevents warning about old test runners
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
+
+## Phone Number Settings
+PHONENUMBER_DB_FORMAT = 'E164'
+PHONENUMBER_DEFAULT_REGION = 'GB' # NB: there's some hardcoded logic in models.py which assumes this
+PHONENUMBER_DEFAULT_FORMAT = 'E164'
