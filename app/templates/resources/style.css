@@ -1,4 +1,9 @@
-.agentlist { list-style-type: none; max-width: 400px; margin: 0 auto; padding: 0; }
+#bio, #notes, #giftideas, #birthday, #relations, .agentlist, .phonenum, .facebooklink a, #altnames {
+	max-width: 428px;
+	margin: 10px auto;
+}
+
+.agentlist { list-style-type: none; padding: 0; }
 .agentlist a { text-decoration: none; color: inherit; display:block; background: #FFE1CA; padding: 10px; margin: 1px;}
 .agentlist a:hover { background-color: #612B00; color: #FFE1CA; }
 .agentlist a.isdead { color: #888; }
@@ -27,21 +32,33 @@ nav { display: block; overflow: hidden; background: #B9E7B7; color: #612B00; mar
 .navswitch a { display: inline; text-decoration: none; color: #B98E6C; }
 .navswitch a.current { font-weight: bold; color: #612B00; }
 .navswitch a:hover { text-decoration: underline; }
-a.phonenum { background: #E5B5D1; max-width: 400px; color: #120800; margin: 0 auto; }
+a.phonenum { background: #E5B5D1; color: #120800; }
 a.phonenum:hover { background-color: #4D002D; color: #E5B5D1; }
-.agentlist .phonenum { display: block; font-family: monospace; padding: 0.3em 0; text-align: center; }
+.agentlist .phonenum { display: block; font-family: monospace; padding: 0.3em 0; text-align: center; margin: 0; }
 .address { display: block;
 text-align: center;
 margin: 1em;
 font-weight: bold; white-space: pre; }
-.phonenum { display: block; font-weight: bold; font-family: monospace; font-size: 2em; padding: 0.7em; text-align: center; text-decoration: none; }
+.phonenum { display: block; font-weight: bold; font-family: monospace; font-size: 2em; padding: 0.7em 0; text-align: center; text-decoration: none; }
+#relations {
+	border: solid 2px #500094;
+	border-radius: 8px 8px 0 0;
+}
+#relations > h2 {
+	background: #500094;
+	color: #fff;
+	margin: 0;
+}
+#relations .agentlist {
+	margin: 0;
+}
 .relation { display: block;}
 h2 { text-align: center; }
 .facebooklink { }
 .facebooklink img { float: left; height: 50px; margin-right: 10px;}
-.facebooklink a { display: block; margin: 10px auto; max-width: 428px; overflow: hidden; border: outset #3b5998 4px; text-decoration: inherit; color: #3b5998; font-weight: bold; line-height: 50px; text-align: center; background: #dfe3ee; font-size: 20px;}
+.facebooklink a { display: block; overflow: hidden; border: outset #3b5998 4px; text-decoration: inherit; color: #3b5998; font-weight: bold; line-height: 50px; text-align: center; background: #dfe3ee; font-size: 20px;}
 .facebooklink a:active { border-style: inset; }
-#bio, #notes, #giftideas, #birthday { max-width: 428px; margin: 10px auto; }
+
 #giftideas {
 	border: solid #612b00;
 	border-radius: 3px 10px;
@@ -64,8 +81,6 @@ h2 { text-align: center; }
 #dead { background-color: #333340; color: #fff; font-family: Brush Script Std, cursive; padding: 0.7em; text-align: center; margin: 0.5em auto; }
 #dead .rest-in-peace { display: block; font-size: 2em; font-family: Snell Roundhand, Brush Script MT, Brush Script Std, cursive; }
 #altnames {
-	max-width: 428px;
-	margin: 15px auto;
 	border: solid thin grey;
 }
 #altnames h4 {

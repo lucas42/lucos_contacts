@@ -53,9 +53,11 @@
 				<span class='content'>{{giftideas}}</span>
 			</details>
 		{%endif%}
-        {%if relations %}
-        <h2>Relations</h2>
-			{% include "agents/agentlist.html" with agents=relations %}
+		{%if relations %}
+			<div id="relations">
+				<h2>Relations</h2>
+				{% include "agents/agentlist.html" with agents=relations %}
+			</div>
 		{%endif%}
 {% endblock %}
 {% block subnav %}
