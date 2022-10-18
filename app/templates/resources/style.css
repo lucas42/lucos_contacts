@@ -80,6 +80,16 @@ h2 { text-align: center; }
 	padding: 5px;
 	cursor: pointer;
 }
+#notes {
+	border: solid 2px #000052;
+	border-radius: 0 0 8px 8px;
+}
+#notes h2 {
+	margin: 0;
+	background: #000052;
+	color: #fff;
+	padding: 5px;
+}
 #birthday .label { font-weight: bold; }
 #dead { background-color: #333340; color: #fff; font-family: Brush Script Std, cursive; padding: 0.7em; text-align: center; margin: 0.5em auto; }
 #dead .rest-in-peace { display: block; font-size: 2em; font-family: Snell Roundhand, Brush Script MT, Brush Script Std, cursive; }
