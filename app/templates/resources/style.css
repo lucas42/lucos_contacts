@@ -40,6 +40,15 @@ text-align: center;
 margin: 1em;
 font-weight: bold; white-space: pre; }
 .phonenum { display: block; font-weight: bold; font-family: monospace; font-size: 2em; padding: 0.7em 0; text-align: center; text-decoration: none; }
+#bio {
+	border: #ccc solid 1px;
+}
+.content {
+	display: block;
+	margin: 9px;
+	white-space: pre-line;
+	font-size: 1.1em;
+}
 #relations {
 	border: solid 2px #500094;
 	border-radius: 8px 8px 0 0;
@@ -70,12 +79,6 @@ h2 { text-align: center; }
 	color: #ffe1ca;
 	padding: 5px;
 	cursor: pointer;
-}
-#giftideas .content {
-	display: block;
-	margin: 9px;
-	white-space: pre-line;
-	font-size: 1.1em;
 }
 #birthday .label { font-weight: bold; }
 #dead { background-color: #333340; color: #fff; font-family: Brush Script Std, cursive; padding: 0.7em; text-align: center; margin: 0.5em auto; }
