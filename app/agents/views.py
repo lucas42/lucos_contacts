@@ -1,6 +1,6 @@
 from agents.models import *
 from lucosauth.decorators import api_auth
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseBadRequest
 from django import utils
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -21,15 +21,15 @@ def agent(request, extid, method=None):
 		return redirect(request.user.agent)
 	if (extid == 'add'):
 		if (request.method == 'POST'):
-			newagent = Agent(name_en=request.POST.get('name_en', ""), name_ga=request.POST.get('name_ga', ""), name_gd=request.POST.get('name_gd', ""), name_cy=request.POST.get('name_cy', ""))
+			name = request.POST.get('name')
+			if not name:
+				return HttpResponseBadRequest("No name provided")
+			newagent = Agent()
 			newagent.save()
-			contactCreated(agent)
+			nameObject = AgentName(name=name, agent=newagent)
+			nameObject.save()
+			contactCreated(newagent)
 			return redirect(newagent)
-		else:
-			template = 'agent-add.html'
-			output = {}
-			output.update(csrf(request))
-			return render(None, 'agents/'+template, output)
 	try:
 		ext = ExternalAgent.objects.get(pk=extid)
 		agent = ext.agent
