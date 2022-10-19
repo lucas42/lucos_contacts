@@ -224,6 +224,10 @@ a.section:link, a.section:visited { color: #612B00; }
 .module a:hover { background: inherit; }
 .button, input[type=submit], input[type=button], .submit-row input, a.button { background: #E5B5D1; color: #010F00; }
 .button.default, input[type=submit].default, .submit-row input.default { background: #732352; color: #E5B5D1;}
+body {
+	/* This already gets included by lucos_navbar, but it's overridden by django's admin base.css, so make it !important */
+	padding-top: 30px !important;
+}
 
 /* Colour Palette guide */
 
