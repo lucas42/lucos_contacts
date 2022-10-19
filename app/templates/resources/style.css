@@ -75,18 +75,19 @@ a.account.email:hover {
 
 .account.facebook img {
 	float: left;
-	height: 50px;
-	margin-right: 10px;
+	height: 42px;
+	margin: 4px;
 }
 a.account.facebook {
-	border: outset #3b5998 4px;
+	border: solid #3b5998 3px;
 	color: #3b5998;
 	line-height: 50px;
-	background: #dfe3ee;
-	font-size: 20px;
+	background-color: #dfe3ee;
+	font-size: 22px;
 }
-a.account.facebook:active {
-	border-style: inset;
+a.account.facebook:hover {
+	background-color: #3b5998;
+	color: #dfe3ee;
 }
 
 #bio {
