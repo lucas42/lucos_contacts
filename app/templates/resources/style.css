@@ -1,4 +1,4 @@
-#bio, #notes, #giftideas, #birthday, #relations, .agentlist, .phonenum, .facebooklink a, #altnames {
+#bio, #notes, #giftideas, #birthday, #relations, .agentlist, .account, #altnames {
 	max-width: 428px;
 	margin: 10px auto;
 }
@@ -32,14 +32,63 @@ nav { display: block; overflow: hidden; background: #B9E7B7; color: #612B00; mar
 .navswitch a { display: inline; text-decoration: none; color: #B98E6C; }
 .navswitch a.current { font-weight: bold; color: #612B00; }
 .navswitch a:hover { text-decoration: underline; }
-a.phonenum { background: #E5B5D1; color: #120800; }
-a.phonenum:hover { background-color: #4D002D; color: #E5B5D1; }
-.agentlist .phonenum { display: block; font-family: monospace; padding: 0.3em 0; text-align: center; margin: 0; }
-.address { display: block;
-text-align: center;
-margin: 1em;
-font-weight: bold; white-space: pre; }
-.phonenum { display: block; font-weight: bold; font-family: monospace; font-size: 2em; padding: 0.7em 0; text-align: center; text-decoration: none; }
+.account {
+	display: block;
+	font-weight: bold;
+	text-align: center;
+	text-decoration: none;
+}
+.account.postal {
+	white-space: pre;
+}
+.account.phonenum {
+	font-family: monospace;
+	font-size: 2em;
+	padding: 0.7em 0;
+}
+a.account.phonenum {
+	background: #E5B5D1;
+	color: #120800;
+}
+a.account.phonenum:hover {
+	background-color: #4D002D;
+	color: #E5B5D1;
+}
+.agentlist .account.phonenum {
+	padding: 0.3em 0;
+	margin: 0;
+}
+.account.email {
+	font-family: monospace;
+	font-size: 2em;
+	padding: 0.7em 0;
+	overflow-x: auto;
+}
+a.account.email {
+	background: #baf8ff;
+	color: #120800;
+}
+a.account.email:hover {
+	background-color: #0e3e44;
+	color: #baf8ff;
+}
+
+.account.facebook img {
+	float: left;
+	height: 50px;
+	margin-right: 10px;
+}
+a.account.facebook {
+	border: outset #3b5998 4px;
+	color: #3b5998;
+	line-height: 50px;
+	background: #dfe3ee;
+	font-size: 20px;
+}
+a.account.facebook:active {
+	border-style: inset;
+}
+
 #bio {
 	border: #ccc solid 1px;
 }
@@ -63,10 +112,6 @@ font-weight: bold; white-space: pre; }
 }
 .relation { display: block;}
 h2 { text-align: center; }
-.facebooklink { }
-.facebooklink img { float: left; height: 50px; margin-right: 10px;}
-.facebooklink a { display: block; overflow: hidden; border: outset #3b5998 4px; text-decoration: inherit; color: #3b5998; font-weight: bold; line-height: 50px; text-align: center; background: #dfe3ee; font-size: 20px;}
-.facebooklink a:active { border-style: inset; }
 
 #giftideas {
 	border: solid #612b00;

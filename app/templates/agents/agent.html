@@ -28,13 +28,16 @@
 		{%endif%}
 		
 		{%for num in phone %}
-			<a class='phonenum' href="tel:{{num}}">{{num}}</a>
+			<a class='account phonenum' href="tel:{{num}}">{{num}}</a>
 		{%endfor%}
-                {%for address in formattedaddresses %}
-                        <span class='address'>{{address}}</span>
-                {%endfor%}
+		{%for address in email %}
+			<a class='account email' href="mailto:{{address.raw}}" target="_blank">{{ address.view }}</a>
+		{%endfor%}
+		{%for address in formattedaddresses %}
+			<span class='account postal'>{{address}}</span>
+		{%endfor%}
 		{%for userid in facebookaccounts %}
-			<span class='facebooklink'><a href="https://www.facebook.com/profile.php?id={{userid}}" target="_blank"><img src="https://graph.facebook.com/{{userid}}/picture" /> Facebook</a></span>
+			<a href="https://www.facebook.com/profile.php?id={{userid}}" target="_blank" class='account facebook'><img src="https://graph.facebook.com/{{userid}}/picture" /> Facebook</a>
 		{%endfor%}
 		{%if formattedBirthday %}
 			<div id="birthday">

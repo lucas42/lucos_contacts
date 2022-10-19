@@ -104,6 +104,9 @@ class Agent(models.Model):
 		for postaladdress in PostalAddress.objects.filter(agent=self, active=True):
 				rawaddresses.append(postaladdress.address)
 				formattedaddresses.append(postaladdress.address.replace(',', ',\n'))
+		emailaddresses = []
+		for email in EmailAddress.objects.filter(agent=self, active=True):
+				emailaddresses.append(email.address)
 		facebookaccounts = []
 		for facebookaccount in FacebookAccount.objects.filter(agent=self, active=True):
 				facebookaccounts.append(facebookaccount.userid)
@@ -121,6 +124,7 @@ class Agent(models.Model):
 			'name': self.getName(),
 			'altnames': altnames,
 			'phone': phonenums,
+			'email': emailaddresses,
 			'url': self.get_absolute_url(),
 			'addresses': rawaddresses,
 			'formattedaddresses': formattedaddresses,

@@ -68,6 +68,10 @@ def agent(request, extid, method=None):
 		return HttpResponse(content=str(agent.starred))
 	else:
 		template = 'agent.html'
+
+		# Puts a zero width space before the at sign in emails
+		# So that long email addresses get split across lines in a more sensible place
+		output['email'] = [{"view": email.replace("@","​@"), "raw": email} for email in output['email']]
 	return render(None, 'agents/'+template, output)
 	
 

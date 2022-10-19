@@ -6,14 +6,14 @@
 				<h3>{{ agent.name }}</h3>
 				<span class='relation'>{{agent.rel}}</span>
 			{% if list == "postal" %}
-                		{%for address in agent.formattedaddresses %}
-                        		<span class='address'>{{address}}</span>
-                		{%endfor%}
+				{%for address in agent.formattedaddresses %}
+					<span class='account postal'>{{address}}</span>
+				{%endfor%}
 			{% endif %}
 			{% if list == "phone" %}
-                		{%for num in agent.phone %}
-                        		<span class='phonenum'>{{num}}</span>
-                		{%endfor%}
+				{%for num in agent.phone %}
+					<span class='account phonenum'>{{num}}</span>
+				{%endfor%}
 			{% endif %}
 			</a></li>
 		{% endfor %}
