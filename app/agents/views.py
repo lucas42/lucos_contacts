@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.core.exceptions import MultipleObjectsReturned
+from django.db.models.functions import Lower
 import json, time, os
 from agents.loganne import contactCreated, contactUpdated, contactStarChanged
 
@@ -88,7 +89,7 @@ def agentindex(request, list):
 		agentlist = Agent.objects.all()
 	else:
 		agentlist = Agent.objects.filter(id=0)
-	for agent in agentlist.distinct().order_by('id'):
+	for agent in agentlist.distinct().order_by(Lower('_name')):
 		data = agent.getData(request.user.agent)
 
 		# Hide any agents who only have inactive postal addresses
