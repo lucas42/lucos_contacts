@@ -1,5 +1,5 @@
 from agents.models import *
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.shortcuts import redirect
 from agents.loganne import contactCreated, contactUpdated, contactDeleted
 
@@ -54,8 +54,7 @@ class AgentAdmin(admin.ModelAdmin):
 	def merge(self, request, queryset):
 		agents = queryset.order_by('id')
 		if (agents.count() < 2):
-			#messages.error(request, "Merging a single object is futile") # requires django 1.2
-			self.message_user(request, "Merging a single object is futile")
+			messages.error(request, "Merging a single object is futile")
 			return
 		mainagent = None
 		for agent in agents:
@@ -65,6 +64,14 @@ class AgentAdmin(admin.ModelAdmin):
 				Relationship.objects.filter(subject=agent).update(subject=mainagent)
 				Relationship.objects.filter(object=agent).update(object=mainagent)
 				ExternalAgent.objects.filter(agent=agent).update(agent=mainagent)
+				AgentName.objects.filter(agent=agent).update(agent=mainagent)
+				PhoneNumber.objects.filter(agent=agent).update(agent=mainagent)
+				EmailAddress.objects.filter(agent=agent).update(agent=mainagent)
+				PostalAddress.objects.filter(agent=agent).update(agent=mainagent)
+				FacebookAccount.objects.filter(agent=agent).update(agent=mainagent)
+				GoogleAccount.objects.filter(agent=agent).update(agent=mainagent)
+				GoogleContact.objects.filter(agent=agent).update(agent=mainagent)
+
 				agent.delete()
 	def delete_all_relationships(self, request, queryset):
 		agents = queryset.order_by('id')
