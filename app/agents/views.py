@@ -96,6 +96,9 @@ def agentindex(request, list):
 		# (the above filter only excludes agents with no postal addresses at all)
 		if (list == 'postal' and not data['addresses']):
 			continue
+		# Same for phone numbers
+		if (list == 'phone' and not data['phone']):
+			continue
 		agents.append(data)
 	return render(None, 'agents/index.html', {
 		'template': template,
