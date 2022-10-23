@@ -96,20 +96,17 @@ class Agent(models.Model):
 
 		phonenums = []
 		for num in PhoneNumber.objects.filter(agent=self, active=True):
-				phonenums.append(str(num.number)
-					.replace('+44','0') # Display UK numbers as local.  TODO: don't hardcode this
-				)
+			phonenums.append(str(num.number)
+				.replace('+44','0') # Display UK numbers as local.  TODO: don't hardcode this
+			)
 		rawaddresses = []
 		formattedaddresses = []
 		for postaladdress in PostalAddress.objects.filter(agent=self, active=True):
-				rawaddresses.append(postaladdress.address)
-				formattedaddresses.append(postaladdress.address.replace(',', ',\n'))
-		emailaddresses = []
-		for email in EmailAddress.objects.filter(agent=self, active=True):
-				emailaddresses.append(email.address)
-		facebookaccounts = []
-		for facebookaccount in FacebookAccount.objects.filter(agent=self, active=True):
-				facebookaccounts.append(facebookaccount.userid)
+			rawaddresses.append(postaladdress.address)
+			formattedaddresses.append(postaladdress.address.replace(',', ',\n'))
+		emailaddresses = [email.address for email in EmailAddress.objects.filter(agent=self, active=True)]
+		facebookaccounts = [facebookaccount.userid for facebookaccount in FacebookAccount.objects.filter(agent=self, active=True)]
+		googlecontacts = [googlecontact.contactid for googlecontact in GoogleContact.objects.filter(agent=self, active=True)]
 
 		altnames = []
 		for agentname in AgentName.objects.filter(agent=self, is_primary=False):
@@ -129,6 +126,7 @@ class Agent(models.Model):
 			'addresses': rawaddresses,
 			'formattedaddresses': formattedaddresses,
 			'facebookaccounts': facebookaccounts,
+			'googlecontacts': googlecontacts,
 			'editurl': reverse('admin:agents_agent_change', args=(self.id,)),
 			'bio': self.bio,
 			'notes': self.notes,

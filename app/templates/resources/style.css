@@ -90,6 +90,22 @@ a.account.facebook:hover {
 	color: #dfe3ee;
 }
 
+.account.googlecontact img {
+	float: left;
+	height: 42px;
+	margin: 4px;
+}
+a.account.googlecontact {
+	color: #9a4800;
+	line-height: 50px;
+	background-color: #fcfec6;
+	font-size: 22px;
+}
+a.account.googlecontact:hover {
+	background-color: #9a4800;
+	color: #fcfec6;
+}
+
 #bio {
 	border: #ccc solid 1px;
 }

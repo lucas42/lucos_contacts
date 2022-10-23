@@ -39,6 +39,9 @@
 		{%for userid in facebookaccounts %}
 			<a href="https://www.facebook.com/profile.php?id={{userid}}" target="_blank" class='account facebook'><img src="https://graph.facebook.com/{{userid}}/picture" /> Facebook</a>
 		{%endfor%}
+		{%for contactid in googlecontacts %}
+			<a href="https://contacts.google.com/person/{{contactid}}" target="_blank" class='account googlecontact'><img src="https://www.gstatic.com/images/branding/product/1x/contacts_48dp.png" />Google Contact</a>
+		{%endfor%}
 		{%if formattedBirthday %}
 			<div id="birthday">
 				<span class="label">Birthday:</span> {{formattedBirthday}}
