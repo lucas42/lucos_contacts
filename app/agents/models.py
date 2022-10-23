@@ -192,8 +192,9 @@ class BaseAccount(models.Model):
 	active = models.BooleanField(default=True)
 	class Meta:
 		abstract = True
-	@staticmethod
-	def getByParams(params):
+
+	@classmethod
+	def getTypeByKey(cls, typeKey):
 		accountTypes = {
 			"facebook": FacebookAccount,
 			"google": GoogleAccount,
@@ -204,12 +205,23 @@ class BaseAccount(models.Model):
 			# HACK:Technically not an account, but also has an `.agent` relationship, so works for now
 			"name": AgentName,
 		}
-		accountArgs = params.dict()
-		typeid = accountArgs.pop("type")
-		accountType = accountTypes.get(typeid)
+		accountType = accountTypes.get(typeKey)
 		if accountType is None:
-			raise ObjectDoesNotExist("Can't find account of type "+typeid)
-		return accountType.objects.get(**accountArgs)
+			raise ObjectDoesNotExist("Can't find account of type "+str(typeKey))
+		return accountType
+
+	# Could use a django manager for these, but that'd require overwriting the manager on each
+	@classmethod
+	def get(cls, **kwargs):
+		accountType = cls.getTypeByKey(kwargs.pop("type", None))
+		return accountType.objects.get(**kwargs)
+
+	@classmethod
+	def get_or_create(cls, **kwargs):
+		accountType = cls.getTypeByKey(kwargs.pop("type", None))
+		return accountType.objects.get_or_create(**kwargs)
+
+
 
 class PhoneNumber(BaseAccount):
 	number = PhoneNumberField(blank=False)

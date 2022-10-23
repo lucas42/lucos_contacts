@@ -42,23 +42,19 @@ def agent(request, extid, method=None):
 	if (method == 'accounts'):
 		if (request.method == 'POST'):
 			accountlist = json.loads(request.body)
+			agentModified = False
 			for accountData in accountlist:
-				accountTypes = {
-					"facebook": FacebookAccount,
-					"google": GoogleAccount,
-					"phone": PhoneNumber,
-					"email": EmailAddress,
-					"googlecontact": GoogleContact,
-				}
-				typeid = accountData.pop("type")
-				accountType = accountTypes.get(typeid)
-				if accountType is None:
-					return HttpResponse(status=404, content="Unknown account type \""+typeid+"\"\n")
 				try:
-					account = accountType.objects.get(agent=agent, **accountData)
-				except ObjectDoesNotExist:
-					account = accountType(agent=agent, **accountData)
-				account.save()
+					(_, created) = BaseAccount.get_or_create(agent=agent, **accountData)
+					if created:
+						agentModified = True
+				except ObjectDoesNotExist as e:
+					return HttpResponse(status=400, content=str(e)+"\n")
+				# Treat Multiple Account Objects like one already existed
+				except MultipleObjectsReturned as e:
+					continue
+			if agentModified:
+				contactUpdated(agent)
 		return HttpResponse(status=204)
 	elif (method == 'starred'):
 		if (request.method == 'PUT'):
@@ -109,7 +105,7 @@ def agentindex(request, list):
 
 def identify(request):
 	try:
-		account = BaseAccount.getByParams(request.GET)
+		account = BaseAccount.get(**request.GET.dict())
 	except ObjectDoesNotExist as e:
 		return HttpResponse(status=404, content=str(e)+"\n")
 	except MultipleObjectsReturned as e:
