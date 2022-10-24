@@ -8,6 +8,7 @@ services:
     image: lucas42/lucos_contacts_web
     volumes:
       - "staticfiles:/usr/share/nginx/html/resources"
+    restart: always
     depends_on:
       - app
   app:
@@ -19,6 +20,7 @@ services:
       - PRODUCTION
     volumes:
       - "staticfiles:/usr/src/app/static"
+    restart: always
     depends_on:
       - db
   db:
@@ -27,6 +29,7 @@ services:
       - db_data:/var/lib/postgresql/data/
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
+    restart: always
 volumes:
   staticfiles:
   db_data:
