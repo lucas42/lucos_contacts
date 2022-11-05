@@ -23,7 +23,7 @@ Requires [pipenv](https://pipenv.kennethreitz.org/en/latest/).  Run the followin
 
 * `cd app`
 * `pipenv install`
-* `CI=true SECRET_KEY=test pipenv run python manage.py test`
+* `CI=true SECRET_KEY=test pipenv run python manage.py test agents.tests comms.tests lucosauth.tests`
 
 The tests also get run in circleCI - test failures there block deployment.
 

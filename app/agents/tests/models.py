@@ -1,14 +1,8 @@
 # -*- coding: utf-8 -*-
-"""
-This file demonstrates two different styles of tests (one doctest and one
-unittest). These will both pass when you run "manage.py test".
-
-Replace these with more appropriate tests for your application.
-"""
 
 from django.test import TestCase
-from agents.models import *
-from agents.relationshipTypes import *
+from agents.models import Agent, Relationship
+from agents.models.relationshipTypes import Parent, Child, Sibling
 
 def get_agents_by_relType(subject, relType):
 	return [rel.object for rel in Relationship.objects.filter(subject=subject, relationshipType=relType)]
