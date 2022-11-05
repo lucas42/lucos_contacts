@@ -3,7 +3,6 @@ from django.db import models
 from django.utils import translation
 from django.core.exceptions import ObjectDoesNotExist
 from agents.relationshipTypes import RELATIONSHIP_TYPE_CHOICES, getRelationshipTypeByKey
-from django.urls import reverse
 from phonenumber_field.modelfields import PhoneNumberField
 import datetime
 
@@ -25,36 +24,6 @@ def monthChoices():
 		choices.append((month, datetime.date(1970, month, 1).strftime('%B')))
 	return choices
 
-
-# Formats a date given the year, month of day - any selection of which may be missing
-def formatDate(year, month, day):
-	monthname = None
-	if month:
-		monthname = datetime.date(1970, month, 1).strftime('%B')
-	if (day and month and year):
-		return str(day)+"/"+str(month)+"/"+str(year)
-	elif (monthname and year):
-		return str(monthname)+" "+str(year)
-	elif (year):
-		return str(year)
-	elif (day and month):
-		return str(day)+"/"+str(month)
-	elif (monthname):
-		return "Sometime in "+str(monthname)
-	elif (day):
-		return str(day)+" of something"
-	else:
-		return None
-
-# Returns a string which can be used in a .sort() function given a year, month and day
-def sortableDate(year, month, day):
-	if (year is None):
-		year = 9999
-	if (month is None):
-		month = 13
-	if (day is None):
-		day = 32
-	return str(year).zfill(4)+'-'+str(month).zfill(2)+'-'+str(day).zfill(2)
 
 class Agent(models.Model):
 	_name = models.CharField(max_length=255, blank=True, editable=False) #denormalised field - automatically updated by AgentName when is_primary
@@ -92,70 +61,6 @@ class Agent(models.Model):
 	def get_absolute_url(self):
 		return "/agents/%i" % self.id
 
-	def getData(self, currentagent=None, extended=False):
-
-		phonenums = []
-		for num in PhoneNumber.objects.filter(agent=self, active=True):
-			phonenums.append(str(num.number)
-				.replace('+44','0') # Display UK numbers as local.  TODO: don't hardcode this
-			)
-		rawaddresses = []
-		formattedaddresses = []
-		for postaladdress in PostalAddress.objects.filter(agent=self, active=True):
-			rawaddresses.append(postaladdress.address)
-			formattedaddresses.append(postaladdress.address.replace(',', ',\n'))
-		emailaddresses = [email.address for email in EmailAddress.objects.filter(agent=self, active=True)]
-		facebookaccounts = [facebookaccount.userid for facebookaccount in FacebookAccount.objects.filter(agent=self, active=True)]
-		googlecontacts = [googlecontact.contactid for googlecontact in GoogleContact.objects.filter(agent=self, active=True)]
-
-		altnames = []
-		for agentname in AgentName.objects.filter(agent=self, is_primary=False):
-			altnames.append(agentname.name)
-
-		formattedBirthday = formatDate(self.year_of_birth, self.month_of_birth, self.day_of_birth)
-		sortableBirthday = sortableDate(self.year_of_birth, self.month_of_birth, self.day_of_birth)
-		formattedDeathDate = formatDate(self.year_of_death, self.month_of_death, self.day_of_death)
-
-		agentdataobj = {
-			'id': self.id,
-			'name': self.getName(),
-			'altnames': altnames,
-			'phone': phonenums,
-			'email': emailaddresses,
-			'url': self.get_absolute_url(),
-			'addresses': rawaddresses,
-			'formattedaddresses': formattedaddresses,
-			'facebookaccounts': facebookaccounts,
-			'googlecontacts': googlecontacts,
-			'editurl': reverse('admin:agents_agent_change', args=(self.id,)),
-			'bio': self.bio,
-			'notes': self.notes,
-			'giftideas': self.gift_ideas,
-			'formattedBirthday': formattedBirthday,
-			'sortableBirthday': sortableBirthday,
-			'formattedDeathDate': formattedDeathDate,
-			'isDead': self.is_dead,
-			'starred': self.starred,
-		}
-
-		if extended:
-			agentdataobj['relations'] = []
-			for relation in Relationship.objects.filter(subject=self):
-				agentdataobj['relations'].append(relation.object.getData(currentagent=self, extended=False))
-			agentdataobj['relations'].sort(key=lambda data: (data['sortableRel'], data['sortableBirthday']))
-
-		if currentagent:
-			agentdataobj['sortableRel'] = -1
-			if (self == currentagent):
-				agentdataobj['rel'] = 'me'
-			else:
-				combinedrels = ''
-				for rel in Relationship.objects.filter(object=self.id, subject=currentagent.id):
-					combinedrels += rel.get_relationshipType_display() + "/"
-					agentdataobj['sortableRel'] = rel.getPriority()
-				agentdataobj['rel'] = combinedrels.strip('/')
-
-		return agentdataobj
 	
 class ExternalAgent(models.Model):
 	agent = models.ForeignKey(Agent, blank=False, on_delete=models.CASCADE)

@@ -1,4 +1,5 @@
 import requests
+from agents.serialize import serializeAgent
 
 def loganneRequest(data):
 	data["source"] = "lucos_contacts"
@@ -10,7 +11,7 @@ def agentAction(agent, action):
 	loganneRequest({
 		"type": "contact"+action.title(),
 		"humanReadable": "Contact \""+agent.getName()+"\" "+action,
-		"agent": agent.getData(),
+		"agent": serializeAgent(agent=agent),
 	})
 
 def contactUpdated(agent):

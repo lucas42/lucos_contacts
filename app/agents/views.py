@@ -10,6 +10,7 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.db.models.functions import Lower
 import json, time, os
 from agents.loganne import contactCreated, contactUpdated, contactStarChanged
+from agents.serialize import serializeAgent
 
 @csrf_exempt
 @api_auth
@@ -39,7 +40,7 @@ def agent(request, extid, method=None):
 	if (agent.id != ext.id):
 		return redirect(agent)
 	
-	output = agent.getData(request.user.agent, True)
+	output = serializeAgent(agent=agent, currentagent=request.user.agent, extended=True)
 	if (method == 'accounts'):
 		if (request.method == 'POST'):
 			accountlist = json.loads(request.body)
@@ -90,7 +91,7 @@ def agentindex(request, list):
 	else:
 		agentlist = Agent.objects.filter(id=0)
 	for agent in agentlist.distinct().order_by(Lower('_name')):
-		data = agent.getData(request.user.agent)
+		data = serializeAgent(agent=agent, currentagent=request.user.agent)
 
 		# Hide any agents who only have inactive postal addresses
 		# (the above filter only excludes agents with no postal addresses at all)
