@@ -132,12 +132,12 @@ class AgentImporterTest(TestCase):
 
 	def test_updating_field_on_existing_account(self):
 		mark = Agent.objects.create()
-		FacebookAccount.objects.create(agent=mark, userid="1234", username="old-name") # Phone number reserved by Ofcom for TV & Radio dramas
+		FacebookAccount.objects.create(agent=mark, userid=1234, username="old-name") # Phone number reserved by Ofcom for TV & Radio dramas
 
 		output = importAgent({
 				'identifiers': [{
 					'type': 'facebook',
-					'userid': '1234',
+					'userid': 1234,
 					'username': 'new-name',
 				}],
 			})
@@ -145,3 +145,18 @@ class AgentImporterTest(TestCase):
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], True)
 		self.assertEqual(FacebookAccount.objects.get(agent=mark, userid='1234').username, 'new-name')
+
+	def test_matching_int_vs_str(self):
+		mark = Agent.objects.create()
+		FacebookAccount.objects.create(agent=mark, userid=1234, username="mark") # Phone number reserved by Ofcom for TV & Radio dramas
+
+		output = importAgent({
+				'identifiers': [{
+					'type': 'facebook',
+					'userid': '1234',
+					'username': 'mark',
+				}],
+			})
+		self.assertEqual(output["id"], mark.id)
+		self.assertEqual(output["existing"], True)
+		self.assertEqual(output["updated"], False)

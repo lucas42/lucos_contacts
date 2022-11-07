@@ -61,7 +61,13 @@ def get_update_fields(identifier):
 	update_fields = {}
 	for field in accountType._meta.get_fields():
 		if field.name in identifier:
-			update_fields[field.name] = identifier[field.name]
+
+			# HACK: Script was getting confused by userids being passed in as strings, but compared to integers
+			# Consider migrating userid field to CharField like everything else
+			if field.get_internal_type() == 'PositiveBigIntegerField':
+				update_fields[field.name] = int(identifier[field.name])
+			else:
+				update_fields[field.name] = identifier[field.name]
 	return update_fields
 
 ## Given a list of identifier dicts, attempts to ascertain which agent is referred to
