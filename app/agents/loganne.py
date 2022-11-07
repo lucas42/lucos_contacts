@@ -1,8 +1,11 @@
 import requests
+from os import environ
 from agents.serialize import serializeAgent
 
 def loganneRequest(data):
 	data["source"] = "lucos_contacts"
+	if not environ.get("PRODUCTION"):
+		return
 	loganne_reponse = requests.post('https://loganne.l42.eu/events', json=data);
 	if loganne_reponse.status_code != 202:
 		print ("Error from Loganne: " + loganne_reponse.text)
