@@ -50,7 +50,7 @@ def get_identification_fields(identifier):
 	accountType = BaseAccount.getTypeByKey(identifier["type"])
 	identification_fields = {}
 	for field in accountType._meta.get_fields():
-		if field.name is not "agent" and not field.blank and field.default is NOT_PROVIDED:
+		if field.name != "agent" and not field.blank and field.default is NOT_PROVIDED:
 			identification_fields[field.name] = identifier[field.name]
 	return identification_fields
 

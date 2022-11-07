@@ -1,16 +1,18 @@
 from agents.models import *
 from lucosauth.decorators import api_auth
-from django.http import HttpResponse, Http404, HttpResponseBadRequest
+from django.http import HttpResponse, Http404, HttpResponseBadRequest, JsonResponse
 from django import utils
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models.functions import Lower
 import json, time, os
 from agents.loganne import contactCreated, contactUpdated, contactStarChanged
 from agents.serialize import serializeAgent
+from agents.importer import importAgent
 
 @csrf_exempt
 @api_auth
@@ -72,6 +74,15 @@ def agent(request, extid, method=None):
 		output['email'] = [{"view": email.replace("@","​@"), "raw": email} for email in output['email']]
 	return render(None, 'agents/'+template, output)
 	
+
+@csrf_exempt
+@api_auth
+@login_required
+@require_http_methods(["POST"])
+def importer(request):
+	data = json.loads(request.body)
+	output = importAgent(data)
+	return JsonResponse(output)
 
 @login_required
 def agentindex(request, list):
