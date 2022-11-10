@@ -26,6 +26,7 @@ class BaseAccount(models.Model):
 			"phone": PhoneNumber,
 			"email": EmailAddress,
 			"googlecontact": GoogleContact,
+			"googlephotos": GooglePhotosProfile,
 
 			# HACK:Technically not an account, but also has an `.agent` relationship, so works for now
 			"name": AgentName,
@@ -96,4 +97,15 @@ class GoogleContact(BaseAccount):
 		if getCurrentLang() == 'ga':
 			return u'Teagmháil Google '+self.agent.getName()
 		return self.agent.getName()+"'s Google Contact"
+
+# A Person Tagged in Google Photos
+class GooglePhotosProfile(BaseAccount):
+	person_id = models.PositiveBigIntegerField(blank=False)
+	cluster_media_key = models.CharField(max_length=255, blank=True)
+	search_path = models.CharField(max_length=255, blank=True)
+	profile_pic_url = models.CharField(max_length=1023, blank=True)
+	def __str__(self):
+		if getCurrentLang() == 'ga':
+			return f"Grianghraif clibáilte le {self.agent.getName()}"
+		return f"Photos tagged with {self.agent.getName()}"
 

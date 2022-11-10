@@ -38,6 +38,11 @@ nav { display: block; overflow: hidden; background: #B9E7B7; color: #612B00; mar
 	text-align: center;
 	text-decoration: none;
 }
+.account img {
+	float: left;
+	height: 42px;
+	margin: 4px;
+}
 .account.postal {
 	white-space: pre;
 }
@@ -73,11 +78,6 @@ a.account.email:hover {
 	color: #baf8ff;
 }
 
-.account.facebook img {
-	float: left;
-	height: 42px;
-	margin: 4px;
-}
 a.account.facebook {
 	border: solid #3b5998 3px;
 	color: #3b5998;
@@ -90,11 +90,6 @@ a.account.facebook:hover {
 	color: #dfe3ee;
 }
 
-.account.googlecontact img {
-	float: left;
-	height: 42px;
-	margin: 4px;
-}
 a.account.googlecontact {
 	color: #9a4800;
 	line-height: 50px;
@@ -104,6 +99,19 @@ a.account.googlecontact {
 a.account.googlecontact:hover {
 	background-color: #9a4800;
 	color: #fcfec6;
+}
+
+a.account.googlephotoprofile {
+	color: #333;
+	line-height: 50px;
+	background-color: #fff;
+	font-size: 22px;
+	border: 1px solid #333;
+	border-radius: 3px;
+}
+a.account.googlephotoprofile:hover {
+	background-color: #333;
+	color: #fff;
 }
 
 #bio {

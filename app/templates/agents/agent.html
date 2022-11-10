@@ -42,6 +42,9 @@
 		{%for contactid in googlecontacts %}
 			<a href="https://contacts.google.com/person/{{contactid}}" target="_blank" class='account googlecontact'><img src="https://www.gstatic.com/images/branding/product/1x/contacts_48dp.png" />Google Contact</a>
 		{%endfor%}
+		{%for search_path in googlephotoprofiles %}
+			<a href="https://photos.google.com{{search_path}}" target="_blank" class='account googlephotoprofile'><img src="https://ssl.gstatic.com/social/photosui/images/logo/1x/photos_512dp.png" />Photos</a>
+		{%endfor%}
 		{%if formattedBirthday %}
 			<div id="birthday">
 				<span class="label">Birthday:</span> {{formattedBirthday}}

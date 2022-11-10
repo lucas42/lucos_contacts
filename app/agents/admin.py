@@ -33,6 +33,9 @@ class GoogleAccountInline(AccountInline):
 class GoogleContactInline(AccountInline):
 	model = GoogleContact
 
+class GooglePhotosProfileInline(AccountInline):
+	model = GooglePhotosProfile
+
 class RelationshipInline(admin.TabularInline):
 	model = Relationship
 	fk_name = 'subject'
@@ -48,6 +51,7 @@ class AgentAdmin(admin.ModelAdmin):
 		FacebookAccountInline,
 		GoogleAccountInline,
 		GoogleContactInline,
+		GooglePhotosProfileInline,
 		RelationshipInline
 	]
 	list_max_show_all = 1000
@@ -71,6 +75,7 @@ class AgentAdmin(admin.ModelAdmin):
 				FacebookAccount.objects.filter(agent=agent).update(agent=mainagent)
 				GoogleAccount.objects.filter(agent=agent).update(agent=mainagent)
 				GoogleContact.objects.filter(agent=agent).update(agent=mainagent)
+				GooglePhotosProfile.objects.filter(agent=agent).update(agent=mainagent)
 
 				agent.delete()
 	def delete_all_relationships(self, request, queryset):

@@ -48,6 +48,7 @@ def serializeAgent(agent, currentagent=None, extended=False):
 	emailaddresses = [email.address for email in EmailAddress.objects.filter(agent=agent, active=True)]
 	facebookaccounts = [facebookaccount.userid for facebookaccount in FacebookAccount.objects.filter(agent=agent, active=True)]
 	googlecontacts = [googlecontact.contactid for googlecontact in GoogleContact.objects.filter(agent=agent, active=True)]
+	googlephotoprofiles = [profile.search_path for profile in GooglePhotosProfile.objects.filter(agent=agent, active=True)]
 
 	altnames = []
 	for agentname in AgentName.objects.filter(agent=agent, is_primary=False):
@@ -68,6 +69,7 @@ def serializeAgent(agent, currentagent=None, extended=False):
 		'formattedaddresses': formattedaddresses,
 		'facebookaccounts': facebookaccounts,
 		'googlecontacts': googlecontacts,
+		'googlephotoprofiles': googlephotoprofiles,
 		'editurl': reverse('admin:agents_agent_change', args=(agent.id,)),
 		'bio': agent.bio,
 		'notes': agent.notes,
