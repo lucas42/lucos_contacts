@@ -103,7 +103,6 @@ class GooglePhotosProfile(BaseAccount):
 	person_id = models.PositiveBigIntegerField(blank=False)
 	cluster_media_key = models.CharField(max_length=255, blank=True)
 	search_path = models.CharField(max_length=255, blank=True)
-	profile_pic_url = models.CharField(max_length=1023, blank=True)
 	def __str__(self):
 		if getCurrentLang() == 'ga':
 			return f"Grianghraif clibáilte le {self.agent.getName()}"
