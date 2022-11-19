@@ -22,6 +22,7 @@ class AgentImporterTest(TestCase):
 		import_bad_data({'identifiers': [{'type':'not-a-thing'}]}, "Unknown identifier type 'not-a-thing'")
 		import_bad_data({'identifiers': [{'type': ["phone"]}]}, "Unknown identifier type '['phone']'")
 		import_bad_data({'identifiers': [{'type': 'name', 'number': '01234'}]}, "Unknown field 'number'")
+		import_bad_data({'identifiers': [{'type':'name','name':'Fred'}],'date_of_birth':"1/1/1970"}, "'date_of_birth' isn't an object")
 
 	def test_matches_phone_number(self):
 		bob = Agent.objects.create()
@@ -160,3 +161,139 @@ class AgentImporterTest(TestCase):
 		self.assertEqual(output["id"], mark.id)
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], False)
+
+	def test_add_new_dob(self):
+		arjun = Agent.objects.create()
+		AgentName.objects.create(agent=arjun, name="Arjun")
+
+		output = importAgent({
+				'identifiers': [{
+					'type': 'name',
+					'name': 'Arjun',
+				}],
+				'date_of_birth': {
+					'day': 13,
+					'month': 7,
+					'year': 1970,
+				}
+			})
+		self.assertEqual(output["id"], arjun.id)
+		self.assertEqual(output["existing"], True)
+		self.assertEqual(output["updated"], True)
+		actual = Agent.objects.get(id=arjun.id)
+		self.assertEqual(actual.day_of_birth, 13)
+		self.assertEqual(actual.month_of_birth, 7)
+		self.assertEqual(actual.year_of_birth, 1970)
+
+	def test_add_new_dob(self):
+		arjun = Agent.objects.create()
+		AgentName.objects.create(agent=arjun, name="Arjun")
+
+		output = importAgent({
+				'identifiers': [{
+					'type': 'name',
+					'name': 'Arjun',
+				}],
+				'date_of_birth': {
+					'day': 13,
+					'month': 7,
+					'year': 1970,
+				}
+			})
+		self.assertEqual(output["id"], arjun.id)
+		self.assertEqual(output["existing"], True)
+		self.assertEqual(output["updated"], True)
+		actual = Agent.objects.get(id=arjun.id)
+		self.assertEqual(actual.day_of_birth, 13)
+		self.assertEqual(actual.month_of_birth, 7)
+		self.assertEqual(actual.year_of_birth, 1970)
+
+	def test_add_incomplete_dob(self):
+		arjun = Agent.objects.create()
+		AgentName.objects.create(agent=arjun, name="Arjun")
+
+		output = importAgent({
+				'identifiers': [{
+					'type': 'name',
+					'name': 'Arjun',
+				}],
+				'date_of_birth': {
+					'year': 1970,
+				}
+			})
+		self.assertEqual(output["id"], arjun.id)
+		self.assertEqual(output["existing"], True)
+		self.assertEqual(output["updated"], True)
+		actual = Agent.objects.get(id=arjun.id)
+		self.assertEqual(actual.day_of_birth, None)
+		self.assertEqual(actual.month_of_birth, None)
+		self.assertEqual(actual.year_of_birth, 1970)
+
+	def test_existing_dob_no_change(self):
+		arjun = Agent.objects.create(day_of_birth=13, month_of_birth=7, year_of_birth=1970)
+		AgentName.objects.create(agent=arjun, name="Arjun")
+
+		output = importAgent({
+				'identifiers': [{
+					'type': 'name',
+					'name': 'Arjun',
+				}],
+				'date_of_birth': {
+					'day': 13,
+					'month': 7,
+					'year': 1970,
+				}
+			})
+		self.assertEqual(output["id"], arjun.id)
+		self.assertEqual(output["existing"], True)
+		self.assertEqual(output["updated"], False)
+		actual = Agent.objects.get(id=arjun.id)
+		self.assertEqual(actual.day_of_birth, 13)
+		self.assertEqual(actual.month_of_birth, 7)
+		self.assertEqual(actual.year_of_birth, 1970)
+
+	def test_update_partial_dob(self):
+		arjun = Agent.objects.create(day_of_birth=13, month_of_birth=7)
+		AgentName.objects.create(agent=arjun, name="Arjun")
+
+		output = importAgent({
+				'identifiers': [{
+					'type': 'name',
+					'name': 'Arjun',
+				}],
+				'date_of_birth': {
+					'year': 1970,
+					'month': None,
+				}
+			})
+		self.assertEqual(output["id"], arjun.id)
+		self.assertEqual(output["existing"], True)
+		self.assertEqual(output["updated"], True)
+		actual = Agent.objects.get(id=arjun.id)
+		self.assertEqual(actual.day_of_birth, 13)
+		self.assertEqual(actual.month_of_birth, 7)
+		self.assertEqual(actual.year_of_birth, 1970)
+
+	def test_conflict_dob(self):
+		arjun = Agent.objects.create(day_of_birth=13, month_of_birth=7, year_of_birth=1970)
+		AgentName.objects.create(agent=arjun, name="Arjun")
+
+		output = importAgent({
+				'identifiers': [{
+					'type': 'name',
+					'name': 'Arjun',
+				}],
+				'date_of_birth': {
+					'day': 1,
+					'month': 1,
+					'year': 2000,
+				}
+			})
+		self.assertEqual(output["id"], arjun.id)
+		self.assertEqual(output["existing"], True)
+		self.assertEqual(output["updated"], False)
+		self.assertEqual(output["warning"], "Inconsistent Date of Birth")
+		actual = Agent.objects.get(id=arjun.id)
+		self.assertEqual(actual.day_of_birth, 13)
+		self.assertEqual(actual.month_of_birth, 7)
+		self.assertEqual(actual.year_of_birth, 1970)

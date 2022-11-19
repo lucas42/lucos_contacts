@@ -7,13 +7,19 @@ from agents.loganne import contactUpdated, contactCreated
 ## Imports data regarding a particular individual
 def importAgent(data):
 	validate(data)
-	output = {}
+	output = {'updated': False}
 	agent = identify(data['identifiers'])
 	output['existing'] = bool(agent)
 	if not agent:
 		agent = Agent.objects.create()
 	output['id'] = agent.id
-	output['updated'] = update(agent, data['identifiers'])
+	if updateIdentifiers(agent, data['identifiers']):
+		output['updated'] = True
+	try:
+		if 'date_of_birth' in data and updateDOB(agent, data['date_of_birth']):
+			output['updated'] = True
+	except(ConflictError):
+		output['warning'] = "Inconsistent Date of Birth"
 
 	# Only call loganne once per agent, regardless of how many creations/updates there were
 	# TODO: work out how to check calls to loganne in unit tests
@@ -43,6 +49,8 @@ def validate(data):
 				continue
 			if field not in validFields:
 				raise BadRequest(f"Unknown field '{field}'")
+	if 'date_of_birth' in data and not isinstance(data['date_of_birth'], dict):
+		raise BadRequest(f"'date_of_birth' isn't an object")
 
 ## Gets the fields which are used when comparing for identify
 ## Returns a dict of key/value pairs
@@ -85,7 +93,7 @@ def identify(identifiers):
 
 ## Updates a given agent with a list of identifiers
 ## Returns a boolean of whether any changes were made
-def update(agent, identifiers):
+def updateIdentifiers(agent, identifiers):
 	updated = False
 	for identifier in identifiers:
 		accountType = BaseAccount.getTypeByKey(identifier["type"])
@@ -103,4 +111,28 @@ def update(agent, identifiers):
 		except MultipleObjectsReturned:
 			# Ideally one agent shouldn't have two identical accounts, but not much can be done about it at this point
 			continue
+	return updated
+
+class ConflictError(Exception):
+	pass
+
+def updateDOB(agent, dobParts):
+	if 'day' in dobParts and dobParts['day'] is not None and agent.day_of_birth is not None and dobParts['day'] != agent.day_of_birth:
+		raise ConflictError("day doesn't match")
+	if 'month' in dobParts and dobParts['month'] is not None and agent.month_of_birth is not None and dobParts['month'] != agent.month_of_birth:
+		raise ConflictError("month doesn't match")
+	if 'year' in dobParts and dobParts['year'] is not None and agent.year_of_birth is not None and dobParts['year'] != agent.year_of_birth:
+		raise ConflictError("year doesn't match")
+	updated = False
+	if 'day' in dobParts and dobParts['day'] is not None and agent.day_of_birth is None:
+		agent.day_of_birth = dobParts['day']
+		updated = True
+	if 'month' in dobParts and dobParts['month'] is not None and agent.month_of_birth is None:
+		agent.month_of_birth = dobParts['month']
+		updated = True
+	if 'year' in dobParts and dobParts['year'] is not None and agent.year_of_birth is None:
+		agent.year_of_birth = dobParts['year']
+		updated = True
+	if updated:
+		agent.save()
 	return updated
