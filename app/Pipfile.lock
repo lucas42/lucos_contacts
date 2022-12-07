@@ -53,11 +53,11 @@
                 "phonenumbers"
             ],
             "hashes": [
-                "sha256:dab78094e83f4b1276effca9903e6728e940d055b00cc8589ad5b8a22cb6a03b",
-                "sha256:f1aaee276b18a8f0bf503d52eda183965ca164a6379c1e70f73718bcc8a91345"
+                "sha256:969bbcab203d697ea44c38726bdc7d72ac9f1ba397694b9f57422b471ad73590",
+                "sha256:9e2b302f239e4703fa9030e44833db5eb524a731335fd77b0b703bd352fbe8d0"
             ],
             "index": "pypi",
-            "version": "==7.0.0"
+            "version": "==7.0.1"
         },
         "gunicorn": {
             "hashes": [
@@ -80,7 +80,6 @@
                 "sha256:07a95c2f178687fd1c3f722cf792b3d33e3a225ae71577e500c99b28544cd6d0",
                 "sha256:7cadfe900e833857500b7bafa3e5a7eddc3263eb66b66a767870b33e44665f92"
             ],
-            "index": "pypi",
             "version": "==8.13.1"
         },
         "pytz": {
