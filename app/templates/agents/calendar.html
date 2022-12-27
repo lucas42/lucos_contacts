@@ -1,0 +1,7 @@
+
+<ul>
+	{%for date in dates %}
+		<li>{{date.day}} / {{date.month}} : <a href="{{date.link}}">{{ date.label }}</a></li>
+	{% endfor %}
+
+</ul>
