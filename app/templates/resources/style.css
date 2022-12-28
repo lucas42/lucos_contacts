@@ -263,7 +263,7 @@ h2 { text-align: center; }
 	text-decoration: none;
 	color: inherit;
 }
-#calendar a:hove {
+#calendar a:hover {
 	text-decoration: underline;
 }
 
