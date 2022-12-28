@@ -21,6 +21,8 @@ TIME_ZONE = 'Europe/London'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'ga-gb'
 
+LOCALE_PATHS = (os.path.join(PROJECT_PATH, "locale"),)
+
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
@@ -47,9 +49,10 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(PROJECT_PATH, "static")
 
 MIDDLEWARE = (
-	'django.middleware.csrf.CsrfViewMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
