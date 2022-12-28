@@ -1,8 +1,8 @@
 {% load humanize %}
-<table>
+<table id='calendar'>
 {% for event in events %}
 	{% ifchanged event.date.month %}
-	<tr class='monthheader'><td>{{ event.date | date:"F 'y" }}</td></tr>
+	<tr class='monthheader'><td colspan="2">{{ event.date | date:"F 'y" }}</td></tr>
 	{% endifchanged %}
 	<tr>
 		<td>

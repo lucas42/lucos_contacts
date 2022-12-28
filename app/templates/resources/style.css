@@ -238,6 +238,35 @@ h2 { text-align: center; }
   }
 }
 
+/* Calendar */
+#calendar {
+	margin: auto;
+	border: solid thin #559;
+	border-collapse: collapse;
+}
+#calendar td {
+	padding: 5px;
+}
+#calendar .monthheader {
+	background: #559;
+	color: #fff;
+	text-align: center;
+	font-weight: bold;
+}
+#calendar .monthheader td {
+	padding: 2px;
+}
+#calendar td:first-child {
+	font-weight: bold;
+}
+#calendar a {
+	text-decoration: none;
+	color: inherit;
+}
+#calendar a:hove {
+	text-decoration: underline;
+}
+
 /* Admin site */
 div.breadcrumbs { background: none; color: #612B00; float: left; padding: 5px; border: none; font-size: 14px; text-align: left; margin: 5px; }
 div.breadcrumbs a { color: #B98E6C; }
