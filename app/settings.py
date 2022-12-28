@@ -85,6 +85,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.messages',
+    'django.contrib.humanize',
 )
 
 SECRET_KEY = os.environ["SECRET_KEY"]
