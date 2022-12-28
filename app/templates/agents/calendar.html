@@ -1,7 +1,7 @@
 
 <ul>
-	{%for date in dates %}
-		<li>{{date.day}} / {{date.month}} : <a href="{{date.link}}">{{ date.label }}</a></li>
+	{%for event in events %}
+		<li>{{event.date.day}} / {{event.date.month}} : <a href="{{event.link}}">{{ event.label }}</a></li>
 	{% endfor %}
 
 </ul>

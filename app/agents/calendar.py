@@ -9,24 +9,19 @@ def getBirthdays():
 	agentlist = Agent.objects.filter(starred=True).exclude(day_of_birth__isnull=True).exclude(month_of_birth__isnull=True)
 	birthdays = []
 	for agent in agentlist.distinct():
+		date = nextOccurence(agent.day_of_birth, agent.month_of_birth)
 		if agent.year_of_birth:
-			currentYear = date.today().year
-			age = currentYear - agent.year_of_birth
-			if nextYear(agent.day_of_birth, agent.month_of_birth):
-				age += 1
+			age = date.year - agent.year_of_birth
 			label = _('%(name)s\'s %(count)s Birthday') % {
 				'name': agent.getName(),
 				'count': ordinal(age)
 			}
 		else:
-			label = _(
-				'%(name)s\'s Birthday'
-			) % {
+			label = _('%(name)s\'s Birthday') % {
 				'name': agent.getName()
 			}
 		birthdays.append({
-			'day': agent.day_of_birth,
-			'month': agent.month_of_birth,
+			'date': date,
 			'label': label,
 			'agent': agent,
 			'link': agent.get_absolute_url(),
@@ -37,25 +32,25 @@ def getDeathdays():
 	agentlist = Agent.objects.filter(starred=True).exclude(day_of_death__isnull=True).exclude(month_of_death__isnull=True)
 	deathdays = []
 	for agent in agentlist.distinct():
+		date = nextOccurence(agent.day_of_death, agent.month_of_death)
 		label = _('%(name)s\'s Deathday') % {'name': agent.getName()}
 		deathdays.append({
-			'day': agent.day_of_death,
-			'month': agent.month_of_death,
+			'date': date,
 			'label': label,
 			'agent': agent,
 			'link': agent.get_absolute_url(),
 		})
 	return deathdays
 
-def getDates():
-	dates = getBirthdays() + getDeathdays()
-	dates.sort(key=lambda date: (nextYear(date['day'], date['month']), date['month'], date['day']))
-	return dates
+def getEvents():
+	events = getBirthdays() + getDeathdays()
+	events.sort(key=lambda event: event['date'])
+	return events
 
 # Returns boolean.
 # True if the next instance of this date is next year.
 # False if there's a remaining this year (including today).
-def nextYear(day, month):
+def isNextYear(day, month):
 	currentDay = date.today().day
 	currentMonth = date.today().month
 	if month > currentMonth:
@@ -64,10 +59,18 @@ def nextYear(day, month):
 		return True
 	return (day < currentDay)
 
+# Returns a date object set to the next time this event will occur
+# Should never return a date in the past, but may return today's date.
+def nextOccurence(day, month):
+	year = date.today().year
+	if isNextYear(day, month):
+		year += 1
+	return date(year, month, day)
+
 def renderCalendar(request):
 	return render(None, 'agents/index.html', {
 		'template': 'agents/calendar.html',
 		'list': 'calendar',
 		'addurl': reverse('admin:agents_agent_add'),
-		'dates': getDates(),
+		'events': getEvents(),
 	})
