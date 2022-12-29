@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.db.models.functions import Lower
 import datetime
 
 def dayChoices():
@@ -33,6 +34,7 @@ class Agent(models.Model):
 
 	class Meta:
 		app_label = 'agents'
+		ordering = [Lower('_name')]
 
 	def getName(self):
 		return self._name or "Unnamed"

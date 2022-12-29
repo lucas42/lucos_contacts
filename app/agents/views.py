@@ -8,7 +8,6 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 from django.core.exceptions import MultipleObjectsReturned
-from django.db.models.functions import Lower
 import json, time, os
 from agents.loganne import contactCreated, contactUpdated, contactStarChanged
 from agents.serialize import serializeAgent
@@ -101,7 +100,7 @@ def agentindex(request, list):
 		agentlist = Agent.objects.all()
 	else:
 		agentlist = Agent.objects.filter(id=0)
-	for agent in agentlist.distinct().order_by(Lower('_name')):
+	for agent in agentlist.distinct():
 		data = serializeAgent(agent=agent, currentagent=request.user.agent)
 
 		# Hide any agents who only have inactive postal addresses
