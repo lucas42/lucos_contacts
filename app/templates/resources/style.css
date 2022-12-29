@@ -28,7 +28,7 @@ nav { display: block; overflow: hidden; background: #B9E7B7; color: #612B00; mar
 .navedit, .viewsitelink { background-image: url(/resources/admin/img/tooltag-arrowright.svg); }
 .toollink:link, .toollink:visited { background-color: #E5B5D1; color: #010F00; }
 .toollink:hover { background-color: #4D002D; color: #E5B5D1; }
-.navswitch { float: left; margin: 10px 0 }
+.navswitch { margin: 10px 0 }
 .navswitch a { display: inline; text-decoration: none; color: #B98E6C; }
 .navswitch a.current { font-weight: bold; color: #612B00; }
 .navswitch a:hover { text-decoration: underline; }
@@ -268,7 +268,7 @@ h2 { text-align: center; }
 }
 
 /* Admin site */
-div.breadcrumbs { background: none; color: #612B00; float: left; padding: 5px; border: none; font-size: 14px; text-align: left; margin: 5px; }
+div.breadcrumbs { background: none; color: #612B00; padding: 5px; border: none; font-size: 14px; text-align: left; margin: 5px; }
 div.breadcrumbs a { color: #B98E6C; }
 div.breadcrumbs a:hover { color: inherit; }
 .module h2, .module caption, .inline-group h2 { background: #B9E7B7; color: #612B00; }
@@ -278,6 +278,7 @@ a.section:link, a.section:visited { color: #612B00; }
 .button, input[type=submit], input[type=button], .submit-row input, a.button { background: #E5B5D1; color: #010F00; }
 .button.default, input[type=submit].default, .submit-row input.default { background: #732352; color: #E5B5D1;}
 body {
+	margin: 0;
 	/* This already gets included by lucos_navbar, but it's overridden by django's admin base.css, so make it !important */
 	padding-top: 30px !important;
 }

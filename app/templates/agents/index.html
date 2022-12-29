@@ -6,6 +6,9 @@
 		{% include template %}
 {% endblock %}
 {% block subnav %}
+	<nav class="tools">
+		<a href="{{addurl}}" class='toollink navadd'>Add</a>
+	</nav>
 	<div class="breadcrumbs">
 		<span class="navswitch">
 			<a href="/agents/starred" class="{% if list == "starred" %}current{% endif %}">Starred</a> |
@@ -16,7 +19,4 @@
 			<a href="/agents/all" class="{% if list == "all" %}current{% endif %}">All</a>
 		</span>
 	</div>
-	<nav class="tools">
-		<a href="{{addurl}}" class='toollink navadd'>Add</a>
-	</nav>
 {% endblock %}

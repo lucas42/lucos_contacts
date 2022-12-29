@@ -70,13 +70,13 @@
 		{%endif%}
 {% endblock %}
 {% block subnav %}
+	<nav class="tools">
+		<a href="{{ editurl }}" class='toollink navedit'>Edit</a>
+	</nav>
 	<div class="breadcrumbs">
 		<span class="navswitch">
 		<a href="/">Contact List</a>
 		&rsaquo; {{ name }}
 		</span>
 	</div>
-	<nav class="tools">
-		<a href="{{ editurl }}" class='toollink navedit'>Edit</a>
-	</nav>
 {% endblock %}
