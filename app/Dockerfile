@@ -15,6 +15,9 @@ RUN apk update \
     && pip install psycopg2 \
     && apk del build-deps
 
+# Needed for compiling translations
+# (Not strictly necessary at runtime, but easier for dev if it's already installed)
+RUN apk add gettext
 
 # Install dependencies
 COPY Pipfile .

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-28 14:56+0000\n"
+"POT-Creation-Date: 2022-12-29 16:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,17 +19,17 @@ msgstr ""
 "Plural-Forms: nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
 "4);\n"
 
-#: agents/calendar.py:15
+#: agents/calendar.py:16
 #, python-format
 msgid "%(name)s's %(count)s Birthday"
 msgstr "Breithlá %(count)s %(name)s"
 
-#: agents/calendar.py:20
+#: agents/calendar.py:21
 #, python-format
 msgid "%(name)s's Birthday"
 msgstr "Breithlá %(name)s"
 
-#: agents/calendar.py:36
+#: agents/calendar.py:37
 #, python-format
 msgid "%(name)s's Deathday"
 msgstr "Lá táisc %(name)s"
@@ -44,8 +44,8 @@ msgstr ""
 
 #: templates/admin/500.html:6 templates/admin/app_index.html:10
 #: templates/admin/auth/user/change_password.html:13
-#: templates/admin/base.html:42 templates/admin/change_form.html:19
-#: templates/admin/change_list.html:32
+#: templates/admin/base.html:42 templates/admin/change_form.html:30
+#: templates/admin/change_list.html:44
 #: templates/admin/delete_confirmation.html:14
 #: templates/admin/delete_selected_confirmation.html:14
 #: templates/admin/invalid_setup.html:6 templates/admin/object_history.html:6
@@ -131,19 +131,19 @@ msgstr ""
 msgid "Django site admin"
 msgstr ""
 
-#: templates/admin/change_form.html:22 templates/admin/change_list.html:42
-#, python-format
-msgid "Add %(name)s"
-msgstr ""
-
-#: templates/admin/change_form.html:30 templates/admin/object_history.html:10
+#: templates/admin/change_form.html:23 templates/admin/object_history.html:10
 msgid "History"
 msgstr ""
 
-#: templates/admin/change_form.html:31
+#: templates/admin/change_form.html:24
 #: templates/admin/edit_inline/stacked.html:14
 #: templates/admin/edit_inline/tabular.html:36
 msgid "View on site"
+msgstr ""
+
+#: templates/admin/change_form.html:33 templates/admin/change_list.html:37
+#, python-format
+msgid "Add %(name)s"
 msgstr ""
 
 #: templates/admin/change_list.html:69
@@ -168,7 +168,7 @@ msgstr ""
 #: templates/admin/submit_line.html:6
 #: templates/admin/widgets/related_widget_wrapper.html:24
 msgid "Delete"
-msgstr ""
+msgstr "Scrios"
 
 #: templates/admin/delete_confirmation.html:24
 #, python-format
@@ -242,7 +242,7 @@ msgstr ""
 
 #: templates/admin/edit_inline/tabular.html:20
 msgid "Delete?"
-msgstr ""
+msgstr "Scrios?"
 
 #: templates/admin/filter.html:2
 #, python-format
@@ -363,6 +363,9 @@ msgid "%(counter)s result"
 msgid_plural "%(counter)s results"
 msgstr[0] ""
 msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
+msgstr[4] ""
 
 #: templates/admin/search_form.html:9
 #, python-format

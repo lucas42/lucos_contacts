@@ -42,5 +42,16 @@ These are hardcoded values, so can only be change by make source code changes in
 * `docker cp contacts_app:/usr/src/app/lucosauth/migrations/ app/lucosauth/`
 * `docker cp contacts_app:/usr/src/app/comms/migrations/ app/comms/`
 * `docker cp contacts_app:/usr/src/app/agents/migrations/ app/agents/`
-* Commit the new migration files to git
 * Rebuild & restart the container for the migrations to take effect.
+* Commit the new migration files to git
+
+## Updating Translations
+
+
+* `docker-compose exec app django-admin makemessages --all`
+* `docker cp contacts_app:/usr/src/app/locale app/`
+* Update the `.po` files in the locale directory with the relevant languages
+* `docker-compose exec app django-admin compilemessages`
+* `docker cp contacts_app:/usr/src/app/locale app/`
+* Rebuild & restart the container for the translations to take effect.
+* Commit the locale files to git (everything in the `locale` directory, including both `.po` and `.mo` files)
