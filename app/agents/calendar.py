@@ -4,6 +4,7 @@ from django.urls import reverse
 from datetime import date
 from django.utils.translation import gettext as _
 from django.contrib.humanize.templatetags.humanize import ordinal
+from django.contrib.auth.decorators import login_required
 
 def getBirthdays():
 	agentlist = Agent.objects.filter(starred=True).exclude(day_of_birth__isnull=True).exclude(month_of_birth__isnull=True)
@@ -67,6 +68,7 @@ def nextOccurence(day, month):
 		year += 1
 	return date(year, month, day)
 
+@login_required
 def renderCalendar(request):
 	return render(None, 'agents/index.html', {
 		'template': 'agents/calendar.html',
