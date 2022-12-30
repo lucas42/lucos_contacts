@@ -47,11 +47,8 @@ These are hardcoded values, so can only be change by make source code changes in
 
 ## Updating Translations
 
-
 * `docker-compose exec app django-admin makemessages --all`
 * `docker cp contacts_app:/usr/src/app/locale app/`
 * Update the `.po` files in the locale directory with the relevant languages
-* `docker-compose exec app django-admin compilemessages`
-* `docker cp contacts_app:/usr/src/app/locale app/`
-* Rebuild & restart the container for the translations to take effect.
-* Commit the locale files to git (everything in the `locale` directory, including both `.po` and `.mo` files)
+* Rebuild & restart the container for the translations to take effect.  (translations are compiled as part of the docker build process)
+* Commit the locale files to git

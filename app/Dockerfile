@@ -15,8 +15,7 @@ RUN apk update \
     && pip install psycopg2 \
     && apk del build-deps
 
-# Needed for compiling translations
-# (Not strictly necessary at runtime, but easier for dev if it's already installed)
+# Needed for translations
 RUN apk add gettext
 
 # Install dependencies
@@ -28,5 +27,8 @@ RUN pipenv install --skip-lock --system
 # Copy project after dependencies, so cached dependencies can be used if unchanged
 COPY . .
 COPY --from=navbar lucos_navbar.js templates/resources/
+
+# Compile Translations
+RUN django-admin compilemessages
 
 CMD ["./startup.sh"]
