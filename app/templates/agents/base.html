@@ -10,9 +10,7 @@
 		<title>{% block headtitle %}{% endblock %}</title>
 	</head>
 	<body>
-		<lucos-navbar bg-colour="#044E00">
-			<a href="/">{% block title %}{% endblock %}</a>
-		</lucos-navbar>
+		{% include "navbar.html" %}
 		<nav id="subnav">
 			{% block subnav %}{% endblock %}
 		</nav>

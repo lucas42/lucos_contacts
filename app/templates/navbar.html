@@ -1,0 +1,16 @@
+
+    <!-- Navbar -->
+    <lucos-navbar bg-colour="#044E00">
+        <a href="/">{{ title }}</a>
+        {% block usertools %}
+        {% if has_permission %}
+        <div id="username" style="float: right; font-size: smaller; font-weight: normal;">
+            {% block welcome-msg %}
+                {% firstof user.get_short_name user.get_username %}
+            {% endblock %}
+        </div>
+        {% endif %}
+        {% endblock %}
+        {% block nav-global %}{% endblock %}
+    </lucos-navbar>
+    <!-- END Navbar -->

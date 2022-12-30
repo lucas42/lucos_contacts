@@ -12,6 +12,7 @@ import json, time, os
 from agents.loganne import contactCreated, contactUpdated, contactStarChanged
 from agents.serialize import serializeAgent
 from agents.importer import importAgent
+from django.utils.translation import gettext as _
 
 @csrf_exempt
 @api_auth
@@ -71,6 +72,9 @@ def agent(request, extid, method=None):
 		# Puts a zero width space before the at sign in emails
 		# So that long email addresses get split across lines in a more sensible place
 		output['email'] = [{"view": email.replace("@","​@"), "raw": email} for email in output['email']]
+
+		# Set the page title to the agent's name
+		output['title'] = output['name']
 	return render(None, 'agents/'+template, output)
 	
 
@@ -113,6 +117,7 @@ def agentindex(request, list):
 		agents.append(data)
 	return render(None, 'agents/index.html', {
 		'template': template,
+		'title': _("Contacts"),
 		'agents': agents,
 		'list': list,
 		'addurl': reverse('admin:agents_agent_add'),
