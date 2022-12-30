@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django.utils import translation
 from django.core.exceptions import ObjectDoesNotExist
 from phonenumber_field.modelfields import PhoneNumberField
 from .agent import Agent, AgentName
-
-def getCurrentLang():
-	cur_language = translation.get_language()
-	if cur_language is None:
-		return ""
-	return cur_language[:2]
-
+from django.utils.translation import gettext_lazy as _
 
 class BaseAccount(models.Model):
 	agent = models.ForeignKey(Agent, blank=False, on_delete=models.CASCADE)
@@ -47,64 +40,63 @@ class BaseAccount(models.Model):
 		accountType = cls.getTypeByKey(kwargs.pop("type", None))
 		return accountType.objects.get_or_create(**kwargs)
 
-
+	def __str__(self):
+		return _('%(name)s\'s %(type)s') % {
+			'name': self.agent.getName(),
+			'type': str(self._meta.verbose_name).title(),
+		}
 
 class PhoneNumber(BaseAccount):
 	number = PhoneNumberField(blank=False)
+	class Meta:
+		verbose_name = _('phone number')
+		verbose_name_plural = _('phone numbers')
 	def __str__(self):
-		if getCurrentLang() == 'ga':
-			return 'Uimhir guathan '+self.agent.getName()
-		return self.agent.getName()+"'s Phone Number"
+		return BaseAccount.__str__(self)
 
 class EmailAddress(BaseAccount):
 	address = models.EmailField(max_length=255, blank=False)
 	class Meta:
-		verbose_name_plural = "Email Addresses"
-	def __str__(self):
-		if getCurrentLang() == 'ga':
-			return u'Seolodh Ríomhphost '+self.agent.getName()
-		return self.agent.getName()+"'s Email Address"
+		verbose_name = _('email address')
+		verbose_name_plural = _('email addresses')
 
 class PostalAddress(BaseAccount):
 	address = models.CharField(max_length=255, blank=False)
 	class Meta:
-		verbose_name_plural = "Postal Addresses"
-	def __str__(self):
-		if getCurrentLang() == 'ga':
-			return 'Seoladh '+self.agent.getName()
-		return self.agent.getName()+"'s Address"
+		verbose_name = _('postal address')
+		verbose_name_plural = _('postal addresses')
 
 class FacebookAccount(BaseAccount):
 	userid = models.PositiveBigIntegerField(blank=False)
 	username = models.CharField(max_length=255, blank=True)
-	def __str__(self):
-		if getCurrentLang() == 'ga':
-			return 'Cuntas Facebook '+self.agent.getName()
-		return self.agent.getName()+"'s Facebook Account"
+	class Meta:
+		verbose_name = _('facebook account')
+		verbose_name_plural = _('facebook accounts')
 
 # An actual google acount, which can be logged into by the user
 class GoogleAccount(BaseAccount):
 	userid = models.CharField(max_length=255, blank=False)
-	def __str__(self):
-		if getCurrentLang() == 'ga':
-			return 'Cuntas Google '+self.agent.getName()
-		return self.agent.getName()+"'s Google Account"
+	class Meta:
+		verbose_name = _('google account')
+		verbose_name_plural = _('google accounts')
 
 # A contact from Google Contacts
 class GoogleContact(BaseAccount):
 	contactid = models.CharField(max_length=127, blank=False)
-	def __str__(self):
-		if getCurrentLang() == 'ga':
-			return u'Teagmháil Google '+self.agent.getName()
-		return self.agent.getName()+"'s Google Contact"
+	class Meta:
+		verbose_name = _('google contact')
+		verbose_name_plural = _('google contacts')
 
 # A Person Tagged in Google Photos
 class GooglePhotosProfile(BaseAccount):
 	person_id = models.PositiveBigIntegerField(blank=False)
 	cluster_media_key = models.CharField(max_length=255, blank=True)
 	search_path = models.CharField(max_length=255, blank=True)
+	class Meta:
+		verbose_name = _('google photos profile')
+		verbose_name_plural = _('google photos profiles')
 	def __str__(self):
-		if getCurrentLang() == 'ga':
-			return f"Grianghraif clibáilte le {self.agent.getName()}"
-		return f"Photos tagged with {self.agent.getName()}"
+		return _('Photos tagged with %(name)s') % {
+			'name': self.agent.getName(),
+		}
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-29 16:05+0000\n"
+"POT-Creation-Date: 2022-12-30 00:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,6 +33,72 @@ msgstr "Breithlá %(name)s"
 #, python-format
 msgid "%(name)s's Deathday"
 msgstr "Lá táisc %(name)s"
+
+#: agents/models/accounts.py:47
+#, python-format
+msgid "%(name)s's %(type)s"
+msgstr "%(type)s %(name)s"
+
+#: agents/models/accounts.py:55
+msgid "phone number"
+msgstr "uimhir guathan"
+
+#: agents/models/accounts.py:56
+msgid "phone numbers"
+msgstr "uimhreacha guathan"
+
+#: agents/models/accounts.py:63
+msgid "email address"
+msgstr "seolodh ríomhphost"
+
+#: agents/models/accounts.py:64
+msgid "email addresses"
+msgstr "seoltaí ríomhphost"
+
+#: agents/models/accounts.py:69
+msgid "postal address"
+msgstr "seoladh"
+
+#: agents/models/accounts.py:70
+msgid "postal addresses"
+msgstr "seoltaí"
+
+#: agents/models/accounts.py:76
+msgid "facebook account"
+msgstr "cuntas facebook"
+
+#: agents/models/accounts.py:77
+msgid "facebook accounts"
+msgstr "cuntais facebook"
+
+#: agents/models/accounts.py:83
+msgid "google account"
+msgstr "cuntas google"
+
+#: agents/models/accounts.py:84
+msgid "google accounts"
+msgstr "cuntais google"
+
+#: agents/models/accounts.py:90
+msgid "google contact"
+msgstr "teagmháil google"
+
+#: agents/models/accounts.py:91
+msgid "google contacts"
+msgstr "teagmhálacha google"
+
+#: agents/models/accounts.py:99
+msgid "google photos profile"
+msgstr "próifíl grianghraif google"
+
+#: agents/models/accounts.py:100
+msgid "google photos profiles"
+msgstr "próifíleanna grianghraif google"
+
+#: agents/models/accounts.py:102
+#, python-format
+msgid "Photos tagged with %(name)s"
+msgstr "Grianghraif clibáilte le %(name)s"
 
 #: templates/admin/404.html:4 templates/admin/404.html:8
 msgid "Page not found"
@@ -345,7 +411,7 @@ msgstr ""
 #: templates/admin/widgets/related_widget_wrapper.html:16
 #, python-format
 msgid "Add another %(model)s"
-msgstr ""
+msgstr "Cuir %(model)s eile"
 
 #: templates/admin/related_widget_wrapper.html:23
 #: templates/admin/widgets/related_widget_wrapper.html:23
