@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-31 01:03+0000\n"
+"POT-Creation-Date: 2022-12-31 02:07+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,7 +36,7 @@ msgstr "Lá táisc %(name)s"
 
 #: agents/calendar.py:75
 msgid "Contacts Calendar"
-msgstr ""
+msgstr "Féilire Teagmhálaithe"
 
 #: agents/models/accounts.py:44
 #, python-format
@@ -104,49 +104,53 @@ msgstr "próifíleanna grianghraif google"
 msgid "Photos tagged with %(name)s"
 msgstr "Grianghraif clibáilte le %(name)s"
 
-#: agents/models/relationshipTypes.py:49
+#: agents/models/relationshipTypes.py:55
 msgid "child"
 msgstr "páiste"
 
-#: agents/models/relationshipTypes.py:53
+#: agents/models/relationshipTypes.py:59
 msgid "parent"
 msgstr "tuismitheoir"
 
-#: agents/models/relationshipTypes.py:62
+#: agents/models/relationshipTypes.py:68
 msgid "sibling"
 msgstr "siblín"
 
-#: agents/models/relationshipTypes.py:65
+#: agents/models/relationshipTypes.py:71
 msgid "half-sibling"
 msgstr "leath-siblín"
 
-#: agents/models/relationshipTypes.py:75
+#: agents/models/relationshipTypes.py:81
 msgid "grandchild"
 msgstr "garpháiste"
 
-#: agents/models/relationshipTypes.py:78
+#: agents/models/relationshipTypes.py:84
 msgid "grandparent"
 msgstr "seantuismitheoir"
 
-#: agents/models/relationshipTypes.py:86
+#: agents/models/relationshipTypes.py:92
 msgid "aunt/uncle"
 msgstr "aintín/uncail"
 
-#: agents/models/relationshipTypes.py:93
+#: agents/models/relationshipTypes.py:99
 msgid "nibling"
 msgstr "niblín"
 
-#: agents/models/relationshipTypes.py:99
+#: agents/models/relationshipTypes.py:105
 msgid "great aunt/uncle"
 msgstr "seanaintín/seanuncail"
 
-#: agents/models/relationshipTypes.py:106
+#: agents/models/relationshipTypes.py:112
 msgid "great nibling"
 msgstr "garniblín"
 
-#: agents/models/relationshipTypes.py:112
+#: agents/models/relationshipTypes.py:118
 msgid "cousin"
 msgstr "col ceathrair"
+
+#: agents/serialize.py:94
+msgid "Me"
+msgstr "Mise"
 
 #: agents/views.py:120
 msgid "Contacts"
@@ -386,6 +390,7 @@ msgstr ""
 
 #: templates/admin/index.html:31 templates/admin/related_widget_wrapper.html:17
 #: templates/admin/widgets/related_widget_wrapper.html:17
+#: templates/agents/index.html:11
 msgid "Add"
 msgstr ""
 
@@ -509,3 +514,75 @@ msgstr ""
 #: templates/admin/submit_line.html:10
 msgid "Save and continue editing"
 msgstr ""
+
+#: templates/agents/agent.html:9
+msgid "Rest In Peace"
+msgstr "Suaimhneas Síoraí"
+
+#: templates/agents/agent.html:11
+msgid "Date of Death"
+msgstr "Dáta Báis"
+
+#: templates/agents/agent.html:17
+msgid "Also Known As"
+msgstr "Ainmneacha Eile"
+
+#: templates/agents/agent.html:41
+msgid "Facebook"
+msgstr ""
+
+#: templates/agents/agent.html:44
+msgid "Google Contact"
+msgstr "Teagmháil Google"
+
+#: templates/agents/agent.html:47
+msgid "Photos"
+msgstr "Grianghraif"
+
+#: templates/agents/agent.html:51
+msgid "Birthday"
+msgstr "Breithlá"
+
+#: templates/agents/agent.html:56
+msgid "Notes"
+msgstr "Notaí"
+
+#: templates/agents/agent.html:62
+msgid "Gift Ideas"
+msgstr "Smaointe Bronntanas"
+
+#: templates/agents/agent.html:68
+msgid "Relatives"
+msgstr "Gaoil"
+
+#: templates/agents/agent.html:75
+msgid "Edit"
+msgstr "Cuir in Eagar"
+
+#: templates/agents/agent.html:79
+msgid "Contact List"
+msgstr "Liosta Teagmhálacha"
+
+#: templates/agents/index.html:15
+msgid "Starred"
+msgstr "Le Réalta"
+
+#: templates/agents/index.html:16
+msgid "Phonebook"
+msgstr "Leabhar Fóin"
+
+#: templates/agents/index.html:17
+msgid "Address Book"
+msgstr "Leabhar Seoltaí"
+
+#: templates/agents/index.html:18
+msgid "Gift List"
+msgstr "Liosta Bronntanas"
+
+#: templates/agents/index.html:19
+msgid "Calendar"
+msgstr "Féilire"
+
+#: templates/agents/index.html:20
+msgid "All"
+msgstr "Uilig"

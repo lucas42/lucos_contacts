@@ -1,4 +1,5 @@
 {% extends "agents/base.html" %}
+{% load i18n %}
 
 {% block headtitle %}LucOs - Contacts{% endblock %}
 {% block title %}Contacts{% endblock %}
@@ -7,16 +8,16 @@
 {% endblock %}
 {% block subnav %}
 	<nav class="tools">
-		<a href="{{addurl}}" class='toollink navadd'>Add</a>
+		<a href="{{addurl}}" class='toollink navadd'>{% trans 'Add' %}</a>
 	</nav>
 	<div class="breadcrumbs">
 		<span class="navswitch">
-			<a href="/agents/starred" class="{% if list == "starred" %}current{% endif %}">Starred</a> |
-			<a href="/agents/phone" class="{% if list == "phone" %}current{% endif %}">Phonebook</a> |
-			<a href="/agents/postal" class="{% if list == "postal" %}current{% endif %}">Address Book</a> |
-			<a href="/agents/gifts" class="{% if list == "gifts" %}current{% endif %}">Gift List</a> |
-			<a href="/calendar" class="{% if list == "calendar" %}current{% endif %}">Calendar</a> |
-			<a href="/agents/all" class="{% if list == "all" %}current{% endif %}">All</a>
+			<a href="/agents/starred" class="{% if list == "starred" %}current{% endif %}">{% trans 'Starred' %}</a> |
+			<a href="/agents/phone" class="{% if list == "phone" %}current{% endif %}">{% trans 'Phonebook' %}</a> |
+			<a href="/agents/postal" class="{% if list == "postal" %}current{% endif %}">{% trans 'Address Book' %}</a> |
+			<a href="/agents/gifts" class="{% if list == "gifts" %}current{% endif %}">{% trans 'Gift List' %}</a> |
+			<a href="/calendar" class="{% if list == "calendar" %}current{% endif %}">{% trans 'Calendar' %}</a> |
+			<a href="/agents/all" class="{% if list == "all" %}current{% endif %}">{% trans 'All' %}</a>
 		</span>
 	</div>
 {% endblock %}

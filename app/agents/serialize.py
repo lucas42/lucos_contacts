@@ -1,6 +1,7 @@
 from agents.models import *
 import datetime
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 
 # Formats a date given the year, month of day - any selection of which may be missing
@@ -90,7 +91,7 @@ def serializeAgent(agent, currentagent=None, extended=False):
 	if currentagent:
 		agentdataobj['sortableRel'] = -1
 		if (agent == currentagent):
-			agentdataobj['rel'] = 'me'
+			agentdataobj['rel'] = _('Me')
 		else:
 			combinedrels = ''
 			for rel in Relationship.objects.filter(object=agent.id, subject=currentagent.id):

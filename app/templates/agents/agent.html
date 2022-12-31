@@ -1,19 +1,20 @@
 {% extends "agents/base.html" %}
+{% load i18n %}
 
 {% block headtitle %}LucOs - {{ name }}{% endblock %}
 {% block title %}{{ name }}{% endblock %}
 {% block body %}
 		{%if isDead %}
 			<div id="dead">
-				<span class="rest-in-peace">Rest In Peace</span>
+				<span class="rest-in-peace">{% trans 'Rest In Peace' %}</span>
 				{%if formattedDeathDate %}
-					<span class="label">Date of Death:</span> {{formattedDeathDate}}
+					<span class="label">{% trans 'Date of Death' %}:</span> {{formattedDeathDate}}
 				{%endif%}
 			</div>
 		{%endif%}
 		{%if altnames %}
 			<div id="altnames">
-				<h4>Also Known As</h4>
+				<h4>{% trans 'Also Known As' %}</h4>
 				<ul>
 				{%for altname in altnames %}
 					<li>{{altname}}</li>
@@ -37,45 +38,45 @@
 			<span class='account postal'>{{address}}</span>
 		{%endfor%}
 		{%for userid in facebookaccounts %}
-			<a href="https://www.facebook.com/profile.php?id={{userid}}" target="_blank" class='account facebook'><img src="https://graph.facebook.com/{{userid}}/picture" /> Facebook</a>
+			<a href="https://www.facebook.com/profile.php?id={{userid}}" target="_blank" class='account facebook'><img src="https://graph.facebook.com/{{userid}}/picture" />{% trans 'Facebook' %}</a>
 		{%endfor%}
 		{%for contactid in googlecontacts %}
-			<a href="https://contacts.google.com/person/{{contactid}}" target="_blank" class='account googlecontact'><img src="https://www.gstatic.com/images/branding/product/1x/contacts_48dp.png" />Google Contact</a>
+			<a href="https://contacts.google.com/person/{{contactid}}" target="_blank" class='account googlecontact'><img src="https://www.gstatic.com/images/branding/product/1x/contacts_48dp.png" />{% trans 'Google Contact' %}</a>
 		{%endfor%}
 		{%for search_path in googlephotoprofiles %}
-			<a href="https://photos.google.com{{search_path}}" target="_blank" class='account googlephotoprofile'><img src="https://ssl.gstatic.com/social/photosui/images/logo/1x/photos_512dp.png" />Photos</a>
+			<a href="https://photos.google.com{{search_path}}" target="_blank" class='account googlephotoprofile'><img src="https://ssl.gstatic.com/social/photosui/images/logo/1x/photos_512dp.png" />{% trans 'Photos' %}</a>
 		{%endfor%}
 		{%if formattedBirthday %}
 			<div id="birthday">
-				<span class="label">Birthday:</span> {{formattedBirthday}}
+				<span class="label">{% trans 'Birthday' %}:</span> {{formattedBirthday}}
 			</div>
 		{%endif%}
 		{%if notes %}
 			<div id="notes">
-				<h2>Notes</h2>
+				<h2>{% trans 'Notes' %}</h2>
 				<span class="content">{{notes}}</span>
 			</div>
 		{%endif%}
 		{%if giftideas %}
 			<details id="giftideas">
-				<summary>Gift Ideas</summary>
+				<summary>{% trans 'Gift Ideas' %}</summary>
 				<span class="content">{{giftideas}}</span>
 			</details>
 		{%endif%}
 		{%if relations %}
 			<div id="relations">
-				<h2>Relations</h2>
+				<h2>{% trans 'Relatives' %}</h2>
 				{% include "agents/agentlist.html" with agents=relations %}
 			</div>
 		{%endif%}
 {% endblock %}
 {% block subnav %}
 	<nav class="tools">
-		<a href="{{ editurl }}" class='toollink navedit'>Edit</a>
+		<a href="{{ editurl }}" class='toollink navedit'>{% trans 'Edit' %}</a>
 	</nav>
 	<div class="breadcrumbs">
 		<span class="navswitch">
-		<a href="/">Contact List</a>
+		<a href="/">{% trans 'Contact List' %}</a>
 		&rsaquo; {{ name }}
 		</span>
 	</div>
