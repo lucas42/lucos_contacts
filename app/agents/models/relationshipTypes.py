@@ -1,3 +1,11 @@
+from django.utils.translation import gettext_lazy as _
+from django.utils.functional import keep_lazy_text
+
+# Lazily makes translation objects titlecase
+@keep_lazy_text
+def lazy_title(str):
+	return str.title()
+
 class RelationshipConnection:
 	def __init__(self, existingRel, inferredRel):
 		self.existingRel = existingRel
@@ -9,8 +17,7 @@ class BaseRelationshipType:
 	transitive = False
 	incomingRels = []
 	outgoingRels = []
-	label_ga = None
-	label_en = None
+	label = None
 
 def setInverse(typeA, typeB):
 	if typeA.inverse or typeB.inverse:
@@ -45,13 +52,11 @@ def setInference(rel1, rel2, inferred):
 
 class Child(BaseRelationshipType):
 	dbKey='child'
-	label_en='child'
-	label_ga='páiste'
+	label=_('child')
 
 class Parent(BaseRelationshipType):
 	dbKey='parent'
-	label_en='parent'
-	label_ga='tuismitheoir'
+	label=_('parent')
 
 setInverse(Parent, Child)
 
@@ -60,12 +65,10 @@ setInverse(Parent, Child)
 class Sibling(BaseRelationshipType):
 	dbKey='sibling'
 	transitive=True
-	label_en='sibling'
-	label_ga='siblín'
+	label=_('sibling')
 class HalfSibling(BaseRelationshipType):
 	dbKey='half-sibling'
-	label_en='half-sibling'
-	label_ga='leath-siblín'
+	label=_('half-sibling')
 
 setSymmetrical(Sibling)
 setSymmetrical(HalfSibling)
@@ -75,12 +78,10 @@ setInference(Sibling, HalfSibling, HalfSibling)
 
 class Grandchild(BaseRelationshipType):
 	dbKey='grandchild'
-	label_en='grandchild'
-	label_ga='garpháiste'
+	label=_('grandchild')
 class Grandparent(BaseRelationshipType):
 	dbKey='grandparent'
-	label_en='grandparent'
-	label_ga='seantuismitheoir'
+	label=_('grandparent')
 
 setInverse(Grandparent, Grandchild)
 
@@ -88,36 +89,33 @@ setInference(Parent, Parent, Grandparent)
 
 class AuntOrUncle(BaseRelationshipType):
 	dbKey='aunt/uncle'
-	label_en='aunt/uncle'
+	label=_('aunt/uncle')
 
 setInference(Parent, Sibling, AuntOrUncle)
 setInference(Sibling, AuntOrUncle, AuntOrUncle)
 
 class Nibling(BaseRelationshipType):
 	dbKey='nibling'
-	label_en='nibling'
-	label_ga='niblín'
+	label=_('nibling')
 
 setInverse(AuntOrUncle, Nibling)
 
 class GreatAuntOrGreatUncle(BaseRelationshipType):
 	dbKey='great aunt/uncle'
-	label_en='great aunt/uncle'
+	label=_('great aunt/uncle')
 
 setInference(Grandparent, Sibling, GreatAuntOrGreatUncle)
 setInference(Sibling, GreatAuntOrGreatUncle, GreatAuntOrGreatUncle)
 
 class GreatNibling(BaseRelationshipType):
 	dbKey='great nibling'
-	label_en='great nibling'
-	label_ga='garniblín'
+	label=_('great nibling')
 
 setInverse(GreatAuntOrGreatUncle, GreatNibling)
 
 class FirstCousin(BaseRelationshipType):
 	dbKey='first cousin'
-	label_en='cousin'
-	label_ga='col ceathrair'
+	label=_('cousin')
 setInference(AuntOrUncle, Child, FirstCousin)
 
 RELATIONSHIP_TYPES = [
@@ -136,7 +134,7 @@ RELATIONSHIP_TYPES = [
 RELATIONSHIP_TYPE_CHOICES = []
 for reltypeclass in RELATIONSHIP_TYPES:
 	RELATIONSHIP_TYPE_CHOICES.append(
-		(reltypeclass.dbKey, (reltypeclass.label_ga or reltypeclass.label_en).title())
+		(reltypeclass.dbKey, lazy_title(reltypeclass.label))
 	)
 
 def getRelationshipTypeByKey(key):

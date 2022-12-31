@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-30 00:47+0000\n"
+"POT-Creation-Date: 2022-12-31 01:03+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,71 +34,131 @@ msgstr "Breithlá %(name)s"
 msgid "%(name)s's Deathday"
 msgstr "Lá táisc %(name)s"
 
-#: agents/models/accounts.py:47
+#: agents/calendar.py:75
+msgid "Contacts Calendar"
+msgstr ""
+
+#: agents/models/accounts.py:44
 #, python-format
 msgid "%(name)s's %(type)s"
 msgstr "%(type)s %(name)s"
 
-#: agents/models/accounts.py:55
+#: agents/models/accounts.py:52
 msgid "phone number"
 msgstr "uimhir guathan"
 
-#: agents/models/accounts.py:56
+#: agents/models/accounts.py:53
 msgid "phone numbers"
 msgstr "uimhreacha guathan"
 
-#: agents/models/accounts.py:63
+#: agents/models/accounts.py:60
 msgid "email address"
 msgstr "seolodh ríomhphost"
 
-#: agents/models/accounts.py:64
+#: agents/models/accounts.py:61
 msgid "email addresses"
 msgstr "seoltaí ríomhphost"
 
-#: agents/models/accounts.py:69
+#: agents/models/accounts.py:66
 msgid "postal address"
 msgstr "seoladh"
 
-#: agents/models/accounts.py:70
+#: agents/models/accounts.py:67
 msgid "postal addresses"
 msgstr "seoltaí"
 
-#: agents/models/accounts.py:76
+#: agents/models/accounts.py:73
 msgid "facebook account"
 msgstr "cuntas facebook"
 
-#: agents/models/accounts.py:77
+#: agents/models/accounts.py:74
 msgid "facebook accounts"
 msgstr "cuntais facebook"
 
-#: agents/models/accounts.py:83
+#: agents/models/accounts.py:80
 msgid "google account"
 msgstr "cuntas google"
 
-#: agents/models/accounts.py:84
+#: agents/models/accounts.py:81
 msgid "google accounts"
 msgstr "cuntais google"
 
-#: agents/models/accounts.py:90
+#: agents/models/accounts.py:87
 msgid "google contact"
 msgstr "teagmháil google"
 
-#: agents/models/accounts.py:91
+#: agents/models/accounts.py:88
 msgid "google contacts"
 msgstr "teagmhálacha google"
 
-#: agents/models/accounts.py:99
+#: agents/models/accounts.py:96
 msgid "google photos profile"
 msgstr "próifíl grianghraif google"
 
-#: agents/models/accounts.py:100
+#: agents/models/accounts.py:97
 msgid "google photos profiles"
 msgstr "próifíleanna grianghraif google"
 
-#: agents/models/accounts.py:102
+#: agents/models/accounts.py:99
 #, python-format
 msgid "Photos tagged with %(name)s"
 msgstr "Grianghraif clibáilte le %(name)s"
+
+#: agents/models/relationshipTypes.py:49
+msgid "child"
+msgstr "páiste"
+
+#: agents/models/relationshipTypes.py:53
+msgid "parent"
+msgstr "tuismitheoir"
+
+#: agents/models/relationshipTypes.py:62
+msgid "sibling"
+msgstr "siblín"
+
+#: agents/models/relationshipTypes.py:65
+msgid "half-sibling"
+msgstr "leath-siblín"
+
+#: agents/models/relationshipTypes.py:75
+msgid "grandchild"
+msgstr "garpháiste"
+
+#: agents/models/relationshipTypes.py:78
+msgid "grandparent"
+msgstr "seantuismitheoir"
+
+#: agents/models/relationshipTypes.py:86
+msgid "aunt/uncle"
+msgstr "aintín/uncail"
+
+#: agents/models/relationshipTypes.py:93
+msgid "nibling"
+msgstr "niblín"
+
+#: agents/models/relationshipTypes.py:99
+msgid "great aunt/uncle"
+msgstr "seanaintín/seanuncail"
+
+#: agents/models/relationshipTypes.py:106
+msgid "great nibling"
+msgstr "garniblín"
+
+#: agents/models/relationshipTypes.py:112
+msgid "cousin"
+msgstr "col ceathrair"
+
+#: agents/views.py:120
+msgid "Contacts"
+msgstr "Teagmhálacha"
+
+#: settings.py:25
+msgid "Irish"
+msgstr ""
+
+#: settings.py:26
+msgid "English"
+msgstr ""
 
 #: templates/admin/404.html:4 templates/admin/404.html:8
 msgid "Page not found"
@@ -110,7 +170,7 @@ msgstr ""
 
 #: templates/admin/500.html:6 templates/admin/app_index.html:10
 #: templates/admin/auth/user/change_password.html:13
-#: templates/admin/base.html:42 templates/admin/change_form.html:30
+#: templates/admin/base.html:29 templates/admin/change_form.html:30
 #: templates/admin/change_list.html:44
 #: templates/admin/delete_confirmation.html:14
 #: templates/admin/delete_selected_confirmation.html:14
@@ -189,7 +249,7 @@ msgstr ""
 msgid "Enter a new password for the user <strong>%(username)s</strong>."
 msgstr ""
 
-#: templates/admin/base.html:45
+#: templates/admin/base.html:32
 msgid "Log out"
 msgstr ""
 
