@@ -72,6 +72,7 @@ def nextOccurence(day, month):
 def renderCalendar(request):
 	return render(None, 'agents/index.html', {
 		'template': 'agents/calendar.html',
+		'title': _("Contacts Calendar"),
 		'list': 'calendar',
 		'addurl': reverse('admin:agents_agent_add'),
 		'events': getEvents(),
