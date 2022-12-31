@@ -1,5 +1,6 @@
 import os
 import sys
+from django.utils.translation import gettext_lazy as _
 # Django settings for contacts project.
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -20,6 +21,10 @@ TIME_ZONE = 'Europe/London'
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'ga-gb'
+LANGUAGES = [
+    ('ga', _('Irish')),
+    ('en', _('English')),
+]
 
 LOCALE_PATHS = (os.path.join(PROJECT_PATH, "locale"),)
 

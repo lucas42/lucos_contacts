@@ -25,5 +25,6 @@ urlpatterns = [
 
 	url(r'^admin/', admin.site.urls),
 	url(r'^accounts/login/', auth_views.loginview),
-	url(r'^_info$', agents_views.info)
+	url(r'^_info$', agents_views.info),
+	url (r'^i18n/' ,include('django.conf.urls.i18n')),
 ]
