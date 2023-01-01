@@ -50,6 +50,20 @@ class RomanticRelationship(models.Model):
 		memberNames = self.members.values_list('_name', flat=True)
 		return (" "+joinSymbol+" ").join(memberNames)
 
+	# Put romantic relationships to the top of relationships lists
+	def getPriority(self):
+		return -1
+
+	def getRelationshipLabel(self):
+		if self.milestone == 'married':
+			return _('Spouse')
+		if self.milestone == 'engaged':
+			# Translators: Using this in a gender-neutral sense here.
+			# Whilst there's often a spelling difference based on gender, there seems to be
+			# growing acceptance of using the previously male form in a gender-neutral way now
+			return _('Fiancé')
+		return _('Partner')
+
 # Takes a year, month and day (any of which may be None) and tries to determine if that date has passed yet
 # Returns True if the date is in the past (or is today).
 # Returns False if the date is in the future.
