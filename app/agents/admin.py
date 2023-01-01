@@ -101,9 +101,13 @@ class RelationshipAdmin(admin.ModelAdmin):
 	list_display = ('subject', 'relationshipType', 'object')
 	list_display_links = ('subject', 'relationshipType', 'object')
 
+class RomanticRelationshipAdmin(admin.ModelAdmin):
+	filter_horizontal = ('members', )
+
 admin.site.register(Agent, AgentAdmin)
 admin.site.register(PhoneNumber)
 admin.site.register(EmailAddress)
 admin.site.register(FacebookAccount)
 admin.site.register(PostalAddress)
 admin.site.register(Relationship, RelationshipAdmin)
+admin.site.register(RomanticRelationship, RomanticRelationshipAdmin)
