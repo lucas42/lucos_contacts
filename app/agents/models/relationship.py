@@ -2,11 +2,18 @@
 from django.db import models
 from .relationshipTypes import RELATIONSHIP_TYPE_CHOICES, getRelationshipTypeByKey
 from .agent import Agent
+from django.db.models.functions import Lower
 
 class Relationship(models.Model):
 	subject = models.ForeignKey(Agent, related_name='subject', blank=False, on_delete=models.CASCADE)
 	object = models.ForeignKey(Agent, related_name='object', blank=False, on_delete=models.CASCADE)
 	relationshipType = models.CharField(choices=RELATIONSHIP_TYPE_CHOICES, blank=False, max_length=127)
+	class Meta:
+		# Ideally this would just be ['subject'], and then follow the Lower('_name') bit on the agent model
+		# However, the `Lower` function seems to cause that to error in quite a cryptic way
+		# So easiest fix is just be more explicit here
+		# Note the the first two underscores are for separating the the model from the field; the third underscore is part of the field name.
+		ordering = [Lower('subject___name')]
 	def save(self, *args, **kwargs):
 		super(Relationship, self).save(*args, **kwargs)
 		self.inferRelationships()

@@ -100,7 +100,6 @@ class RelationshipAdmin(admin.ModelAdmin):
 	fields = ('subject', 'relationshipType', 'object')
 	list_display = ('subject', 'relationshipType', 'object')
 	list_display_links = ('subject', 'relationshipType', 'object')
-	ordering = ['subject']
 
 admin.site.register(Agent, AgentAdmin)
 admin.site.register(PhoneNumber)
