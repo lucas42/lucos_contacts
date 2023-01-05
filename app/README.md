@@ -7,7 +7,7 @@ A list of contacts
 
 ## Environment Variables:
 
-* **SECRET_KEY** a secret used by django for lots of its security mechanisms
+* **SECRET_KEY** a secret used by django for lots of its security mechanisms.  To generate a new one, run `docker-compose exec app python manage.py shell -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`
 * **PRODUCTION** Set in a production environment, as it increases security protections.  Not setting it will give detailed debug pages on error.
 
 ## Running
