@@ -77,11 +77,11 @@
         },
         "phonenumbers": {
             "hashes": [
-                "sha256:14f5a639eb47548595bb2baeff7bb63b32c95a4f79eed4dc7529afa2a65002d1",
-                "sha256:7d0c45c154013970b78b86f4188e0e00a8e77d6bebef7c81efdc038db876eeba"
+                "sha256:6d63455012fc9431105ffc7739befca61c3efc551b287dca58d2be2e745475a9",
+                "sha256:a577a46c069ad889c7b7cf4dd978751d059edeab28b97acead4775d2ea1fc70a"
             ],
             "index": "pypi",
-            "version": "==8.13.3"
+            "version": "==8.13.4"
         },
         "pytz": {
             "hashes": [
