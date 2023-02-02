@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "96dbd27a56b1959111c99ca3785540b593ce8efe691b0de9a69db7666f4cef0e"
+            "sha256": "94e30e36bb3eff0ae23dd72ac81989c27fb3b7b8d70aff5883d04c5ae6dead64"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -128,11 +128,11 @@
         },
         "django": {
             "hashes": [
-                "sha256:18ba8efa36b69cfcd4b670d0fa187c6fe7506596f0ababe580e16909bcdec121",
-                "sha256:3adc285124244724a394fa9b9839cc8cd116faf7d159554c43ecdaa8cdf0b94d"
+                "sha256:59c39fc342b242fb42b6b040ad8b1b4c15df438706c1d970d416d63cdd73e7fd",
+                "sha256:644288341f06ebe4938eec6801b6bd59a6534a78e4aedde2a153075d11143894"
             ],
             "index": "pypi",
-            "version": "==3.2.16"
+            "version": "==3.2.17"
         },
         "django-phonenumber-field": {
             "extras": [
@@ -188,7 +188,7 @@
                 "sha256:a7687c12b444eaac951ea87a9627c4f904ac757e7abdc5aac32833234af90378",
                 "sha256:e261cdf010c11a41cb5cb5f1bf3338a7433832029f559a6a7614bd42a967c300"
             ],
-            "index": "pypi",
+            "markers": "python_version >= '3.7'",
             "version": "==67.1.0"
         },
         "sqlparse": {
