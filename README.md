@@ -39,3 +39,9 @@ Assuming the backup file is available over ssh on another machine, run the follo
 * `docker-compose exec db scp <user@hostname>:/tmp/contacts.sql /tmp/contacts.sql`
 * `docker-compose exec db sh -c 'dropdb --user postgres postgres && createdb --user postgres postgres'` (To wipe data, if there's an existing DB)
 * `docker-compose exec db sh -c 'psql --user postgres postgres < /tmp/contacts.sql'`
+
+
+## Environment Variables:
+
+* **SECRET_KEY** a secret used by django for lots of its security mechanisms.  To generate a new one, run `docker-compose exec app python manage.py shell -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`
+* **PRODUCTION** Set in a production environment, as it increases security protections.  Not setting it will give detailed debug pages on error.
