@@ -15,6 +15,7 @@ def agentAction(agent, action):
 		"type": "contact"+action.title(),
 		"humanReadable": "Contact \""+agent.getName()+"\" "+action,
 		"agent": serializeAgent(agent=agent),
+		"url": "https://contacts.l42.eu" + agent.get_absolute_url(),
 	})
 
 def contactUpdated(agent):
