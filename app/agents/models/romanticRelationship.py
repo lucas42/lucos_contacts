@@ -50,6 +50,10 @@ class RomanticRelationship(models.Model):
 		memberNames = self.members.values_list('_name', flat=True)
 		return (" "+joinSymbol+" ").join(memberNames)
 
+	# Relationships don't have their own view URL, so for now just use the admin url
+	def get_absolute_url(self):
+		return "/admin/agents/romanticrelationship/%i/change/" % self.id
+
 	# Put romantic relationships to the top of relationships lists
 	def getPriority(self):
 		return -1
@@ -63,6 +67,12 @@ class RomanticRelationship(models.Model):
 			# growing acceptance of using the previously male form in a gender-neutral way now
 			return _('Fiancé')
 		return _('Partner')
+
+	# Returns a string containing the first names of the members, separated by ampersands
+	def getFirstNames(self):
+		fullNames = self.members.order_by('-starred', '_name').values_list('_name', flat=True)
+		firstNames = [name.split()[0] for name in fullNames]
+		return " & ".join(firstNames)
 
 # Takes a year, month and day (any of which may be None) and tries to determine if that date has passed yet
 # Returns True if the date is in the past (or is today).

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-01 22:37+0000\n"
+"POT-Creation-Date: 2023-02-23 08:32+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,7 +34,19 @@ msgstr "Breithlá %(name)s"
 msgid "%(name)s's Deathday"
 msgstr "Lá táisc %(name)s"
 
-#: agents/calendar.py:75
+#: agents/calendar.py:54
+msgid "%(names)s's %(count)s Anniversary"
+msgstr "Comóradh Pósta %(count)s %(names)s"
+
+#: agents/calendar.py:59
+msgid "%(names)s's Anniversary"
+msgstr "Comóradh Pósta %(names)s"
+
+#: agents/calendar.py:66
+msgid "%(names)s's Wedding"
+msgstr "Bainis %(names)s"
+
+#: agents/calendar.py:108
 msgid "Contacts Calendar"
 msgstr "Féilire Teagmhálaithe"
 
@@ -164,18 +176,18 @@ msgstr "Geallta"
 msgid "Married"
 msgstr "Pósta"
 
-#: agents/models/romanticRelationship.py:59
+#: agents/models/romanticRelationship.py:63
 msgid "Spouse"
 msgstr "Céile"
 
 #. Translators: Using this in a gender-neutral sense here.
 #. Whilst there's often a spelling difference based on gender, there seems to be
 #. growing acceptance of using the previously male form in a gender-neutral way now
-#: agents/models/romanticRelationship.py:64
+#: agents/models/romanticRelationship.py:68
 msgid "Fiancé"
 msgstr ""
 
-#: agents/models/romanticRelationship.py:65
+#: agents/models/romanticRelationship.py:69
 msgid "Partner"
 msgstr "Páirtí"
 

@@ -24,7 +24,6 @@ def getBirthdays():
 		birthdays.append({
 			'date': date,
 			'label': label,
-			'agent': agent,
 			'link': agent.get_absolute_url(),
 		})
 	return birthdays
@@ -38,13 +37,45 @@ def getDeathdays():
 		deathdays.append({
 			'date': date,
 			'label': label,
-			'agent': agent,
 			'link': agent.get_absolute_url(),
 		})
 	return deathdays
 
+def getWeddings():
+	relationships = RomanticRelationship.objects.filter(active=True, members__starred=True).exclude(wedding_day__isnull=True).exclude(wedding_month__isnull=True)
+	weddingdays = []
+	for relationship in relationships.distinct():
+		date = nextOccurence(relationship.wedding_day, relationship.wedding_month)
+		if relationship.milestone == 'married':
+			if relationship.wedding_year:
+				age = date.year - relationship.wedding_year
+				label = _('%(names)s\'s %(count)s Anniversary') % {
+					'names': relationship.getFirstNames(),
+					'count': ordinal(age)
+				}
+			else:
+				label = _('%(names)s\'s Anniversary') % {
+					'names': relationship.getFirstNames()
+				}
+		elif relationship.milestone == 'engaged':
+			# If the wedding year isn't this upcoming year, then ignore
+			if date.year != relationship.wedding_year:
+				continue
+			label = _('%(names)s\'s Wedding') % {
+				'names': relationship.getFirstNames()
+			}
+		else:
+			continue
+		weddingdays.append({
+			'date': date,
+			'label': label,
+			'link': relationship.get_absolute_url(),
+		})
+	return weddingdays
+
+
 def getEvents():
-	events = getBirthdays() + getDeathdays()
+	events = getBirthdays() + getDeathdays() + getWeddings()
 	events.sort(key=lambda event: event['date'])
 	return events
 
