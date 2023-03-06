@@ -163,10 +163,11 @@
         },
         "phonenumbers": {
             "hashes": [
-                "sha256:1531b42c8c49a1f06b08598441bf1f11fe2618f707c6fc96b581b44aa4f2b0e3",
-                "sha256:f8bd92975ba7463b7828ae2f95e1037b7e0ab8f023e9e8ffb7c560fd7f5d66d7"
+                "sha256:253bb0e01250d21a11f2b42b3e6e161b7f6cb2ac440e2e2a95c1da71d221ee1a",
+                "sha256:d3e3555b38c89b121f5b2e917847003bdd07027569d758d5f40156c01aeac089"
             ],
-            "version": "==8.13.6"
+            "index": "pypi",
+            "version": "==8.13.7"
         },
         "pytz": {
             "hashes": [
@@ -185,11 +186,11 @@
         },
         "setuptools": {
             "hashes": [
-                "sha256:e5fd0a713141a4a105412233c63dc4e17ba0090c8e8334594ac790ec97792330",
-                "sha256:f106dee1b506dee5102cc3f3e9e68137bbad6d47b616be7991714b0c62204251"
+                "sha256:113ff8d482b826d2f3b99f26adb1fe505e526a94a08e68cdf392d1dff9ce0595",
+                "sha256:9f0004c0daa3d41ef4465934a89498da3eef994039f48845d6eb8202aa13b2e9"
             ],
-            "index": "pypi",
-            "version": "==67.4.0"
+            "markers": "python_version >= '3.7'",
+            "version": "==67.5.0"
         },
         "sqlparse": {
             "hashes": [
