@@ -150,10 +150,11 @@
         },
         "phonenumbers": {
             "hashes": [
-                "sha256:1b7c75c4a5e62885a0be0a6b073b7e3f4ce6672fd42ab7b4a6b46359c40591d0",
-                "sha256:4ba92a917fb8f6e3fe33fd04b9d84299852ce237289129ee4eda47a043a5c6c4"
+                "sha256:7706e490154551829110a158a94e3efdbd86b1d8607b7bb1e8d1cf27637db798",
+                "sha256:d2afb9f23b3fb99cd4dfce8b1e9005a66bb546470128a6ab5c1ac353463b2c8b"
             ],
-            "version": "==8.13.8"
+            "index": "pypi",
+            "version": "==8.13.9"
         },
         "pytz": {
             "hashes": [
@@ -175,7 +176,7 @@
                 "sha256:257de92a9d50a60b8e22abfcbb771571fde0dbf3ec234463212027a4eeecbe9a",
                 "sha256:e728ca814a823bf7bf60162daf9db95b93d532948c4c0bea762ce62f60189078"
             ],
-            "index": "pypi",
+            "markers": "python_version >= '3.7'",
             "version": "==67.6.1"
         },
         "sqlparse": {
