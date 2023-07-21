@@ -166,10 +166,11 @@
         },
         "phonenumbers": {
             "hashes": [
-                "sha256:92772b142eac9f3aeb0e87958c436996ac16d468d96646483997c8a57517933b",
-                "sha256:d7ca6b392eac44b50b923c6dc661525c73b21fa506723d2540c72de3db023442"
+                "sha256:89671217c706cbaa3ced101deefafa779836feac3e059434d886ac31f09f32c0",
+                "sha256:e8ffd86b2e0b844fd6189fdb0927dbe8707cb03b59102cba5532b3ea305cc1bd"
             ],
-            "version": "==8.13.16"
+            "index": "pypi",
+            "version": "==8.13.17"
         },
         "pytz": {
             "hashes": [
