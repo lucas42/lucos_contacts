@@ -8,6 +8,10 @@ jobs:
     steps:
       - checkout
       - run:
+        name: Install pipenv
+        command: pip install --upgrade pip && pip install pipenv
+          working_directory: app
+      - run:
           name: Install dependencies
           command: pipenv install
           working_directory: app
