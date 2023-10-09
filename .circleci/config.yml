@@ -13,7 +13,7 @@ jobs:
           working_directory: app
       - run:
           name: Install dependencies
-          command: pipenv install --skip-lock --system
+          command: pipenv install
           working_directory: app
       - run:
           name: Run tests for django app

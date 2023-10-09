@@ -174,7 +174,7 @@
             "version": "==23.2"
         },
         "phonenumbers": {
-q            "hashes": [
+            "hashes": [
                 "sha256:001664c90f59b8954766c2db85adafc8dbc96177efeb49607ca4e64a7acaf569",
                 "sha256:85ceeba9e67984ba98182c77e8e4c70093d38c0c6a0cb2bd392e0694ddaeb1f6"
             ],
