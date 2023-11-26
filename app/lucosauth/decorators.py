@@ -16,3 +16,16 @@ def api_auth(func):
 					return HttpResponse(status=403)
 		return func(request, *args, **kwargs)
 	return _decorator
+
+def calendar_auth(func):
+	@wraps(func)
+	def _decorator(request, *args, **kwargs):
+		from django.contrib.auth import login
+		if 'key' in request.GET:
+			try:
+				user = ApiUser.objects.get(apikey=request.GET['key'])
+				login(request, user)
+			except ApiUser.DoesNotExist:
+				return HttpResponse(status=403)
+		return func(request, *args, **kwargs)
+	return _decorator

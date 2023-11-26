@@ -1,10 +1,14 @@
 from django.shortcuts import render
 from agents.models import *
 from django.urls import reverse
-from datetime import date
+from datetime import date, datetime
+from django.http import HttpResponse
 from django.utils.translation import gettext as _
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from lucosauth.decorators import calendar_auth
+from icalendar import Calendar, Event
 
 def getBirthdays():
 	agentlist = Agent.objects.filter(starred=True).exclude(day_of_birth__isnull=True).exclude(month_of_birth__isnull=True)
@@ -25,6 +29,7 @@ def getBirthdays():
 			'date': date,
 			'label': label,
 			'link': agent.get_absolute_url(),
+			'uid': "birthday_"+str(agent.id)+"_"+str(date.year),
 		})
 	return birthdays
 
@@ -38,6 +43,7 @@ def getDeathdays():
 			'date': date,
 			'label': label,
 			'link': agent.get_absolute_url(),
+			'uid': "deathday_"+str(agent.id)+"_"+str(date.year),
 		})
 	return deathdays
 
@@ -70,6 +76,7 @@ def getWeddings():
 			'date': date,
 			'label': label,
 			'link': relationship.get_absolute_url(),
+			'uid': "wedding_"+str(relationship.id)+"_"+str(date.year),
 		})
 	return weddingdays
 
@@ -108,3 +115,19 @@ def renderCalendar(request):
 		'addurl': reverse('admin:agents_agent_add'),
 		'events': getEvents(),
 	})
+
+@csrf_exempt
+@calendar_auth
+@login_required
+def outputICalendar(request):
+	cal = Calendar()
+	cal.add('prodid', '-//lucos//contacts//')
+	cal.add('version', '2.0')
+	for eventData in getEvents():
+		event = Event()
+		event.add('uid', "lucos_contacts//"+eventData['uid'])
+		event.add('summary', eventData['label'])
+		event.add('dtstart', eventData['date'])
+		event.add('dtstamp', datetime.now())
+		cal.add_component(event)
+	return HttpResponse(content=cal.to_ical(), content_type="text/calendar")

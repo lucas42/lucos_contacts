@@ -14,6 +14,7 @@ urlpatterns = [
 	url(r'^agents/(?P<extid>(\d+|me|add))(/(?P<method>(view|accounts|starred)))?/?$', agents_views.agent),
 	url(r'^agents/(?P<list>(phone|postal|gifts|starred|all))$', agents_views.agentindex),
 	url(r'^calendar/?$', calendar_views.renderCalendar),
+	url(r'^calendar.ics$', calendar_views.outputICalendar),
 	url(r'^agents/import$', agents_views.importer),
 	url(r'^identify/?$', agents_views.identify),
 	url(r'^(?:agents/?)?$', RedirectView.as_view(url='/agents/starred')),
