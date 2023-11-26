@@ -243,6 +243,7 @@ h2 { text-align: center; }
 	margin: auto;
 	border: solid thin #559;
 	border-collapse: collapse;
+	clear: right;
 }
 #calendar td {
 	padding: 5px;
@@ -265,6 +266,19 @@ h2 { text-align: center; }
 }
 #calendar a:hover {
 	text-decoration: underline;
+}
+.icalendar-link {
+	float: right;
+	color: inherit;
+	text-decoration: none;
+	border: outset thin;
+	padding: 0.3em;
+	border-radius: 0.8em;
+	font-size: smaller;
+	margin: 0 1em 0.5em;
+}
+.icalendar-link:hover {
+	background: #eee;
 }
 
 /* Admin site */

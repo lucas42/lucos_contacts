@@ -1,4 +1,5 @@
 {% load humanize %}
+<a href="{{icalendar_link}}" class="icalendar-link" target="_blank">📅 iCalendar Link</a>
 <table id='calendar'>
 {% for event in events %}
 	{% ifchanged event.date.month %}
