@@ -53,7 +53,7 @@ def agent(request, extid, method=None):
 					if created:
 						agentModified = True
 				except ObjectDoesNotExist as e:
-					return HttpResponse(status=400, content=str(e)+"\n")
+					return HttpResponse(status=400, content=e.args[0]+"\n")
 				# Treat Multiple Account Objects like one already existed
 				except MultipleObjectsReturned as e:
 					continue
@@ -127,9 +127,9 @@ def identify(request):
 	try:
 		account = BaseAccount.get(**request.GET.dict())
 	except ObjectDoesNotExist as e:
-		return HttpResponse(status=404, content=str(e)+"\n")
+		return HttpResponse(status=404, content=e.args[0]+"\n")
 	except MultipleObjectsReturned as e:
-		return HttpResponse(status=409, content=str(e)+"\n")
+		return HttpResponse(status=409, content=e.args[0]+"\n")
 	return redirect(account.agent)
 
 def info(request):
