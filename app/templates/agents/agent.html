@@ -32,19 +32,19 @@
 			<a class='account phonenum' href="tel:{{num}}">{{num}}</a>
 		{%endfor%}
 		{%for address in email %}
-			<a class='account email' href="mailto:{{address.raw}}" target="_blank">{{ address.view }}</a>
+			<a class='account email' href="mailto:{{address.raw}}">{{ address.view }}</a>
 		{%endfor%}
 		{%for address in formattedaddresses %}
 			<span class='account postal'>{{address}}</span>
 		{%endfor%}
 		{%for userid in facebookaccounts %}
-			<a href="https://www.facebook.com/profile.php?id={{userid}}" target="_blank" class='account facebook'><img src="https://graph.facebook.com/{{userid}}/picture" />{% trans 'Facebook' %}</a>
+			<a href="https://www.facebook.com/profile.php?id={{userid}}" target="_blank" class='account facebook' rel="noopener"><img src="https://graph.facebook.com/{{userid}}/picture" />{% trans 'Facebook' %}</a>
 		{%endfor%}
 		{%for contactid in googlecontacts %}
-			<a href="https://contacts.google.com/person/{{contactid}}" target="_blank" class='account googlecontact'><img src="https://www.gstatic.com/images/branding/product/1x/contacts_48dp.png" />{% trans 'Google Contact' %}</a>
+			<a href="https://contacts.google.com/person/{{contactid}}" target="_blank" class='account googlecontact' rel="noopener"><img src="https://www.gstatic.com/images/branding/product/1x/contacts_48dp.png" />{% trans 'Google Contact' %}</a>
 		{%endfor%}
 		{%for search_path in googlephotoprofiles %}
-			<a href="https://photos.google.com{{search_path}}" target="_blank" class='account googlephotoprofile'><img src="https://ssl.gstatic.com/social/photosui/images/logo/1x/photos_512dp.png" />{% trans 'Photos' %}</a>
+			<a href="https://photos.google.com{{search_path}}" target="_blank" class='account googlephotoprofile' rel="noopener"><img src="https://ssl.gstatic.com/social/photosui/images/logo/1x/photos_512dp.png" />{% trans 'Photos' %}</a>
 		{%endfor%}
 		{%if formattedBirthday %}
 			<div id="birthday">
