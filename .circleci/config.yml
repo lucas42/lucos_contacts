@@ -8,6 +8,14 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Populate known_hosts
+          command: |
+            ssh-keyscan -p 2202 -H creds.l42.eu >> ~/.ssh/known_hosts
+      - run:
+          name: Fetch test envfile
+          command: |
+            scp -s -P 2202 -o BatchMode=yes $DEPLOY_USERNAME@creds.l42.eu:$CIRCLE_PROJECT_REPONAME/test/.env .
+      - run:
           name: Install pipenv
           command: pip install --upgrade pip && pip install pipenv
           working_directory: app
@@ -19,6 +27,10 @@ jobs:
           name: Run tests for django app
           command: pipenv run python manage.py test agents.tests comms.tests lucosauth.tests
           working_directory: app
+      - run:
+          name: Delete envfile
+          command: |
+            rm -f .env
 workflows:
   version: 2
   build-deploy:
