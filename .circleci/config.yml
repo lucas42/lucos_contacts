@@ -15,6 +15,7 @@ jobs:
           name: Fetch test envfile
           command: |
             scp -s -P 2202 -o BatchMode=yes tests@creds.l42.eu:$CIRCLE_PROJECT_REPONAME/test/.env .
+          working_directory: app
       - run:
           name: Install pipenv
           command: pip install --upgrade pip && pip install pipenv
