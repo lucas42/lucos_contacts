@@ -164,11 +164,12 @@
                 "phonenumbers"
             ],
             "hashes": [
-                "sha256:4eaab35fe9a163046dc3a47188771385c56a788e0e11b7bbcc662e1e6b7b9104",
-                "sha256:63721dbdc7424cd594a08d80f550e790cf6e7c903cbc0fb4dd9d86baac8b8c51"
+                "sha256:bc6eaa49d1f9d870944f5280258db511e3a1ba5e2fbbed255488dceacae45d06",
+                "sha256:f9cdb3de085f99c249328293a3b93d4e5fa440c0c8e3b99eb0d0f54748629797"
             ],
             "index": "pypi",
-            "version": "==7.1.0"
+            "markers": "python_version >= '3.8'",
+            "version": "==7.3.0"
         },
         "gunicorn": {
             "hashes": [
