@@ -28,17 +28,17 @@ Has three components:
 
 ### Wiping database clean so restore doesn't cause any conflicts
 (on machine with docker & docker-compose installed)
-* `docker-compose exec db dropdb --user postgres postgres`
-* `docker-compose exec db createdb --user postgres postgres`
+* `docker compose exec db dropdb --user postgres postgres`
+* `docker compose exec db createdb --user postgres postgres`
 
 ### Restoring from backup
 (on machine with docker & docker-compose installed)
 Assuming the backup file is available over ssh on another machine, run the following commands:
 
-* `docker-compose exec db apk add openssh-client`
-* `docker-compose exec db scp <user@hostname>:/tmp/contacts.sql /tmp/contacts.sql`
-* `docker-compose exec db sh -c 'dropdb --user postgres postgres && createdb --user postgres postgres'` (To wipe data, if there's an existing DB)
-* `docker-compose exec db sh -c 'psql --user postgres postgres < /tmp/contacts.sql'`
+* `docker compose exec db apk add openssh-client`
+* `docker compose exec db scp <user@hostname>:/tmp/contacts.sql /tmp/contacts.sql`
+* `docker compose exec db sh -c 'dropdb --user postgres postgres && createdb --user postgres postgres'` (To wipe data, if there's an existing DB)
+* `docker compose exec db sh -c 'psql --user postgres postgres < /tmp/contacts.sql'`
 
 
 ## Environment Variables:
