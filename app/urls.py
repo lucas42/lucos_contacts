@@ -1,4 +1,4 @@
-from django.conf.urls import url, include
+from django.urls import re_path, include
 from django.views.generic import RedirectView
 from django.contrib.auth.decorators import user_passes_test
 
@@ -11,21 +11,21 @@ admin.autodiscover()
 admin.site.login = user_passes_test(lambda u:u.is_staff, login_url='/accounts/login/')(admin.site.login)
 
 urlpatterns = [
-	url(r'^agents/(?P<extid>(\d+|me|add))(/(?P<method>(view|accounts|starred)))?/?$', agents_views.agent),
-	url(r'^agents/(?P<list>(phone|postal|gifts|starred|all))$', agents_views.agentindex),
-	url(r'^calendar/?$', calendar_views.renderCalendar),
-	url(r'^calendar.ics$', calendar_views.outputICalendar),
-	url(r'^agents/import$', agents_views.importer),
-	url(r'^identify/?$', agents_views.identify),
-	url(r'^(?:agents/?)?$', RedirectView.as_view(url='/agents/starred')),
+	re_path(r'^agents/(?P<extid>(\d+|me|add))(/(?P<method>(view|accounts|starred)))?/?$', agents_views.agent),
+	re_path(r'^agents/(?P<list>(phone|postal|gifts|starred|all))$', agents_views.agentindex),
+	re_path(r'^calendar/?$', calendar_views.renderCalendar),
+	re_path(r'^calendar.ics$', calendar_views.outputICalendar),
+	re_path(r'^agents/import$', agents_views.importer),
+	re_path(r'^identify/?$', agents_views.identify),
+	re_path(r'^(?:agents/?)?$', RedirectView.as_view(url='/agents/starred')),
 	# Static files (icons, bootloader) are handled by nginx
 
 	# Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
 	# to INSTALLED_APPS to enable admin documentation:
 	# url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-	url(r'^admin/', admin.site.urls),
-	url(r'^accounts/login/', auth_views.loginview),
-	url(r'^_info$', agents_views.info),
-	url (r'^i18n/' ,include('django.conf.urls.i18n')),
+	re_path(r'^admin/', admin.site.urls),
+	re_path(r'^accounts/login/', auth_views.loginview),
+	re_path(r'^_info$', agents_views.info),
+	re_path (r'^i18n/' ,include('django.conf.urls.i18n')),
 ]
