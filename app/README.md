@@ -28,12 +28,7 @@ Requires [pipenv](https://pipenv.kennethreitz.org/en/latest/).  Run the followin
 The tests also get run in circleCI - test failures there block deployment.
 
 ## Language support
-Some fields support having values in different languages.  Currently this is limited to:
-* English
-* Irish
-* Scottish Gaelic
-* Welsh
-These are hardcoded values, so can only be change by make source code changes in several places.  Obviously this isn't very scabable, but a scalable solution would require a more complicated database schema and I wasn't sure if there was enough demand for this.
+The UI is available in English or Irish languages.  Irish is the default and this can be switched in the navigation bar.  The source files are written in English, with locale config provided for Irish in `locale/ga/LC_MESSAGE/django.po`.
 
 ## Creating a new database migration
 
