@@ -150,6 +150,14 @@ LOGGING = {
     },
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+
 # This prevents warning about old test runners
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
