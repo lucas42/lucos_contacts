@@ -17,17 +17,8 @@ jobs:
             scp -s -P 2202 -o BatchMode=yes tests@creds.l42.eu:$CIRCLE_PROJECT_REPONAME/test/.env .
           working_directory: app
       - run:
-          name: Install pipenv
-          command: pip install --upgrade pip && pip install pipenv
-          working_directory: app
-      - run:
-          name: Install dependencies
-          command: pipenv install
-          working_directory: app
-      - run:
           name: Run tests for django app
-          command: pipenv run python manage.py test agents.tests comms.tests lucosauth.tests
-          working_directory: app
+          command: docker compose up test --build --exit-code-from test
       - run:
           name: Delete envfile
           command: |

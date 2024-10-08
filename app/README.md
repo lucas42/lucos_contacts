@@ -19,11 +19,9 @@ Run the following:
 This will spin up docker containers for the django app, database and web proxy.
 
 ## Running tests locally
-Requires [pipenv](https://pipenv.kennethreitz.org/en/latest/).  Run the following:
+Run the following:
 
-* `cd app`
-* `pipenv install`
-* `CI=true SECRET_KEY=test pipenv run python manage.py test agents.tests comms.tests lucosauth.tests`
+`docker compose up test --build --exit-code-from test`
 
 The tests also get run in circleCI - test failures there block deployment.
 

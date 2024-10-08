@@ -30,6 +30,15 @@ services:
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
     restart: always
+  test:
+    build: ./app
+    container_name: contacts_test
+    image: lucas42/lucos_contacts_app
+    environment:
+      - SECRET_KEY=test
+    depends_on:
+      - db
+    command: ./manage.py test agents.tests comms.tests lucosauth.tests
 volumes:
   staticfiles:
   db_data:
