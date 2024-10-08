@@ -4,7 +4,7 @@ orbs:
 jobs:
   test-app:
     docker:
-      - image: python:3.12
+      - image: cimg/base:current
     steps:
       - checkout
       - run:
