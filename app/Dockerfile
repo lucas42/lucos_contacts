@@ -8,21 +8,17 @@ WORKDIR /usr/src/app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# install psycopg2
-RUN apk update \
-    && apk add --virtual build-deps gcc python3-dev musl-dev \
-    && apk add postgresql-dev \
-    && pip install psycopg2 \
-    && apk del build-deps
+# Install apk dependencies
+RUN apk update
+RUN apk add postgresql-dev # Needed for database connection
+RUN apk add gettext # Needed for translations
 
-# Needed for translations
-RUN apk add gettext
-
-# Install dependencies
-COPY Pipfile .
-RUN pip install --upgrade pip
-RUN pip install pipenv
-RUN pipenv install --skip-lock --system
+# Install pip dependencies
+RUN apk add --virtual build-deps gcc python3-dev musl-dev # These are needed to install pyscopg, but can be removed after
+COPY Pipfile* .
+RUN pip install --upgrade pip pipenv
+RUN pipenv install --system
+RUN apk del build-deps gcc python3-dev musl-dev
 
 # Copy project after dependencies, so cached dependencies can be used if unchanged
 COPY . .
