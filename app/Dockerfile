@@ -1,7 +1,7 @@
-FROM lucas42/lucos_navbar:latest as navbar
+FROM lucas42/lucos_navbar:latest AS navbar
 FROM python:3.13.0-alpine
 
-# set work directory
+# set working directory
 WORKDIR /usr/src/app
 
 # set environment varibles
