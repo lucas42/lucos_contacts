@@ -116,7 +116,7 @@ else:
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django.db.backends.postgresql', # Add 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'postgres',              # Or path to database file if using sqlite3.
         'USER': 'postgres',              # Not used with sqlite3.
         'HOST': 'db',                    # Set to empty string for localhost. Not used with sqlite3.
