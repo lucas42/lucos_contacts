@@ -197,12 +197,12 @@
         },
         "psycopg": {
             "hashes": [
-                "sha256:43665368ccd48180744cab26b74332f46b63b7e06e8ce0775547a3533883d381",
-                "sha256:f26f1346d6bf1ef5f5ef1714dd405c67fb365cfd1c6cea07de1792747b167b92"
+                "sha256:b782130983e5b3de30b4c529623d3687033b4dafa05bb661fc6bf45837ca5879",
+                "sha256:f5f750611c67cb200e85b408882f29265c66d1de7f813add4f8125978bfd70e8"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==3.2.4"
+            "version": "==3.2.5"
         },
         "python-dateutil": {
             "hashes": [
