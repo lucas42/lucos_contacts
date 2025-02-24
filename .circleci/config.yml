@@ -32,7 +32,7 @@ workflows:
       - lucos/build-amd64
       - lucos/deploy-avalon:
           requires:
-            - test-app
+            - test
             - lucos/build-amd64
           filters:
             branches:
