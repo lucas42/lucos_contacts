@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-23 08:32+0000\n"
+"POT-Creation-Date: 2025-03-20 01:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,34 +19,37 @@ msgstr ""
 "Plural-Forms: nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
 "4);\n"
 
-#: agents/calendar.py:16
+#: agents/calendar.py:21
 #, python-format
 msgid "%(name)s's %(count)s Birthday"
 msgstr "Breithlá %(count)s %(name)s"
 
-#: agents/calendar.py:21
+#: agents/calendar.py:26
 #, python-format
 msgid "%(name)s's Birthday"
 msgstr "Breithlá %(name)s"
 
-#: agents/calendar.py:37
+#: agents/calendar.py:42
 #, python-format
 msgid "%(name)s's Deathday"
 msgstr "Lá táisc %(name)s"
 
-#: agents/calendar.py:54
+#: agents/calendar.py:59
+#, python-format
 msgid "%(names)s's %(count)s Anniversary"
 msgstr "Comóradh Pósta %(count)s %(names)s"
 
-#: agents/calendar.py:59
+#: agents/calendar.py:64
+#, python-format
 msgid "%(names)s's Anniversary"
 msgstr "Comóradh Pósta %(names)s"
 
-#: agents/calendar.py:66
+#: agents/calendar.py:71
+#, python-format
 msgid "%(names)s's Wedding"
 msgstr "Bainis %(names)s"
 
-#: agents/calendar.py:108
+#: agents/calendar.py:114
 msgid "Contacts Calendar"
 msgstr "Féilire Teagmhálaithe"
 
@@ -198,6 +201,43 @@ msgstr "Mise"
 #: agents/views.py:120
 msgid "Contacts"
 msgstr "Teagmhálacha"
+
+#: comms/models.py:6
+msgid "Christmas"
+msgstr "Nollaig"
+
+#: comms/models.py:7 templates/agents/agent.html:51
+msgid "Birthday"
+msgstr "Breithlá"
+
+#: comms/models.py:8
+msgid "Other"
+msgstr "Eile"
+
+#: comms/models.py:24
+msgid "{year} {type} List"
+msgstr "Liosta {type} {year}"
+
+#: comms/models.py:32
+msgid "E.g. 'Handmade Scarf', 'Book'"
+msgstr "E.g. 'Scairf Déanta Le Lámh', 'Leabhar'"
+
+#: comms/models.py:35 comms/models.py:43
+msgid "Given"
+msgstr "Tugtha"
+
+#: comms/models.py:35 comms/models.py:43
+msgid "Received"
+msgstr "Faighte"
+
+#: comms/models.py:37
+#, python-brace-format
+msgid "{action} by {agents}: {description} ({occasion})"
+msgstr "{action} le {agents}: {description} ({occasion})"
+
+#: comms/models.py:45
+msgid "{description} for {agents}'s {year} Birthday"
+msgstr "{description} do Bhreithlá {agents} {year}"
 
 #: settings.py:25
 msgid "Irish"
@@ -582,10 +622,6 @@ msgstr "Teagmháil Google"
 msgid "Photos"
 msgstr "Grianghraif"
 
-#: templates/agents/agent.html:51
-msgid "Birthday"
-msgstr "Breithlá"
-
 #: templates/agents/agent.html:56
 msgid "Notes"
 msgstr "Notaí"
@@ -629,3 +665,6 @@ msgstr "Féilire"
 #: templates/agents/index.html:20
 msgid "All"
 msgstr "Uilig"
+
+#~ msgid "{} by {}: {} ({})"
+#~ msgstr "{} le {}: {} ({})"
