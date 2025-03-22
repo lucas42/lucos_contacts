@@ -1,6 +1,7 @@
 from comms.models import *
 from django.contrib import admin
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 
 class PresentForm(forms.ModelForm):
@@ -8,7 +9,7 @@ class PresentForm(forms.ModelForm):
 		model = Present
 		fields = '__all__'
 		widgets = {
-			'was_given': forms.RadioSelect
+			'was_given': forms.RadioSelect,
 		}
 class PresentInline(admin.TabularInline):
 	model = Present
@@ -29,9 +30,22 @@ class PresentAdmin(admin.ModelAdmin):
 
 admin.site.register(Present, PresentAdmin)
 
+class BirthdayPresentForm(PresentForm):
+	class Meta:
+		model = BirthdayPresent
+		fields = ('agents', 'year', 'description')
+		widgets = {
+			'agents': forms.Select,
+		}
+		labels = {
+			'agents': _('Whose birthday it was'),
+			'description': _('What I gave them'),
+		}
+		help_texts = {
+			'year': _("The calendar year of the birthday the present was for (which is usually, but not necessarily, the year the present was given)"),
+		}
+
 class BirthdayPresentAdmin(admin.ModelAdmin):
-	filter_horizontal = ('agents',)
-	exclude = ('occasion',)
-	form = PresentForm
+	form = BirthdayPresentForm
 
 admin.site.register(BirthdayPresent, BirthdayPresentAdmin)

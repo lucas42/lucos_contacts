@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-20 01:10+0000\n"
+"POT-Creation-Date: 2025-03-22 17:40+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -202,6 +202,20 @@ msgstr "Mise"
 msgid "Contacts"
 msgstr "Teagmhálacha"
 
+#: comms/admin.py:41
+msgid "Whose birthday it was"
+msgstr "Cé leis a breithlá a bhí sé"
+
+#: comms/admin.py:42
+msgid "What I gave them"
+msgstr "Cad a thug mé dóibh"
+
+#: comms/admin.py:45
+msgid ""
+"The calendar year of the birthday the present was for (which is usually, but "
+"not necessarily, the year the present was given)"
+msgstr ""
+
 #: comms/models.py:6
 msgid "Christmas"
 msgstr "Nollaig"
@@ -215,6 +229,7 @@ msgid "Other"
 msgstr "Eile"
 
 #: comms/models.py:24
+#, python-brace-format
 msgid "{year} {type} List"
 msgstr "Liosta {type} {year}"
 
@@ -236,6 +251,7 @@ msgid "{action} by {agents}: {description} ({occasion})"
 msgstr "{action} le {agents}: {description} ({occasion})"
 
 #: comms/models.py:45
+#, python-brace-format
 msgid "{description} for {agents}'s {year} Birthday"
 msgstr "{description} do Bhreithlá {agents} {year}"
 
