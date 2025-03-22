@@ -41,9 +41,6 @@ class BirthdayPresentForm(PresentForm):
 			'agents': _('Whose birthday it was'),
 			'description': _('What I gave them'),
 		}
-		help_texts = {
-			'year': _("The calendar year of the birthday the present was for (which is usually, but not necessarily, the year the present was given)"),
-		}
 
 class BirthdayPresentAdmin(admin.ModelAdmin):
 	form = BirthdayPresentForm

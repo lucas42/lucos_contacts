@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-22 17:40+0000\n"
+"POT-Creation-Date: 2025-03-22 18:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -204,17 +204,11 @@ msgstr "Teagmhálacha"
 
 #: comms/admin.py:41
 msgid "Whose birthday it was"
-msgstr "Cé leis a breithlá a bhí sé"
+msgstr "Cé leis an breithlá a bhí ann"
 
 #: comms/admin.py:42
 msgid "What I gave them"
 msgstr "Cad a thug mé dóibh"
-
-#: comms/admin.py:45
-msgid ""
-"The calendar year of the birthday the present was for (which is usually, but "
-"not necessarily, the year the present was given)"
-msgstr ""
 
 #: comms/models.py:6
 msgid "Christmas"
@@ -228,40 +222,109 @@ msgstr "Breithlá"
 msgid "Other"
 msgstr "Eile"
 
-#: comms/models.py:24
+#: comms/models.py:16 comms/models.py:45
+msgid "year"
+msgstr "bliain"
+
+#: comms/models.py:16
+msgid "Calendar year, as per the Gregorian Calendar (Common Era assumed)"
+msgstr "Bliain fhéilire, de réir an Fhéilire Gregorian (Glactar leis an Ré Choiteann)"
+
+#: comms/models.py:17
+msgid "gave card to"
+msgstr "Thúg cárta do"
+
+#: comms/models.py:18
+msgid "received card from"
+msgstr "Fuair cárta ó"
+
+#: comms/models.py:22
+msgid "occasion list"
+msgstr "liosta ócáid"
+
+#: comms/models.py:23
+msgid "occasion lists"
+msgstr "liostaí ócáidí"
+
+#: comms/models.py:26
 #, python-brace-format
 msgid "{year} {type} List"
 msgstr "Liosta {type} {year}"
 
-#: comms/models.py:32
-msgid "E.g. 'Handmade Scarf', 'Book'"
-msgstr "E.g. 'Scairf Déanta Le Lámh', 'Leabhar'"
-
-#: comms/models.py:35 comms/models.py:43
+#: comms/models.py:28 comms/models.py:40 comms/models.py:51
 msgid "Given"
 msgstr "Tugtha"
 
-#: comms/models.py:35 comms/models.py:43
+#: comms/models.py:28 comms/models.py:40 comms/models.py:51
 msgid "Received"
 msgstr "Faighte"
 
+#: comms/models.py:31
+msgid "occasion"
+msgstr "ócáid"
+
+#: comms/models.py:32
+msgid "agent"
+msgstr "gníomhaí"
+
+#: comms/models.py:33
+msgid "was given"
+msgstr "tugtha?"
+
+#: comms/models.py:33
+msgid "Whether I gave or received the present"
+msgstr "Cé acu a thug nó a bhfuair mé an bronntanas"
+
+#: comms/models.py:34
+msgid "description"
+msgstr "tuairisc"
+
+#: comms/models.py:34
+msgid "E.g. 'Handmade Scarf', 'Book'"
+msgstr "Mar Shampla 'Scairf Déanta Le Lámh', 'Leabhar'"
+
 #: comms/models.py:37
+msgid "present"
+msgstr "bronntanas"
+
+#: comms/models.py:38
+msgid "presents"
+msgstr "bronntanais"
+
+#: comms/models.py:42
 #, python-brace-format
 msgid "{action} by {agents}: {description} ({occasion})"
 msgstr "{action} le {agents}: {description} ({occasion})"
 
 #: comms/models.py:45
+msgid ""
+"The calendar year of the birthday the present was for (which is usually, but "
+"not necessarily, the year the present was given)"
+msgstr ""
+"An bhliain féilire ina raibh an breithlá go raibh an bronntanas faoi "
+"choinne(De ghnáth, ach chan i gcónaí, bionn seo an bliain céanna gur thugadh "
+"an bronntanas)"
+
+#: comms/models.py:48
+msgid "birthday present"
+msgstr "bronntanas breithlá"
+
+#: comms/models.py:49
+msgid "birthday presents"
+msgstr "bronntanais breithlá"
+
+#: comms/models.py:53
 #, python-brace-format
 msgid "{description} for {agents}'s {year} Birthday"
 msgstr "{description} do Bhreithlá {agents} {year}"
 
 #: settings.py:25
 msgid "Irish"
-msgstr ""
+msgstr "Gaeigle"
 
 #: settings.py:26
 msgid "English"
-msgstr ""
+msgstr "Béarla"
 
 #: templates/admin/404.html:4 templates/admin/404.html:8
 msgid "Page not found"
@@ -681,6 +744,3 @@ msgstr "Féilire"
 #: templates/agents/index.html:20
 msgid "All"
 msgstr "Uilig"
-
-#~ msgid "{} by {}: {} ({})"
-#~ msgstr "{} le {}: {} ({})"
