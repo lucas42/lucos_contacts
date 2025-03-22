@@ -1,7 +1,7 @@
 services:
   web:
     build: ./web
-    container_name: contacts_web
+    container_name: lucos_contacts_web
     ports:
       - "8013:80"
     image: lucas42/lucos_contacts_web
@@ -12,7 +12,7 @@ services:
       - app
   app:
     build: ./app
-    container_name: contacts_app
+    container_name: lucos_contacts_app
     image: lucas42/lucos_contacts_app
     environment:
       - SECRET_KEY
@@ -23,6 +23,7 @@ services:
     depends_on:
       - db
   db:
+    container_name: lucos_contacts_db
     image: postgres:16-alpine
     volumes:
       - db_data:/var/lib/postgresql/data/
@@ -31,7 +32,7 @@ services:
     restart: always
   test:
     build: ./app
-    container_name: contacts_test
+    container_name: lucos_contacts_test
     image: lucas42/lucos_contacts_app
     environment:
       - SECRET_KEY=test
