@@ -96,18 +96,8 @@ class AgentAdmin(admin.ModelAdmin):
 		contactDeleted(agent_name, agent_id)
 		return res
 
-class RelationshipAdmin(admin.ModelAdmin):
-	fields = ('subject', 'relationshipType', 'object')
-	list_display = ('subject', 'relationshipType', 'object')
-	list_display_links = ('subject', 'relationshipType', 'object')
-
 class RomanticRelationshipAdmin(admin.ModelAdmin):
 	filter_horizontal = ('members', )
 
 admin.site.register(Agent, AgentAdmin)
-admin.site.register(PhoneNumber)
-admin.site.register(EmailAddress)
-admin.site.register(FacebookAccount)
-admin.site.register(PostalAddress)
-admin.site.register(Relationship, RelationshipAdmin)
 admin.site.register(RomanticRelationship, RomanticRelationshipAdmin)
