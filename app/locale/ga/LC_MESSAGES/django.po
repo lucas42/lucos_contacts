@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-22 18:24+0000\n"
+"POT-Creation-Date: 2025-08-02 23:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -228,7 +228,8 @@ msgstr "bliain"
 
 #: comms/models.py:16
 msgid "Calendar year, as per the Gregorian Calendar (Common Era assumed)"
-msgstr "Bliain fhéilire, de réir an Fhéilire Gregorian (Glactar leis an Ré Choiteann)"
+msgstr ""
+"Bliain fhéilire, de réir an Fhéilire Gregorian (Glactar leis an Ré Choiteann)"
 
 #: comms/models.py:17
 msgid "gave card to"
@@ -236,7 +237,7 @@ msgstr "Thúg cárta do"
 
 #: comms/models.py:18
 msgid "received card from"
-msgstr "Fuair cárta ó"
+msgstr "Fuarthas cárta ó"
 
 #: comms/models.py:22
 msgid "occasion list"
@@ -251,11 +252,11 @@ msgstr "liostaí ócáidí"
 msgid "{year} {type} List"
 msgstr "Liosta {type} {year}"
 
-#: comms/models.py:28 comms/models.py:40 comms/models.py:51
+#: comms/models.py:28 comms/models.py:51
 msgid "Given"
 msgstr "Tugtha"
 
-#: comms/models.py:28 comms/models.py:40 comms/models.py:51
+#: comms/models.py:28 comms/models.py:51
 msgid "Received"
 msgstr "Faighte"
 
@@ -291,10 +292,17 @@ msgstr "bronntanas"
 msgid "presents"
 msgstr "bronntanais"
 
+#: comms/models.py:40
+msgid "Given to"
+msgstr "Tugtha do"
+
+#: comms/models.py:40
+msgid "Received from"
+msgstr "Faighte ó"
+
 #: comms/models.py:42
-#, python-brace-format
-msgid "{action} by {agents}: {description} ({occasion})"
-msgstr "{action} le {agents}: {description} ({occasion})"
+msgid "{action} {agents}: {description} ({occasion})"
+msgstr "{action} {agents}: {description} ({occasion})"
 
 #: comms/models.py:45
 msgid ""

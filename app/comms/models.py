@@ -37,9 +37,9 @@ class Present(models.Model):
 		verbose_name = _('present')
 		verbose_name_plural = _('presents')
 	def __str__(self):
-		action = _("Given") if self.was_given else _("Received")
+		action = _("Given to") if self.was_given else _("Received from")
 		agents = ", ".join(str(agent) for agent in self.agents.all())
-		return _("{action} by {agents}: {description} ({occasion})").format(action=action, agents=agents, description=self.description, occasion=self.occasion)
+		return _("{action} {agents}: {description} ({occasion})").format(action=action, agents=agents, description=self.description, occasion=self.occasion)
 
 class BirthdayPresent(Present):
 	year = models.IntegerField(_('year'), help_text=_("The calendar year of the birthday the present was for (which is usually, but not necessarily, the year the present was given)"))

@@ -25,9 +25,6 @@ Run the following:
 
 The tests also get run in circleCI - test failures there block deployment.
 
-## Language support
-The UI is available in English or Irish languages.  Irish is the default and this can be switched in the navigation bar.  The source files are written in English, with locale config provided for Irish in `locale/ga/LC_MESSAGE/django.po`.
-
 ## Creating a new database migration
 
 * Upgrade the approprite `models.py` files
@@ -38,10 +35,13 @@ The UI is available in English or Irish languages.  Irish is the default and thi
 * Rebuild & restart the container for the migrations to take effect.
 * Commit the new migration files to git
 
+## Language support
+The UI is available in English or Irish languages.  Irish is the default and this can be switched in the navigation bar.  The source files are written in English, with locale config provided for Irish in `locale/ga/LC_MESSAGE/django.po`.
+
 ## Updating Translations
 
 * `docker-compose exec app django-admin makemessages --all`
-* `docker cp contacts_app:/usr/src/app/locale app/`
+* `docker cp lucos_contacts_app:/usr/src/app/locale app/`
 * Update the `.po` files in the locale directory with the relevant languages
 * Rebuild & restart the container for the translations to take effect.  (translations are compiled as part of the docker build process)
 * Commit the locale files to git
