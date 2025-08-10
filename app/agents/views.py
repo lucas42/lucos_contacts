@@ -96,7 +96,7 @@ def agentindex(request, list):
 	elif (list == 'phone'):
 		agentlist = Agent.objects.filter(phonenumber__isnull=False)
 	elif (list == 'gifts'):
-		agentlist = Agent.objects.filter(on_gift_list=True)
+		agentlist = Agent.objects.filter(starred=True).exclude(gift_ideas="")
 		template = 'agents/agenttable.html'
 	elif (list == 'starred'):
 		agentlist = Agent.objects.filter(starred=True)

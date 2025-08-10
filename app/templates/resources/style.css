@@ -11,9 +11,29 @@
 .agentlist h3 { margin: 0; }
 .agentlist .relation { font-style: italic; font-size: smaller; }
 
-.agenttable { margin: auto; }
-.agenttable thead { font-weight: bold; }
-.agenttable td { padding: 5px 10px; }
+.agenttable {
+	margin: auto;
+	max-width: 700px;
+	border-collapse: collapse;
+}
+.agenttable thead {
+	font-weight: bold;
+	background: #559;
+	color: #fff;
+}
+.agenttable td {
+	padding: 5px 10px;
+	border: solid thin #559;
+}
+.agenttable td:first-child {
+	border-left: none;
+}
+.agenttable td:last-child {
+	border-right: none;
+}
+.agenttable tr:last-child td {
+	border-bottom: none;
+}
 .agenttable a { text-decoration: none; color: inherit; display:block;}
 .agenttable a:hover { text-decoration: underline; }
 

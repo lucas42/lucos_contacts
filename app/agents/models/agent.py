@@ -29,7 +29,6 @@ class Agent(models.Model):
 	is_dead = models.BooleanField(default=False)
 	bio = models.TextField(blank=True)
 	notes = models.TextField(blank=True)
-	on_gift_list = models.BooleanField(default=False)
 	gift_ideas = models.TextField(blank=True)
 
 	class Meta:
