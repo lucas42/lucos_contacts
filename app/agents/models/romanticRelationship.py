@@ -74,10 +74,6 @@ class RomanticRelationship(models.Model):
 		joinSymbol = "❤️" if self.active else "💔"
 		return self.personA.getName()+" "+joinSymbol+" "+self.personB.getName()
 
-	# Relationships don't have their own view URL, so for now just use the admin url
-	def get_absolute_url(self):
-		return "/admin/agents/romanticrelationship/%i/change/" % self.id
-
 	# Put romantic relationships to the top of relationships lists
 	def getPriority(self):
 		return -1

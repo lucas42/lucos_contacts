@@ -1,4 +1,5 @@
 from agents.models import *
+from django import forms
 from django.contrib import admin, messages
 from django.shortcuts import redirect
 from agents.loganne import contactCreated, contactUpdated, contactDeleted
@@ -41,6 +42,48 @@ class RelationshipInline(admin.TabularInline):
 	fk_name = 'subject'
 	fields = ('relationshipType', 'object')
 
+class RomanticRelationshipForm(forms.ModelForm):
+	romanticPartner = forms.ModelChoiceField(queryset=Agent.objects.all(), required=True, label="Romantic Partner")
+
+	class Meta:
+		model = RomanticRelationship
+		exclude = ("personA", "personB")
+
+	def __init__(self, *args, **kwargs):
+		self.current_agent = kwargs.pop('current_agent', None)
+		super().__init__(*args, **kwargs)
+		if self.current_agent:
+			self.fields['romanticPartner'].queryset = Agent.objects.exclude(pk=self.current_agent.pk)
+			if self.instance.pk:
+				self.fields['romanticPartner'].initial = self.instance.getOtherPerson(self.current_agent)
+	def save(self, commit=True):
+		self.instance.personA = self.current_agent
+		self.instance.personB = self.cleaned_data['romanticPartner']
+		return super().save(commit=commit)
+
+class RomanticRelationshipInline(admin.TabularInline):
+	model = RomanticRelationship
+	form = RomanticRelationshipForm
+	extra = 1
+	fk_name = 'personA'  # Needed by Django, but we try to override where needed
+
+	def get_formset(self, request, obj=None, **kwargs):
+		FormSet = super().get_formset(request, obj, **kwargs)
+
+		class FormSetWithCurrentAgent(FormSet):
+			def __init__(self, *args, **kwargs):
+				kwargs['form_kwargs'] = {'current_agent': obj}
+				super().__init__(*args, **kwargs)
+
+			def get_queryset(self):
+				return RomanticRelationship.objects.filter_person(obj)
+
+		return FormSetWithCurrentAgent
+	def get_fields(self, request, obj=None):
+		all_fields = [f.name for f in self.model._meta.fields if f.name not in self.form.Meta.exclude]
+		fields_order = ['romanticPartner'] + [f for f in all_fields if f != 'romanticPartner']
+		return fields_order
+
 class AgentAdmin(admin.ModelAdmin):
 	actions = ['merge','delete_all_relationships']
 	inlines = [
@@ -52,7 +95,8 @@ class AgentAdmin(admin.ModelAdmin):
 		GoogleAccountInline,
 		GoogleContactInline,
 		GooglePhotosProfileInline,
-		RelationshipInline
+		RelationshipInline,
+		RomanticRelationshipInline,
 	]
 	list_max_show_all = 1000
 	def merge(self, request, queryset):
@@ -67,6 +111,8 @@ class AgentAdmin(admin.ModelAdmin):
 			else:
 				Relationship.objects.filter(subject=agent).update(subject=mainagent)
 				Relationship.objects.filter(object=agent).update(object=mainagent)
+				RomanticRelationship.objects.filter(personA=agent).update(personA=mainagent)
+				RomanticRelationship.objects.filter(personB=agent).update(personB=mainagent)
 				ExternalAgent.objects.filter(agent=agent).update(agent=mainagent)
 				AgentName.objects.filter(agent=agent).update(agent=mainagent)
 				PhoneNumber.objects.filter(agent=agent).update(agent=mainagent)
@@ -96,8 +142,4 @@ class AgentAdmin(admin.ModelAdmin):
 		contactDeleted(agent_name, agent_id)
 		return res
 
-class RomanticRelationshipAdmin(admin.ModelAdmin):
-	list_max_show_all = 1000
-
 admin.site.register(Agent, AgentAdmin)
-admin.site.register(RomanticRelationship, RomanticRelationshipAdmin)
