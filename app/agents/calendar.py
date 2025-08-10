@@ -76,7 +76,7 @@ def getWeddings():
 		weddingdays.append({
 			'date': date,
 			'label': label,
-			'link': relationship.get_absolute_url(),
+			'link': relationship.personA.get_absolute_url(), # Hack: there's no UI for weddings yet, so link to one of the people's pages
 			'uid': "wedding_"+str(relationship.id)+"_"+str(date.year),
 		})
 	return weddingdays
