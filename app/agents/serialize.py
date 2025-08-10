@@ -86,9 +86,9 @@ def serializeAgent(agent, currentagent=None, extended=False):
 		agentdataobj['relations'] = []
 		for relation in Relationship.objects.filter(subject=agent):
 			agentdataobj['relations'].append(serializeAgent(agent=relation.object, currentagent=agent, extended=False))
-		for relationship in RomanticRelationship.objects.filter(members=agent).filter(active=True):
-			for partner in relationship.members.exclude(id=agent.id):
-				agentdataobj['relations'].append(serializeAgent(agent=partner, currentagent=agent, extended=False))
+		for relationship in RomanticRelationship.objects.filter_person(agent).filter(active=True):
+			partner = relationship.getOtherPerson(agent)
+			agentdataobj['relations'].append(serializeAgent(agent=partner, currentagent=agent, extended=False))
 		agentdataobj['relations'].sort(key=lambda data: (data['sortableRel'], data['sortableBirthday']))
 
 	if currentagent:
@@ -100,7 +100,7 @@ def serializeAgent(agent, currentagent=None, extended=False):
 			for rel in Relationship.objects.filter(object=agent.id, subject=currentagent.id):
 				combinedrels += rel.get_relationshipType_display() + "/"
 				agentdataobj['sortableRel'] = rel.getPriority()
-			for rel in RomanticRelationship.objects.filter(members=agent).filter(members=currentagent).filter(active=True):
+			for rel in RomanticRelationship.objects.filter_people(agent, currentagent).filter(active=True):
 				combinedrels += rel.getRelationshipLabel() + "/"
 				agentdataobj['sortableRel'] = rel.getPriority()
 			agentdataobj['rel'] = combinedrels.strip('/')

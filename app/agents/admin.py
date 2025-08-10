@@ -97,7 +97,7 @@ class AgentAdmin(admin.ModelAdmin):
 		return res
 
 class RomanticRelationshipAdmin(admin.ModelAdmin):
-	filter_horizontal = ('members', )
+	list_max_show_all = 1000
 
 admin.site.register(Agent, AgentAdmin)
 admin.site.register(RomanticRelationship, RomanticRelationshipAdmin)

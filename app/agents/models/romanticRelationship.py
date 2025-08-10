@@ -2,6 +2,24 @@ from django.db import models
 from .agent import Agent, dayChoices, monthChoices
 from django.utils.translation import gettext_lazy as _
 from datetime import date
+from django.db.models import Q
+
+class RomanticRelationshipQuerySet(models.QuerySet):
+	def filter_person(self, person):
+		return self.filter(
+			Q(personA=person) |
+			Q(personB=person)
+		)
+	def filter_people(self, person1, person2):
+		return self.filter(
+			Q(personA=person1, personB=person2) |
+			Q(personA=person2, personB=person1)
+		)
+	def filter_starred(self): # Only include romantic relationships where either of the people are starred
+		return self.filter(
+			Q(personA__starred=True) |
+			Q(personB__starred=True)
+		)
 
 class RomanticRelationship(models.Model):
 	MILESTONE_CHOICES = [
@@ -10,7 +28,8 @@ class RomanticRelationship(models.Model):
 		('engaged', _('Engaged')),
 		('married', _('Married')),
 	]
-	members = models.ManyToManyField(Agent)
+	personA = models.ForeignKey(Agent, related_name='personA', blank=False, on_delete=models.CASCADE)
+	personB = models.ForeignKey(Agent, related_name='personB', blank=False, on_delete=models.CASCADE)
 	active = models.BooleanField(default=True)
 
 	# Maximum milestone acheived before the relationship ended
@@ -25,7 +44,13 @@ class RomanticRelationship(models.Model):
 	wedding_month = models.IntegerField(choices=monthChoices(), blank=True, null=True)
 	wedding_year = models.IntegerField(blank=True, null=True)
 
+	objects = RomanticRelationshipQuerySet.as_manager()
+
 	def save(self, *args, **kwargs):
+
+		# Store person A & B in a consistent order, based on ID
+		if self.personA_id > self.personB_id:
+			self.personA, self.personB = self.personA, self.personB
 
 		# If the end of the relationship has passed, then it's no longer active
 		if dateHasPassed(self.end_year, self.end_month, self.end_day):
@@ -47,8 +72,7 @@ class RomanticRelationship(models.Model):
 
 	def __str__(self):
 		joinSymbol = "❤️" if self.active else "💔"
-		memberNames = self.members.values_list('_name', flat=True)
-		return (" "+joinSymbol+" ").join(memberNames)
+		return self.personA.getName()+" "+joinSymbol+" "+self.personB.getName()
 
 	# Relationships don't have their own view URL, so for now just use the admin url
 	def get_absolute_url(self):
@@ -70,9 +94,15 @@ class RomanticRelationship(models.Model):
 
 	# Returns a string containing the first names of the members, separated by ampersands
 	def getFirstNames(self):
-		fullNames = self.members.order_by('-starred', '_name').values_list('_name', flat=True)
-		firstNames = [name.split()[0] for name in fullNames]
-		return " & ".join(firstNames)
+		return self.personA.getName().split()[0]+" & "+self.personB.getName().split()[0]
+
+	# Given a person, figures out who the other person in the relationship is
+	# (If given a person who isn't in the relationship, will return the personA)
+	def getOtherPerson(self, person):
+		if (person == self.personA):
+			return self.personB
+		else:
+			return self.personA
 
 # Takes a year, month and day (any of which may be None) and tries to determine if that date has passed yet
 # Returns True if the date is in the past (or is today).

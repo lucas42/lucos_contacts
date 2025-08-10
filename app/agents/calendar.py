@@ -49,7 +49,7 @@ def getDeathdays():
 	return deathdays
 
 def getWeddings():
-	relationships = RomanticRelationship.objects.filter(active=True, members__starred=True).exclude(wedding_day__isnull=True).exclude(wedding_month__isnull=True)
+	relationships = RomanticRelationship.objects.filter(active=True).filter_starred().exclude(wedding_day__isnull=True).exclude(wedding_month__isnull=True)
 	weddingdays = []
 	for relationship in relationships.distinct():
 		date = nextOccurence(relationship.wedding_day, relationship.wedding_month)
