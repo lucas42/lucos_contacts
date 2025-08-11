@@ -27,6 +27,12 @@ document.querySelectorAll(".star").forEach(star => {
 		}
 	});
 });
+document.querySelectorAll(".content a").forEach(link => {
+	link.target = "_blank";
+});
+document.querySelectorAll(".agenttable .name a").forEach(link => {
+	link.href += "#giftideas";
+});
 
 
 class LanguageSelector extends HTMLElement {

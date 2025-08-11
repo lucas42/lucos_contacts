@@ -1,26 +1,16 @@
 
 		<table class='agenttable'>
 			<thead>
-				<td>
-					Name
-				</td>
+				<td>Name</td>
 				{% if list == "gifts" %}
-				<td>
-					Gift Ideas
-				</td>
+				<td>Gift Ideas</td>
 				{% endif %}
 			</thead>
 		{%for agent in agents %}
 			<tr>
-				<td>
-					<a href="{{agent.url}}">
-					{{ agent.name }}
-					</a>
-				</td>
+				<td class="name"><a href="{{agent.url}}">{{ agent.name }}</a></td>
 				{% if list == "gifts" %}
-				<td>
-					{{agent.giftideas}}
-				</td>
+				<td class="content">{{agent.giftideas|urlizetrunc:65}}</td>
 				{% endif %}
 			</tr>
 		{% endfor %}

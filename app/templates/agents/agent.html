@@ -60,7 +60,7 @@
 		{%if giftideas %}
 			<details id="giftideas">
 				<summary>{% trans 'Gift Ideas' %}</summary>
-				<span class="content">{{giftideas}}</span>
+				<span class="content">{{giftideas|urlizetrunc:65}}</span>
 			</details>
 		{%endif%}
 		{%if relations %}
