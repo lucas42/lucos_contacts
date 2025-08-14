@@ -3,3 +3,4 @@
 *.sqlite
 .env
 *.mo
+.DS_Store
