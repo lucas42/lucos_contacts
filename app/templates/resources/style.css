@@ -139,13 +139,13 @@ a.account.googlephotoprofile:hover {
 	color: #fff;
 }
 
-#bio {
-	border: #ccc solid 1px;
-}
+
 .content {
 	white-space: pre-line;
 	line-break: anywhere;
 	font-size: 1.1em;
+	display: block;
+	margin: 9px;
 }
 .content a {
 	color: inherit;
@@ -154,6 +154,12 @@ a.account.googlephotoprofile:hover {
 }
 .content a:hover {
 	text-decoration: underline;
+}
+td.content {
+	display: table-cell;
+}
+#bio {
+	border: #ccc solid 1px;
 }
 #relations {
 	border: solid 2px #500094;
@@ -181,10 +187,6 @@ h2 { text-align: center; }
 	color: #ffe1ca;
 	padding: 5px;
 	cursor: pointer;
-}
-#giftideas .content {
-	display: block;
-	margin: 9px;
 }
 #notes {
 	border: solid 2px #000052;
