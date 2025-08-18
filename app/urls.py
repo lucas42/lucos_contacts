@@ -1,14 +1,21 @@
 from django.urls import re_path, include
 from django.views.generic import RedirectView
 from django.contrib.auth.decorators import user_passes_test
+from django.utils.http import urlencode
 
-# Uncomment the next two lines to enable the admin:
+from django.shortcuts import redirect
 from django.contrib import admin
 from lucosauth import views as auth_views
 from agents import views as agents_views
 from agents import calendar as calendar_views
 admin.autodiscover()
-admin.site.login = user_passes_test(lambda u:u.is_staff, login_url='/accounts/login/')(admin.site.login)
+
+"""Send all admin login attempts straight to /accounts/login."""
+def direct_admin_login(request, extra_context=None):
+    params = urlencode({"next": request.GET.get("next", "/admin/")})
+    return redirect(f"/accounts/login/?{params}")
+
+admin.site.login = direct_admin_login
 
 urlpatterns = [
 	re_path(r'^agents/(?P<extid>(\d+|me|add))(/(?P<method>(view|accounts|starred)))?/?$', agents_views.agent),
