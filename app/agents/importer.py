@@ -2,6 +2,7 @@
 from agents.models import *
 from django.core.exceptions import BadRequest, MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.fields import NOT_PROVIDED
+from agents.serialize import serializeAgent
 from agents.loganne import contactUpdated, contactCreated
 
 ## Imports data regarding a particular individual
@@ -27,6 +28,7 @@ def importAgent(data):
 		contactCreated(agent)
 	elif output['updated']:
 		contactUpdated(agent)
+	output['agent'] = serializeAgent(agent)
 	return output
 
 ## Checks the data given is in a valid format
