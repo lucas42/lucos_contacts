@@ -57,7 +57,7 @@ class RomanticRelationshipForm(forms.ModelForm):
 			if self.instance.pk:
 				self.fields['romanticPartner'].initial = self.instance.getOtherPerson(self.current_agent)
 	def save(self, commit=True):
-		self.instance.personA = self.current_agent
+		# PersonA is set in the AgentAdmin save_formset, so just add personB here
 		self.instance.personB = self.cleaned_data['romanticPartner']
 		return super().save(commit=commit)
 
@@ -141,5 +141,15 @@ class AgentAdmin(admin.ModelAdmin):
 		res = super(AgentAdmin, self).response_delete(request, agent_name, agent_id)
 		contactDeleted(agent_name, agent_id)
 		return res
+	def save_formset(self, request, form, formset, change):
+		if isinstance(formset.model, RomanticRelationship):
+			instances = formset.save(commit=False)
+			for instance in instances:
+				if not instance.personA_id:
+					instance.personA = form.instance  # parent Agent
+				instance.save()
+			formset.save_m2m()
+		else:
+			super().save_formset(request, form, formset, change)
 
 admin.site.register(Agent, AgentAdmin)
