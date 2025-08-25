@@ -4,11 +4,13 @@ from agents.serialize import serializeAgent
 
 def loganneRequest(data):
 	data["source"] = "lucos_contacts"
-	if not environ.get("PRODUCTION"):
+	if not environ.get("LOGANNE_ENDPOINT"):
 		return
-	loganne_reponse = requests.post('https://loganne.l42.eu/events', json=data);
-	if loganne_reponse.status_code != 202:
-		print ("Error from Loganne: " + loganne_reponse.text)
+	try:
+		loganne_reponse = requests.post(environ.get("LOGANNE_ENDPOINT"), json=data);
+		loganne_reponse.raise_for_status()
+	except Exception as error:
+		print("Error from Loganne: {}".format(error))
 
 def agentAction(agent, action):
 	loganneRequest({
