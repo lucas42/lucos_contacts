@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from lucosauth.decorators import calendar_auth
 from icalendar import Calendar, Event
-from lucosauth.helpers import get_calendar_key
+from lucosauth.envvars import get_calendar_key
 
 def getBirthdays():
 	agentlist = Agent.objects.filter(starred=True).exclude(day_of_birth__isnull=True).exclude(month_of_birth__isnull=True)

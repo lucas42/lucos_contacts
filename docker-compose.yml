@@ -37,7 +37,7 @@ services:
     image: lucas42/lucos_contacts_app
     environment:
       - SECRET_KEY=test
-      - CLIENT_KEYS=
+      - CLIENT_KEYS=external_calendar:test=1234
     depends_on:
       - db
     command: ./manage.py test agents.tests comms.tests lucosauth.tests

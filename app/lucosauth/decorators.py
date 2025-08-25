@@ -31,6 +31,10 @@ def calendar_auth(func):
 				user = ApiUser.objects.get(apikey=request.GET['key'])
 				login(request, user)
 			except ApiUser.DoesNotExist:
-				return HttpResponse(status=403)
+				user = getUserByKey(apikey=request.GET['key'])
+				if user:
+					request.user = user
+				else:
+					return HttpResponse(status=403)
 		return func(request, *args, **kwargs)
 	return _decorator

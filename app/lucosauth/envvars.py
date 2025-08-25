@@ -34,6 +34,7 @@ class EnvVarUser(AnonymousUser):
 if "CLIENT_KEYS" not in os.environ:
 	raise Exception("No CLIENT_KEYS environment variable specified")
 usersByKey = {}
+calendar_user = None
 rawkeys = os.environ["CLIENT_KEYS"]
 if rawkeys:
 	pairs = rawkeys.split(";")
@@ -43,9 +44,16 @@ if rawkeys:
 		apikey = pair[1].strip()
 		user = EnvVarUser(system, apikey)
 		usersByKey[apikey] = user
+		if system.startswith("external_calendar:"):
+			calendar_user = user
+if not calendar_user:
+	raise Exception("No apikey set for external_calendar")
 
 def getUserByKey(apikey):
 	try:
 		return usersByKey[apikey]
 	except KeyError:
 		return None
+
+def get_calendar_key():
+	return calendar_user.apikey
