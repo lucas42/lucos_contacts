@@ -1,5 +1,6 @@
 from functools import wraps
 from lucosauth.models import ApiUser
+from lucosauth.envvars import getUserByKey
 from django.http import HttpResponse
 
 def api_auth(func):
@@ -13,7 +14,11 @@ def api_auth(func):
 					user = ApiUser.objects.get(apikey=auth)
 					login(request, user)
 				except ApiUser.DoesNotExist:
-					return HttpResponse(status=403)
+					user = getUserByKey(apikey=auth)
+					if user:
+						request.user = user
+					else:
+						return HttpResponse(status=403)
 		return func(request, *args, **kwargs)
 	return _decorator
 
