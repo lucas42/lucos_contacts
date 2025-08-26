@@ -142,10 +142,10 @@ a.account.googlephotoprofile:hover {
 
 .content {
 	white-space: pre-line;
-	line-break: anywhere;
 	font-size: 1.1em;
 	display: block;
 	margin: 9px;
+	overflow: clip;
 }
 .content a {
 	color: inherit;
