@@ -1,7 +1,7 @@
 
     <!-- Navbar -->
     <lucos-navbar bg-colour="#044E00">
-        <a href="/">{{ title }}</a>
+        {{ title }}
         {% include "language-selector.html" %}
         {% block usertools %}
         {% if has_permission %}

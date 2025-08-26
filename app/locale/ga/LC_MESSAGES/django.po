@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-02 23:29+0000\n"
+"POT-Creation-Date: 2025-08-26 00:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -163,34 +163,34 @@ msgstr "garniblín"
 msgid "cousin"
 msgstr "col ceathrair"
 
-#: agents/models/romanticRelationship.py:8
+#: agents/models/romanticRelationship.py:26
 msgid "Dating"
 msgstr "Geandála"
 
-#: agents/models/romanticRelationship.py:9
+#: agents/models/romanticRelationship.py:27
 msgid "Cohabitation"
 msgstr "Comhchónaí"
 
-#: agents/models/romanticRelationship.py:10
+#: agents/models/romanticRelationship.py:28
 msgid "Engaged"
 msgstr "Geallta"
 
-#: agents/models/romanticRelationship.py:11
+#: agents/models/romanticRelationship.py:29
 msgid "Married"
 msgstr "Pósta"
 
-#: agents/models/romanticRelationship.py:63
+#: agents/models/romanticRelationship.py:83
 msgid "Spouse"
 msgstr "Céile"
 
 #. Translators: Using this in a gender-neutral sense here.
 #. Whilst there's often a spelling difference based on gender, there seems to be
 #. growing acceptance of using the previously male form in a gender-neutral way now
-#: agents/models/romanticRelationship.py:68
+#: agents/models/romanticRelationship.py:88
 msgid "Fiancé"
 msgstr ""
 
-#: agents/models/romanticRelationship.py:69
+#: agents/models/romanticRelationship.py:89
 msgid "Partner"
 msgstr "Páirtí"
 
@@ -301,6 +301,7 @@ msgid "Received from"
 msgstr "Faighte ó"
 
 #: comms/models.py:42
+#, python-brace-format
 msgid "{action} {agents}: {description} ({occasion})"
 msgstr "{action} {agents}: {description} ({occasion})"
 
@@ -342,29 +343,41 @@ msgstr ""
 msgid "We're sorry, but the requested page could not be found."
 msgstr ""
 
-#: templates/admin/500.html:6 templates/admin/app_index.html:10
+#: templates/admin/500.html:7 templates/admin/app_index.html:10
 #: templates/admin/auth/user/change_password.html:13
-#: templates/admin/base.html:29 templates/admin/change_form.html:30
+#: templates/admin/base.html:31 templates/admin/change_form.html:30
 #: templates/admin/change_list.html:44
-#: templates/admin/delete_confirmation.html:14
-#: templates/admin/delete_selected_confirmation.html:14
-#: templates/admin/invalid_setup.html:6 templates/admin/object_history.html:6
-msgid "Home"
-msgstr ""
+#: templates/admin/delete_confirmation.html:15
+#: templates/admin/delete_selected_confirmation.html:15
+#: templates/admin/index.html:13 templates/admin/invalid_setup.html:7
+#: templates/admin/object_history.html:7 templates/agents/agent.html:79
+msgid "Contact List"
+msgstr "Liosta Teagmhálacha"
 
-#: templates/admin/500.html:7
+#: templates/admin/500.html:8 templates/admin/app_index.html:11
+#: templates/admin/auth/user/change_password.html:14
+#: templates/admin/base.html:32 templates/admin/change_form.html:31
+#: templates/admin/change_list.html:45
+#: templates/admin/delete_confirmation.html:16
+#: templates/admin/delete_selected_confirmation.html:16
+#: templates/admin/index.html:14 templates/admin/invalid_setup.html:8
+#: templates/admin/object_history.html:8
+msgid "Admin"
+msgstr "Riarachán"
+
+#: templates/admin/500.html:9
 msgid "Server error"
 msgstr ""
 
-#: templates/admin/500.html:11
+#: templates/admin/500.html:14
 msgid "Server error (500)"
 msgstr ""
 
-#: templates/admin/500.html:14
+#: templates/admin/500.html:17
 msgid "Server Error <em>(500)</em>"
 msgstr ""
 
-#: templates/admin/500.html:15
+#: templates/admin/500.html:18
 msgid ""
 "There's been an error. It's been reported to the site administrators via "
 "email and should be fixed shortly. Thanks for your patience."
@@ -401,29 +414,29 @@ msgstr ""
 msgid "Enter a username and password."
 msgstr ""
 
-#: templates/admin/auth/user/change_password.html:17
-#: templates/admin/auth/user/change_password.html:55
+#: templates/admin/auth/user/change_password.html:18
+#: templates/admin/auth/user/change_password.html:56
 msgid "Change password"
 msgstr ""
 
-#: templates/admin/auth/user/change_password.html:28
-#: templates/admin/change_form.html:48 templates/admin/change_list.html:58
+#: templates/admin/auth/user/change_password.html:29
+#: templates/admin/change_form.html:48 templates/admin/change_list.html:59
 #: templates/admin/login.html:21
 msgid "Please correct the error below."
 msgstr ""
 
-#: templates/admin/auth/user/change_password.html:28
-#: templates/admin/change_form.html:48 templates/admin/change_list.html:58
+#: templates/admin/auth/user/change_password.html:29
+#: templates/admin/change_form.html:48 templates/admin/change_list.html:59
 #: templates/admin/login.html:21
 msgid "Please correct the errors below."
 msgstr ""
 
-#: templates/admin/auth/user/change_password.html:32
+#: templates/admin/auth/user/change_password.html:33
 #, python-format
 msgid "Enter a new password for the user <strong>%(username)s</strong>."
 msgstr ""
 
-#: templates/admin/base.html:32
+#: templates/admin/base.html:35
 msgid "Log out"
 msgstr ""
 
@@ -431,7 +444,7 @@ msgstr ""
 msgid "Django site admin"
 msgstr ""
 
-#: templates/admin/change_form.html:23 templates/admin/object_history.html:10
+#: templates/admin/change_form.html:23 templates/admin/object_history.html:12
 msgid "History"
 msgstr ""
 
@@ -441,12 +454,12 @@ msgstr ""
 msgid "View on site"
 msgstr ""
 
-#: templates/admin/change_form.html:33 templates/admin/change_list.html:37
+#: templates/admin/change_form.html:34 templates/admin/change_list.html:37
 #, python-format
 msgid "Add %(name)s"
 msgstr ""
 
-#: templates/admin/change_list.html:69
+#: templates/admin/change_list.html:70
 msgid "Filter"
 msgstr ""
 
@@ -463,14 +476,14 @@ msgstr ""
 msgid "Toggle sorting"
 msgstr ""
 
-#: templates/admin/delete_confirmation.html:18
+#: templates/admin/delete_confirmation.html:20
 #: templates/admin/related_widget_wrapper.html:24
 #: templates/admin/submit_line.html:6
 #: templates/admin/widgets/related_widget_wrapper.html:24
 msgid "Delete"
 msgstr "Scrios"
 
-#: templates/admin/delete_confirmation.html:24
+#: templates/admin/delete_confirmation.html:27
 #, python-format
 msgid ""
 "Deleting the %(object_name)s '%(escaped_object)s' would result in deleting "
@@ -478,40 +491,40 @@ msgid ""
 "following types of objects:"
 msgstr ""
 
-#: templates/admin/delete_confirmation.html:31
+#: templates/admin/delete_confirmation.html:34
 #, python-format
 msgid ""
 "Deleting the %(object_name)s '%(escaped_object)s' would require deleting the "
 "following protected related objects:"
 msgstr ""
 
-#: templates/admin/delete_confirmation.html:38
+#: templates/admin/delete_confirmation.html:41
 #, python-format
 msgid ""
 "Are you sure you want to delete the %(object_name)s \"%(escaped_object)s\"? "
 "All of the following related items will be deleted:"
 msgstr ""
 
-#: templates/admin/delete_confirmation.html:40
-#: templates/admin/delete_selected_confirmation.html:39
+#: templates/admin/delete_confirmation.html:43
+#: templates/admin/delete_selected_confirmation.html:42
 msgid "Objects"
 msgstr ""
 
-#: templates/admin/delete_confirmation.html:47
-#: templates/admin/delete_selected_confirmation.html:50
+#: templates/admin/delete_confirmation.html:50
+#: templates/admin/delete_selected_confirmation.html:53
 msgid "Yes, I'm sure"
 msgstr ""
 
-#: templates/admin/delete_confirmation.html:48
-#: templates/admin/delete_selected_confirmation.html:51
+#: templates/admin/delete_confirmation.html:51
+#: templates/admin/delete_selected_confirmation.html:54
 msgid "No, take me back"
 msgstr ""
 
-#: templates/admin/delete_selected_confirmation.html:17
+#: templates/admin/delete_selected_confirmation.html:19
 msgid "Delete multiple objects"
 msgstr ""
 
-#: templates/admin/delete_selected_confirmation.html:23
+#: templates/admin/delete_selected_confirmation.html:26
 #, python-format
 msgid ""
 "Deleting the selected %(objects_name)s would result in deleting related "
@@ -519,14 +532,14 @@ msgid ""
 "types of objects:"
 msgstr ""
 
-#: templates/admin/delete_selected_confirmation.html:30
+#: templates/admin/delete_selected_confirmation.html:33
 #, python-format
 msgid ""
 "Deleting the selected %(objects_name)s would require deleting the following "
 "protected related objects:"
 msgstr ""
 
-#: templates/admin/delete_selected_confirmation.html:37
+#: templates/admin/delete_selected_confirmation.html:40
 #, python-format
 msgid ""
 "Are you sure you want to delete the selected %(objects_name)s? All of the "
@@ -534,7 +547,7 @@ msgid ""
 msgstr ""
 
 #: templates/admin/edit_inline/stacked.html:12
-#: templates/admin/edit_inline/tabular.html:34 templates/admin/index.html:37
+#: templates/admin/edit_inline/tabular.html:34 templates/admin/index.html:44
 #: templates/admin/related_widget_wrapper.html:10
 #: templates/admin/widgets/related_widget_wrapper.html:10
 msgid "Change"
@@ -553,38 +566,38 @@ msgstr ""
 msgid "Summary"
 msgstr ""
 
-#: templates/admin/index.html:20
+#: templates/admin/index.html:27
 #, python-format
 msgid "Models in the %(name)s application"
 msgstr ""
 
-#: templates/admin/index.html:31 templates/admin/related_widget_wrapper.html:17
+#: templates/admin/index.html:38 templates/admin/related_widget_wrapper.html:17
 #: templates/admin/widgets/related_widget_wrapper.html:17
 #: templates/agents/index.html:11
 msgid "Add"
 msgstr ""
 
-#: templates/admin/index.html:47
+#: templates/admin/index.html:54
 msgid "You don't have permission to edit anything."
 msgstr ""
 
-#: templates/admin/index.html:55
+#: templates/admin/index.html:62
 msgid "Recent actions"
 msgstr ""
 
-#: templates/admin/index.html:56
+#: templates/admin/index.html:63
 msgid "My actions"
 msgstr ""
 
-#: templates/admin/index.html:60
+#: templates/admin/index.html:67
 msgid "None available"
 msgstr ""
 
-#: templates/admin/index.html:74
+#: templates/admin/index.html:81
 msgid "Unknown content"
 msgstr ""
 
-#: templates/admin/invalid_setup.html:12
+#: templates/admin/invalid_setup.html:15
 msgid ""
 "Something's wrong with your database installation. Make sure the appropriate "
 "database tables have been created, and make sure the database is readable by "
@@ -606,19 +619,19 @@ msgstr ""
 msgid "Log in"
 msgstr ""
 
-#: templates/admin/object_history.html:22
+#: templates/admin/object_history.html:25
 msgid "Date/time"
 msgstr ""
 
-#: templates/admin/object_history.html:23
+#: templates/admin/object_history.html:26
 msgid "User"
 msgstr ""
 
-#: templates/admin/object_history.html:24
+#: templates/admin/object_history.html:27
 msgid "Action"
 msgstr ""
 
-#: templates/admin/object_history.html:38
+#: templates/admin/object_history.html:41
 msgid ""
 "This object doesn't have a change history. It probably wasn't added via this "
 "admin site."
@@ -724,10 +737,6 @@ msgstr "Gaoil"
 #: templates/agents/agent.html:75
 msgid "Edit"
 msgstr "Cuir in Eagar"
-
-#: templates/agents/agent.html:79
-msgid "Contact List"
-msgstr "Liosta Teagmhálacha"
 
 #: templates/agents/index.html:15
 msgid "Starred"

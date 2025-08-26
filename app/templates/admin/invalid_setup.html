@@ -2,10 +2,13 @@
 {% load i18n %}
 
 {% block breadcrumbs %}
-<div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-&rsaquo; {{ title }}
-</div>
+<nav id="subnav">
+	<div class="breadcrumbs">
+		<a href="/">{% trans 'Contact List' %}</a>
+		&rsaquo; <a href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>
+		&rsaquo; {{ title }}
+	</div>
+</nav>
 {% endblock %}
 
 {% block content %}

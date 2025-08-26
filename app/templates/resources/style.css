@@ -320,7 +320,7 @@ h2 { text-align: center; }
 }
 
 /* Admin site */
-div.breadcrumbs { background: none; color: #612B00; padding: 5px; border: none; font-size: 14px; text-align: left; margin: 5px; }
+div.breadcrumbs { background: none; color: #612B00; padding: 5px; border: none; font-size: 14px; text-align: left; margin: 5px; font-family: "Helvetica Neue", sans-serif; }
 div.breadcrumbs a { color: #B98E6C; }
 div.breadcrumbs a:hover { color: inherit; }
 .module h2, .module caption, .inline-group h2 { background: #B9E7B7; color: #612B00; }

@@ -6,13 +6,14 @@
 {% if not is_popup %}
 {% block breadcrumbs %}
 <nav id="subnav">
-<div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-&rsaquo;
-{% for app in app_list %}
-{{ app.name }}
-{% endfor %}
-</div>
+	<div class="breadcrumbs">
+		<a href="/">{% trans 'Contact List' %}</a>
+		&rsaquo; <a href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>
+		&rsaquo;
+		{% for app in app_list %}
+		{{ app.name }}
+		{% endfor %}
+	</div>
 </nav>
 {% endblock %}
 {% endif %}

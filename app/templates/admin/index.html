@@ -7,7 +7,14 @@
 
 {% block bodyclass %}{{ block.super }} dashboard{% endblock %}
 
-{% block breadcrumbs %}{% endblock %}
+{% block breadcrumbs %}
+<nav id="subnav">
+    <div class="breadcrumbs">
+        <a href="/">{% trans 'Contact List' %}</a>
+        &rsaquo; {% trans 'Admin' %}
+    </div>
+</nav>
+{% endblock %}
 
 {% block content %}
 <div id="content-main">

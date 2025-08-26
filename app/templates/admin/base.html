@@ -25,14 +25,18 @@
 
     {% include "navbar.html" %}
     {% block breadcrumbs %}
-    <div class="breadcrumbs">
-    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-    {% if title %} &rsaquo; {{ title }}{% endif %}
+
+    <nav id="subnav">
+        <div class="breadcrumbs">
+            <a href="/">{% trans 'Contact List' %}</a>
+            &rsaquo; <a href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>
+            {% if title %} &rsaquo; {{ title }}{% endif %}
             {% block userlinks %}
                 <a href="{% url 'admin:logout' %}">{% trans 'Log out' %}</a>
             {% endblock %}
-        {% block object-tools %}{% endblock %}
-    </div>
+            {% block object-tools %}{% endblock %}
+        </div>
+    </nav>
     {% endblock %}
     {% endif %}
 

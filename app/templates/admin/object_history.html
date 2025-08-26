@@ -2,13 +2,16 @@
 {% load i18n admin_urls %}
 
 {% block breadcrumbs %}
-<div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
-&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ module_name }}</a>
-&rsaquo; <a href="{% url opts|admin_urlname:'change' object.pk|admin_urlquote %}">{{ object|truncatewords:"18" }}</a>
-&rsaquo; {% trans 'History' %}
-</div>
+<nav id="subnav">
+    <div class="breadcrumbs">
+        <a href="/">{% trans 'Contact List' %}</a>
+        &rsaquo; <a href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>
+        &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+        &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ module_name }}</a>
+        &rsaquo; <a href="{% url opts|admin_urlname:'change' object.pk|admin_urlquote %}">{{ object|truncatewords:"18" }}</a>
+        &rsaquo; {% trans 'History' %}
+    </div>
+</nav>
 {% endblock %}
 
 {% block content %}
