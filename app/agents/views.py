@@ -13,6 +13,8 @@ from agents.loganne import contactCreated, contactUpdated, contactStarChanged
 from agents.serialize import serializeAgent
 from agents.importer import importAgent
 from django.utils.translation import gettext as _
+from .utils_conneg import choose_rdf_over_html, pick_best_rdf_format
+from .utils_rdf import agent_to_rdf, agent_list_to_rdf
 
 @csrf_exempt
 @api_auth
@@ -42,6 +44,10 @@ def agent(request, extid, method=None):
 	if (agent.id != ext.id):
 		return redirect(agent)
 	
+	if choose_rdf_over_html(request):
+		graph = agent_to_rdf(agent)
+		format, content_type = pick_best_rdf_format(request)
+		return HttpResponse(graph.serialize(format=format), content_type=content_type)
 	output = serializeAgent(agent=agent, currentagent=request.user.agent, extended=True)
 	if (method == 'accounts'):
 		if (request.method == 'POST'):
@@ -87,6 +93,7 @@ def importer(request):
 	output = importAgent(data)
 	return JsonResponse(output)
 
+@api_auth
 @login_required
 def agentindex(request, list):
 	agents = []
@@ -104,6 +111,10 @@ def agentindex(request, list):
 		agentlist = Agent.objects.all()
 	else:
 		agentlist = Agent.objects.filter(id=0)
+	if choose_rdf_over_html(request):
+		graph = agent_list_to_rdf(agentlist)
+		format, content_type = pick_best_rdf_format(request)
+		return HttpResponse(graph.serialize(format=format), content_type=content_type)
 	for agent in agentlist.distinct():
 		data = serializeAgent(agent=agent, currentagent=request.user.agent)
 

@@ -19,6 +19,7 @@ services:
       - PRODUCTION
       - CLIENT_KEYS
       - LOGANNE_ENDPOINT
+      - BASE_URL
     volumes:
       - "staticfiles:/usr/src/app/static"
     restart: always

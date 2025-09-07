@@ -10,6 +10,7 @@ requests = "*"
 django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
 icalendar = "*"
 psycopg = "*"
+rdflib = "*"
 
 [dev-packages]
 
