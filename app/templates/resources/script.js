@@ -7,7 +7,7 @@ document.querySelectorAll(".star").forEach(star => {
 		const toStar = !wasStarred;
 
 		try {
-			const response = await fetch(`/agents/${agentid}/starred`, {
+			const response = await fetch(`/people/${agentid}/starred`, {
 				method: 'PUT',
 				body: toStar
 			});

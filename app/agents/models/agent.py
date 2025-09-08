@@ -57,7 +57,7 @@ class Person(models.Model):
 			ext = ExternalPerson.objects.create(id=self.id, agent=self)
 			
 	def get_absolute_url(self):
-		return "/agents/%i" % self.id
+		return "/people/%i" % self.id
 
 	
 class ExternalPerson(models.Model):
