@@ -1,6 +1,5 @@
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import keep_lazy_text
-import urllib.parse
 
 # Lazily makes translation objects titlecase
 @keep_lazy_text
@@ -21,7 +20,7 @@ class BaseRelationshipType:
 	label = None
 	@classmethod
 	def get_absolute_url(cls):
-		return f"/relationships/{urllib.parse.quote(cls.dbKey, safe='')}"
+		return f"/relationships/{cls.dbKey.replace(' ','_').replace('/','-')}"
 
 def setInverse(typeA, typeB):
 	if typeA.inverse or typeB.inverse:
