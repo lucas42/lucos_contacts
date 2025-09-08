@@ -2,6 +2,8 @@ import os
 import rdflib
 from agents.models import *
 from .models.relationshipTypes import RELATIONSHIP_TYPES, getRelationshipTypeByKey
+from django.conf import settings
+from django.utils import translation
 
 BASE_URL = os.environ.get("BASE_URL")
 CONTACTS_NS = rdflib.Namespace(BASE_URL)
@@ -49,6 +51,9 @@ def agent_list_to_rdf(agentlist):
 def rel_types_rdf():
 	g = rdflib.Graph()
 	for reltype in RELATIONSHIP_TYPES:
-		type_uri = rdflib.URIRef(CONTACTS_NS[reltype.get_absolute_url()])
+		type_uri = CONTACTS_NS[reltype.get_absolute_url()]
 		g.add((type_uri, rdflib.RDFS.subPropertyOf, rdflib.URIRef('https://dbpedia.org/ontology/relative')))
+		for lang, _ in settings.LANGUAGES:
+			with translation.override(lang):
+				g.add((type_uri, rdflib.SKOS.prefLabel, rdflib.Literal(translation.gettext(reltype.label).title(), lang=lang)))
 	return g
