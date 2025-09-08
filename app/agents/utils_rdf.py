@@ -1,6 +1,7 @@
 import os
 import rdflib
 from agents.models import *
+from .models.relationshipTypes import RELATIONSHIP_TYPES, getRelationshipTypeByKey
 
 BASE_URL = os.environ.get("BASE_URL")
 
@@ -30,10 +31,23 @@ def agent_to_rdf(agent):
 		g.add((agent_uri, rdflib.FOAF.account, account_bnode))
 		g.add((account_bnode, rdflib.FOAF.accountName, rdflib.Literal(googleaccount.userid)))
 		g.add((account_bnode, rdflib.FOAF.accountServiceHomepage, rdflib.URIRef("https://myaccount.google.com/")))
+	for relation in Relationship.objects.filter(subject=agent):
+		rel_type = getRelationshipTypeByKey(relation.relationshipType)
+		rel_type_uri = rdflib.URIRef(f"{BASE_URL}{rel_type.get_absolute_url()}")
+		rel_uri = rdflib.URIRef(f"{BASE_URL}{relation.object.get_absolute_url()}")
+		g.add((agent_uri, rel_type_uri, rel_uri))
 	return g
 
 def agent_list_to_rdf(agentlist):
 	g = rdflib.Graph()
+	g += rel_types_rdf()
 	for agent in agentlist:
 		g += agent_to_rdf(agent)
+	return g
+
+def rel_types_rdf():
+	g = rdflib.Graph()
+	for reltype in RELATIONSHIP_TYPES:
+		type_uri = rdflib.URIRef(f"{BASE_URL}{reltype.get_absolute_url()}")
+		g.add((type_uri, rdflib.RDFS.subPropertyOf, rdflib.URIRef('https://dbpedia.org/ontology/relative')))
 	return g
