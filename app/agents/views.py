@@ -10,8 +10,8 @@ from django.urls import reverse
 from django.core.exceptions import MultipleObjectsReturned
 import json, time, os
 from agents.loganne import contactCreated, contactUpdated, contactStarChanged
-from agents.serialize import serializeAgent
-from agents.importer import importAgent
+from agents.serialize import serializePerson
+from agents.importer import importPerson
 from django.utils.translation import gettext as _
 from .utils_conneg import choose_rdf_over_html, pick_best_rdf_format
 from .utils_rdf import agent_to_rdf, agent_list_to_rdf
@@ -30,16 +30,16 @@ def agent(request, extid, method=None):
 			name = request.POST.get('name')
 			if not name:
 				return HttpResponseBadRequest("No name provided")
-			newagent = Agent()
+			newagent = Person()
 			newagent.save()
-			nameObject = AgentName(name=name, agent=newagent)
+			nameObject = PersonName(name=name, agent=newagent)
 			nameObject.save()
 			contactCreated(newagent)
 			return redirect(newagent)
 	try:
-		ext = ExternalAgent.objects.get(pk=extid)
+		ext = ExternalPerson.objects.get(pk=extid)
 		agent = ext.agent
-	except ExternalAgent.DoesNotExist:
+	except ExternalPerson.DoesNotExist:
 		raise Http404
 	if (agent.id != ext.id):
 		return redirect(agent)
@@ -48,7 +48,7 @@ def agent(request, extid, method=None):
 		graph = agent_to_rdf(agent)
 		format, content_type = pick_best_rdf_format(request)
 		return HttpResponse(graph.serialize(format=format), content_type=content_type)
-	output = serializeAgent(agent=agent, currentagent=request.user.agent, extended=True)
+	output = serializePerson(agent=agent, currentagent=request.user.agent, extended=True)
 	if (method == 'accounts'):
 		if (request.method == 'POST'):
 			accountlist = json.loads(request.body)
@@ -90,7 +90,7 @@ def agent(request, extid, method=None):
 @require_http_methods(["POST"])
 def importer(request):
 	data = json.loads(request.body)
-	output = importAgent(data)
+	output = importPerson(data)
 	return JsonResponse(output)
 
 @api_auth
@@ -99,24 +99,24 @@ def agentindex(request, list):
 	agents = []
 	template = 'agents/agentlist.html'
 	if (list == 'postal'):
-		agentlist = Agent.objects.filter(postaladdress__isnull=False)
+		agentlist = Person.objects.filter(postaladdress__isnull=False)
 	elif (list == 'phone'):
-		agentlist = Agent.objects.filter(phonenumber__isnull=False)
+		agentlist = Person.objects.filter(phonenumber__isnull=False)
 	elif (list == 'gifts'):
-		agentlist = Agent.objects.exclude(gift_ideas="")
+		agentlist = Person.objects.exclude(gift_ideas="")
 		template = 'agents/agenttable.html'
 	elif (list == 'starred'):
-		agentlist = Agent.objects.filter(starred=True)
+		agentlist = Person.objects.filter(starred=True)
 	elif (list == 'all'):
-		agentlist = Agent.objects.all()
+		agentlist = Person.objects.all()
 	else:
-		agentlist = Agent.objects.filter(id=0)
+		agentlist = Person.objects.filter(id=0)
 	if choose_rdf_over_html(request):
 		graph = agent_list_to_rdf(agentlist)
 		format, content_type = pick_best_rdf_format(request)
 		return HttpResponse(graph.serialize(format=format), content_type=content_type)
 	for agent in agentlist.distinct():
-		data = serializeAgent(agent=agent, currentagent=request.user.agent)
+		data = serializePerson(agent=agent, currentagent=request.user.agent)
 
 		# Hide any agents who only have inactive postal addresses
 		# (the above filter only excludes agents with no postal addresses at all)
@@ -131,7 +131,7 @@ def agentindex(request, list):
 		'title': _("Contacts"),
 		'agents': agents,
 		'list': list,
-		'addurl': reverse('admin:agents_agent_add'),
+		'addurl': reverse('admin:agents_person_add'),
 	})
 
 def identify(request):
@@ -165,13 +165,13 @@ def info(request):
 		'show_on_homepage': True
 	}
 	try:
-		ext = ExternalAgent.objects.get(pk=1)
+		ext = ExternalPerson.objects.get(pk=1)
 		output['checks']['db']['ok'] = True
 	except Exception as e:
 		output['checks']['db']['ok'] = False
 		output['checks']['db']['debug'] = str(e)
 	try:
-		[output['metrics']['agent-count']['value']] = len(Agent.objects.all()),
+		[output['metrics']['agent-count']['value']] = len(Person.objects.all()),
 	except Exception as e:
 		output['metrics']['agent-count']['value'] = -1
 		output['metrics']['agent-count']['debug'] = str(e)

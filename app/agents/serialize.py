@@ -34,7 +34,7 @@ def sortableDate(year, month, day):
 		day = 32
 	return str(year).zfill(4)+'-'+str(month).zfill(2)+'-'+str(day).zfill(2)
 
-def serializeAgent(agent, currentagent=None, extended=False):
+def serializePerson(agent, currentagent=None, extended=False):
 
 	phonenums = []
 	for num in PhoneNumber.objects.filter(agent=agent, active=True):
@@ -52,7 +52,7 @@ def serializeAgent(agent, currentagent=None, extended=False):
 	googlephotoprofiles = [profile.search_path for profile in GooglePhotosProfile.objects.filter(agent=agent, active=True)]
 
 	altnames = []
-	for agentname in AgentName.objects.filter(agent=agent, is_primary=False):
+	for agentname in PersonName.objects.filter(agent=agent, is_primary=False):
 		altnames.append(agentname.name)
 
 	formattedBirthday = formatDate(agent.year_of_birth, agent.month_of_birth, agent.day_of_birth)
@@ -71,7 +71,7 @@ def serializeAgent(agent, currentagent=None, extended=False):
 		'facebookaccounts': facebookaccounts,
 		'googlecontacts': googlecontacts,
 		'googlephotoprofiles': googlephotoprofiles,
-		'editurl': reverse('admin:agents_agent_change', args=(agent.id,)),
+		'editurl': reverse('admin:agents_person_change', args=(agent.id,)),
 		'bio': agent.bio,
 		'notes': agent.notes,
 		'giftideas': agent.gift_ideas,
@@ -85,10 +85,10 @@ def serializeAgent(agent, currentagent=None, extended=False):
 	if extended:
 		agentdataobj['relations'] = []
 		for relation in Relationship.objects.filter(subject=agent):
-			agentdataobj['relations'].append(serializeAgent(agent=relation.object, currentagent=agent, extended=False))
+			agentdataobj['relations'].append(serializePerson(agent=relation.object, currentagent=agent, extended=False))
 		for relationship in RomanticRelationship.objects.filter_person(agent).filter(active=True):
 			partner = relationship.getOtherPerson(agent)
-			agentdataobj['relations'].append(serializeAgent(agent=partner, currentagent=agent, extended=False))
+			agentdataobj['relations'].append(serializePerson(agent=partner, currentagent=agent, extended=False))
 		agentdataobj['relations'].sort(key=lambda data: (data['sortableRel'], data['sortableBirthday']))
 
 	if currentagent:

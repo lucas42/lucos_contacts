@@ -2,11 +2,11 @@
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from phonenumber_field.modelfields import PhoneNumberField
-from .agent import Agent, AgentName
+from .agent import Person, PersonName
 from django.utils.translation import gettext_lazy as _
 
 class BaseAccount(models.Model):
-	agent = models.ForeignKey(Agent, blank=False, on_delete=models.CASCADE)
+	agent = models.ForeignKey(Person, blank=False, on_delete=models.CASCADE)
 	active = models.BooleanField(default=True)
 	class Meta:
 		abstract = True
@@ -22,7 +22,7 @@ class BaseAccount(models.Model):
 			"googlephotos": GooglePhotosProfile,
 
 			# HACK:Technically not an account, but also has an `.agent` relationship, so works for now
-			"name": AgentName,
+			"name": PersonName,
 		}
 		accountType = accountTypes.get(typeKey)
 		if accountType is None:

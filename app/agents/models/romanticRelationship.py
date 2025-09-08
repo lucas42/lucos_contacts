@@ -1,5 +1,5 @@
 from django.db import models
-from .agent import Agent, dayChoices, monthChoices
+from .agent import Person, dayChoices, monthChoices
 from django.utils.translation import gettext_lazy as _
 from datetime import date
 from django.db.models import Q
@@ -28,8 +28,8 @@ class RomanticRelationship(models.Model):
 		('engaged', _('Engaged')),
 		('married', _('Married')),
 	]
-	personA = models.ForeignKey(Agent, related_name='personA', blank=False, on_delete=models.CASCADE)
-	personB = models.ForeignKey(Agent, related_name='personB', blank=False, on_delete=models.CASCADE)
+	personA = models.ForeignKey(Person, related_name='personA', blank=False, on_delete=models.CASCADE)
+	personB = models.ForeignKey(Person, related_name='personB', blank=False, on_delete=models.CASCADE)
 	active = models.BooleanField(default=True)
 
 	# Maximum milestone acheived before the relationship ended

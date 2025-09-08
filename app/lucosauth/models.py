@@ -2,7 +2,7 @@ from django.db import models
 from django import utils
 from settings import AUTH_DOMAIN
 from django.contrib.auth.models import AbstractBaseUser, User
-from agents.models import Agent
+from agents.models import Person
 import json, time, urllib.request, urllib.error, os
 
 class LucosAuthBackend(object):
@@ -20,14 +20,14 @@ class LucosAuthBackend(object):
 			print("No id returned by auth service; "+url)
 			return None
 		try:
-			agent = Agent.objects.get(id=data['id'])
-		except Agent.DoesNotExist:
+			agent = Person.objects.get(id=data['id'])
+		except Person.DoesNotExist:
 			print("Unknown id ("+str(data['id'])+") returned by auth service; "+url)
 			if os.environ.get("PRODUCTION"):
 				return None
 			else:
 				print("Non-production environment; creating user "+str(data['id']))
-				agent = Agent.objects.create(id=data['id'])
+				agent = Person.objects.create(id=data['id'])
 		try:
 			user = LucosUser.objects.get(agent=agent)
 		except LucosUser.DoesNotExist:
@@ -47,7 +47,7 @@ class LucosAuthBackend(object):
 			return None
 
 class LucosUser(AbstractBaseUser):
-	agent = models.OneToOneField(Agent, on_delete=models.CASCADE)
+	agent = models.OneToOneField(Person, on_delete=models.CASCADE)
 	def is_staff(self):
 		return self.agent.id == 2
 	def has_module_perms(self, app_label):

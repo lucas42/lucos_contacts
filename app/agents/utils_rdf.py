@@ -7,9 +7,9 @@ BASE_URL = os.environ.get("BASE_URL")
 def agent_to_rdf(agent):
 	agent_uri = rdflib.URIRef(f"{BASE_URL}{agent.get_absolute_url()}")
 	g = rdflib.Graph()
-	g.add((agent_uri, rdflib.RDF.type, rdflib.FOAF.Agent))
+	g.add((agent_uri, rdflib.RDF.type, rdflib.FOAF.Person))
 	g.add((agent_uri, rdflib.SKOS.prefLabel, rdflib.Literal(str(agent))))
-	for agentname in AgentName.objects.filter(agent=agent):
+	for agentname in PersonName.objects.filter(agent=agent):
 		g.add((agent_uri, rdflib.FOAF.name, rdflib.Literal(agentname.name)))
 	if agent.day_of_birth and agent.month_of_birth:
 		g.add((agent_uri, rdflib.FOAF.birthday, rdflib.Literal(f"{agent.month_of_birth}-{agent.day_of_birth}")))

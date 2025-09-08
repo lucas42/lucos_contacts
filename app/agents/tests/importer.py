@@ -2,17 +2,17 @@
 
 from django.test import TestCase
 from django.core.exceptions import BadRequest
-from agents.models import Agent, AgentName, PhoneNumber, EmailAddress, FacebookAccount
-from agents.importer import importAgent
+from agents.models import Person, PersonName, PhoneNumber, EmailAddress, FacebookAccount
+from agents.importer import importPerson
 from copy import deepcopy
 
 
-class AgentImporterTest(TestCase):
+class PersonImporterTest(TestCase):
 
 	def test_invalid_import_data(self):
 		def import_bad_data(data, errorMessage):
 			with self.assertRaises(BadRequest) as cm:
-				importAgent(data)
+				importPerson(data)
 			self.assertEqual(errorMessage, str(cm.exception))
 
 		import_bad_data({}, "Key 'identifiers' missing")
@@ -25,10 +25,10 @@ class AgentImporterTest(TestCase):
 		import_bad_data({'identifiers': [{'type':'name','name':'Fred'}],'date_of_birth':"1/1/1970"}, "'date_of_birth' isn't an object")
 
 	def test_matches_phone_number(self):
-		bob = Agent.objects.create()
+		bob = Person.objects.create()
 		PhoneNumber.objects.create(agent=bob, number="01314960937") # Phone number reserved by Ofcom for TV & Radio dramas
 
-		output = importAgent({
+		output = importPerson({
 				'identifiers': [{
 					'type': 'phone',
 					'number': '01314960937',
@@ -40,7 +40,7 @@ class AgentImporterTest(TestCase):
 
 
 	def test_adds_accounts_idempotently(self):
-		clare = Agent.objects.create()
+		clare = Person.objects.create()
 		PhoneNumber.objects.create(agent=clare, number="01314960937") # Phone number reserved by Ofcom for TV & Radio dramas
 
 		importData = {
@@ -54,29 +54,29 @@ class AgentImporterTest(TestCase):
 		}
 
 		# First time round should add the email address
-		output = importAgent(deepcopy(importData))
+		output = importPerson(deepcopy(importData))
 		self.assertEqual(output["id"], clare.id)
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], True)
 		self.assertEqual(EmailAddress.objects.filter(agent=clare, address="clare@example.com").count(), 1)
 
 		# Following times should make no changes
-		output = importAgent(deepcopy(importData))
+		output = importPerson(deepcopy(importData))
 		self.assertEqual(output["id"], clare.id)
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], False)
 		self.assertEqual(EmailAddress.objects.filter(agent=clare, address="clare@example.com").count(), 1)
 
 	def test_ignores_duplicate_matches(self):
-		alice = Agent.objects.create()
-		bob = Agent.objects.create()
-		sally = Agent.objects.create()
+		alice = Person.objects.create()
+		bob = Person.objects.create()
+		sally = Person.objects.create()
 		PhoneNumber.objects.create(agent=alice, number="01314960937") # Phone number reserved by Ofcom for TV & Radio dramas
-		AgentName.objects.create(agent=alice, name="Allie")
+		PersonName.objects.create(agent=alice, name="Allie")
 		PhoneNumber.objects.create(agent=bob, number="01314960937") # Same phone number as Alice
-		AgentName.objects.create(agent=sally, name="Sallie")
+		PersonName.objects.create(agent=sally, name="Sallie")
 
-		output = importAgent({
+		output = importPerson({
 				'identifiers': [{
 					'type': 'phone',
 					'number': '01314960937',
@@ -91,7 +91,7 @@ class AgentImporterTest(TestCase):
 		self.assertEqual(PhoneNumber.objects.filter(agent=sally, number="01314960937").count(), 1)
 
 	def test_agent_created_for_no_matches(self):
-		output = importAgent({
+		output = importPerson({
 				'identifiers': [{
 					'type': 'phone',
 					'number': '01314960937', # Phone number reserved by Ofcom for TV & Radio dramas
@@ -100,11 +100,11 @@ class AgentImporterTest(TestCase):
 		self.assertGreater(output["id"], 0)
 		self.assertEqual(output["existing"], False)
 		self.assertEqual(output["updated"], True)
-		unnamedAgent = Agent.objects.get(pk=output['id'])
-		self.assertEqual(PhoneNumber.objects.filter(agent=unnamedAgent, number="01314960937").count(), 1)
+		unnamedPerson = Person.objects.get(pk=output['id'])
+		self.assertEqual(PhoneNumber.objects.filter(agent=unnamedPerson, number="01314960937").count(), 1)
 
 	def test_adds_name_idempotently(self):
-		philippa = Agent.objects.create()
+		philippa = Person.objects.create()
 		PhoneNumber.objects.create(agent=philippa, number="01314960936") # Phone number reserved by Ofcom for TV & Radio dramas
 
 		importData = {
@@ -118,24 +118,24 @@ class AgentImporterTest(TestCase):
 		}
 
 		# First time round should set the name (as primary as there are no other names)
-		output = importAgent(deepcopy(importData))
+		output = importPerson(deepcopy(importData))
 		self.assertEqual(output["id"], philippa.id)
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], True)
-		self.assertEqual(Agent.objects.get(id=philippa.id).getName(), "Philippa")
+		self.assertEqual(Person.objects.get(id=philippa.id).getName(), "Philippa")
 
 		# Following times should make no changes
-		output = importAgent(deepcopy(importData))
+		output = importPerson(deepcopy(importData))
 		self.assertEqual(output["id"], philippa.id)
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], False)
-		self.assertEqual(Agent.objects.get(id=philippa.id).getName(), "Philippa")
+		self.assertEqual(Person.objects.get(id=philippa.id).getName(), "Philippa")
 
 	def test_updating_field_on_existing_account(self):
-		mark = Agent.objects.create()
+		mark = Person.objects.create()
 		FacebookAccount.objects.create(agent=mark, userid=1234, username="old-name") # Phone number reserved by Ofcom for TV & Radio dramas
 
-		output = importAgent({
+		output = importPerson({
 				'identifiers': [{
 					'type': 'facebook',
 					'userid': 1234,
@@ -148,10 +148,10 @@ class AgentImporterTest(TestCase):
 		self.assertEqual(FacebookAccount.objects.get(agent=mark, userid='1234').username, 'new-name')
 
 	def test_matching_int_vs_str(self):
-		mark = Agent.objects.create()
+		mark = Person.objects.create()
 		FacebookAccount.objects.create(agent=mark, userid=1234, username="mark") # Phone number reserved by Ofcom for TV & Radio dramas
 
-		output = importAgent({
+		output = importPerson({
 				'identifiers': [{
 					'type': 'facebook',
 					'userid': '1234',
@@ -163,10 +163,10 @@ class AgentImporterTest(TestCase):
 		self.assertEqual(output["updated"], False)
 
 	def test_add_new_dob(self):
-		arjun = Agent.objects.create()
-		AgentName.objects.create(agent=arjun, name="Arjun")
+		arjun = Person.objects.create()
+		PersonName.objects.create(agent=arjun, name="Arjun")
 
-		output = importAgent({
+		output = importPerson({
 				'identifiers': [{
 					'type': 'name',
 					'name': 'Arjun',
@@ -180,16 +180,16 @@ class AgentImporterTest(TestCase):
 		self.assertEqual(output["id"], arjun.id)
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], True)
-		actual = Agent.objects.get(id=arjun.id)
+		actual = Person.objects.get(id=arjun.id)
 		self.assertEqual(actual.day_of_birth, 13)
 		self.assertEqual(actual.month_of_birth, 7)
 		self.assertEqual(actual.year_of_birth, 1970)
 
 	def test_add_new_dob(self):
-		arjun = Agent.objects.create()
-		AgentName.objects.create(agent=arjun, name="Arjun")
+		arjun = Person.objects.create()
+		PersonName.objects.create(agent=arjun, name="Arjun")
 
-		output = importAgent({
+		output = importPerson({
 				'identifiers': [{
 					'type': 'name',
 					'name': 'Arjun',
@@ -203,16 +203,16 @@ class AgentImporterTest(TestCase):
 		self.assertEqual(output["id"], arjun.id)
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], True)
-		actual = Agent.objects.get(id=arjun.id)
+		actual = Person.objects.get(id=arjun.id)
 		self.assertEqual(actual.day_of_birth, 13)
 		self.assertEqual(actual.month_of_birth, 7)
 		self.assertEqual(actual.year_of_birth, 1970)
 
 	def test_add_incomplete_dob(self):
-		arjun = Agent.objects.create()
-		AgentName.objects.create(agent=arjun, name="Arjun")
+		arjun = Person.objects.create()
+		PersonName.objects.create(agent=arjun, name="Arjun")
 
-		output = importAgent({
+		output = importPerson({
 				'identifiers': [{
 					'type': 'name',
 					'name': 'Arjun',
@@ -224,16 +224,16 @@ class AgentImporterTest(TestCase):
 		self.assertEqual(output["id"], arjun.id)
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], True)
-		actual = Agent.objects.get(id=arjun.id)
+		actual = Person.objects.get(id=arjun.id)
 		self.assertEqual(actual.day_of_birth, None)
 		self.assertEqual(actual.month_of_birth, None)
 		self.assertEqual(actual.year_of_birth, 1970)
 
 	def test_existing_dob_no_change(self):
-		arjun = Agent.objects.create(day_of_birth=13, month_of_birth=7, year_of_birth=1970)
-		AgentName.objects.create(agent=arjun, name="Arjun")
+		arjun = Person.objects.create(day_of_birth=13, month_of_birth=7, year_of_birth=1970)
+		PersonName.objects.create(agent=arjun, name="Arjun")
 
-		output = importAgent({
+		output = importPerson({
 				'identifiers': [{
 					'type': 'name',
 					'name': 'Arjun',
@@ -247,16 +247,16 @@ class AgentImporterTest(TestCase):
 		self.assertEqual(output["id"], arjun.id)
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], False)
-		actual = Agent.objects.get(id=arjun.id)
+		actual = Person.objects.get(id=arjun.id)
 		self.assertEqual(actual.day_of_birth, 13)
 		self.assertEqual(actual.month_of_birth, 7)
 		self.assertEqual(actual.year_of_birth, 1970)
 
 	def test_update_partial_dob(self):
-		arjun = Agent.objects.create(day_of_birth=13, month_of_birth=7)
-		AgentName.objects.create(agent=arjun, name="Arjun")
+		arjun = Person.objects.create(day_of_birth=13, month_of_birth=7)
+		PersonName.objects.create(agent=arjun, name="Arjun")
 
-		output = importAgent({
+		output = importPerson({
 				'identifiers': [{
 					'type': 'name',
 					'name': 'Arjun',
@@ -269,16 +269,16 @@ class AgentImporterTest(TestCase):
 		self.assertEqual(output["id"], arjun.id)
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], True)
-		actual = Agent.objects.get(id=arjun.id)
+		actual = Person.objects.get(id=arjun.id)
 		self.assertEqual(actual.day_of_birth, 13)
 		self.assertEqual(actual.month_of_birth, 7)
 		self.assertEqual(actual.year_of_birth, 1970)
 
 	def test_conflict_dob(self):
-		arjun = Agent.objects.create(day_of_birth=13, month_of_birth=7, year_of_birth=1970)
-		AgentName.objects.create(agent=arjun, name="Arjun")
+		arjun = Person.objects.create(day_of_birth=13, month_of_birth=7, year_of_birth=1970)
+		PersonName.objects.create(agent=arjun, name="Arjun")
 
-		output = importAgent({
+		output = importPerson({
 				'identifiers': [{
 					'type': 'name',
 					'name': 'Arjun',
@@ -293,7 +293,7 @@ class AgentImporterTest(TestCase):
 		self.assertEqual(output["existing"], True)
 		self.assertEqual(output["updated"], False)
 		self.assertEqual(output["warning"], "Inconsistent Date of Birth")
-		actual = Agent.objects.get(id=arjun.id)
+		actual = Person.objects.get(id=arjun.id)
 		self.assertEqual(actual.day_of_birth, 13)
 		self.assertEqual(actual.month_of_birth, 7)
 		self.assertEqual(actual.year_of_birth, 1970)

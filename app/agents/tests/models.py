@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.test import TestCase
-from agents.models import Agent, Relationship
+from agents.models import Person, Relationship
 from agents.models.relationshipTypes import Parent, Child, Sibling
 
 def get_agents_by_relType(subject, relType):
@@ -10,9 +10,9 @@ def get_agents_by_relType(subject, relType):
 class RelationshipTest(TestCase):
 
 	def test_symmetrical_transitive_relationship(self):
-		luke = Agent.objects.create()
-		rowan = Agent.objects.create()
-		roise = Agent.objects.create()
+		luke = Person.objects.create()
+		rowan = Person.objects.create()
+		roise = Person.objects.create()
 		Relationship.objects.create(subject=luke, object=rowan, relationshipType='sibling')
 		Relationship.objects.create(subject=rowan, object=roise, relationshipType='sibling')
 
@@ -21,9 +21,9 @@ class RelationshipTest(TestCase):
 		self.assertEqual(get_agents_by_relType(roise, 'sibling'), [luke, rowan])
 
 	def test_symmetrical_relationship(self):
-		luke = Agent.objects.create()
-		james = Agent.objects.create()
-		roise = Agent.objects.create()
+		luke = Person.objects.create()
+		james = Person.objects.create()
+		roise = Person.objects.create()
 		Relationship.objects.create(subject=luke, object=james, relationshipType='half-sibling')
 		Relationship.objects.create(subject=james, object=roise, relationshipType='half-sibling')
 
@@ -32,8 +32,8 @@ class RelationshipTest(TestCase):
 		self.assertEqual(get_agents_by_relType(roise, 'half-sibling'), [james])
 
 	def test_inverse_relationship(self):
-		luke = Agent.objects.create()
-		rachel = Agent.objects.create()
+		luke = Person.objects.create()
+		rachel = Person.objects.create()
 		Relationship.objects.create(subject=luke, object=rachel, relationshipType='aunt/uncle')
 
 		self.assertEqual(get_agents_by_relType(luke, 'aunt/uncle'), [rachel])
@@ -42,9 +42,9 @@ class RelationshipTest(TestCase):
 		self.assertEqual(get_agents_by_relType(rachel, 'nibling'), [luke])
 
 	def test_inferred_relationship_subject_rel_first(self):
-		luke = Agent.objects.create()
-		mark = Agent.objects.create()
-		rachel = Agent.objects.create()
+		luke = Person.objects.create()
+		mark = Person.objects.create()
+		rachel = Person.objects.create()
 		Relationship.objects.create(subject=luke, object=mark, relationshipType='parent')
 		Relationship.objects.create(subject=mark, object=rachel, relationshipType='sibling')
 
@@ -53,9 +53,9 @@ class RelationshipTest(TestCase):
 		self.assertEqual(get_agents_by_relType(rachel, 'aunt/uncle'), [])
 
 	def test_inferred_relationship_object_rel_first(self):
-		luke = Agent.objects.create()
-		mark = Agent.objects.create()
-		rachel = Agent.objects.create()
+		luke = Person.objects.create()
+		mark = Person.objects.create()
+		rachel = Person.objects.create()
 		Relationship.objects.create(subject=mark, object=rachel, relationshipType='sibling')
 		Relationship.objects.create(subject=luke, object=mark, relationshipType='parent')
 
@@ -64,12 +64,12 @@ class RelationshipTest(TestCase):
 		self.assertEqual(get_agents_by_relType(rachel, 'aunt/uncle'), [])
 
 	def test_complicated_relationship_inference(self):
-		luke = Agent.objects.create()
-		ruth = Agent.objects.create()
-		felim = Agent.objects.create()
-		myra = Agent.objects.create()
-		brenda = Agent.objects.create()
-		frances = Agent.objects.create()
+		luke = Person.objects.create()
+		ruth = Person.objects.create()
+		felim = Person.objects.create()
+		myra = Person.objects.create()
+		brenda = Person.objects.create()
+		frances = Person.objects.create()
 
 		Relationship.objects.create(subject=luke, object=ruth, relationshipType='parent')
 		Relationship.objects.create(subject=ruth, object=felim, relationshipType='sibling')
@@ -97,16 +97,16 @@ class RelationshipTypeTest(TestCase):
 
 class DeathTest(TestCase):
 	def test_death_date_sets_is_dead(self):
-		jacqui = Agent.objects.create()
+		jacqui = Person.objects.create()
 		jacqui.year_of_death = 2021
 		jacqui.save()
 		self.assertTrue(jacqui.is_dead)
 	def test_is_dead_stays_without_death_date(self):
-		jim = Agent.objects.create()
+		jim = Person.objects.create()
 		jim.is_dead = True
 		jim.save()
 		self.assertTrue(jim.is_dead)
 	def test_staying_alive(self):
-		luke = Agent.objects.create()
+		luke = Person.objects.create()
 		luke.is_dead =False
 		self.assertFalse(luke.is_dead)

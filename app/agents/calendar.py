@@ -12,7 +12,7 @@ from icalendar import Calendar, Event
 from lucosauth.envvars import get_calendar_key
 
 def getBirthdays():
-	agentlist = Agent.objects.filter(starred=True).exclude(day_of_birth__isnull=True).exclude(month_of_birth__isnull=True)
+	agentlist = Person.objects.filter(starred=True).exclude(day_of_birth__isnull=True).exclude(month_of_birth__isnull=True)
 	birthdays = []
 	for agent in agentlist.distinct():
 		date = nextOccurence(agent.day_of_birth, agent.month_of_birth)
@@ -35,7 +35,7 @@ def getBirthdays():
 	return birthdays
 
 def getDeathdays():
-	agentlist = Agent.objects.filter(starred=True).exclude(day_of_death__isnull=True).exclude(month_of_death__isnull=True)
+	agentlist = Person.objects.filter(starred=True).exclude(day_of_death__isnull=True).exclude(month_of_death__isnull=True)
 	deathdays = []
 	for agent in agentlist.distinct():
 		date = nextOccurence(agent.day_of_death, agent.month_of_death)
@@ -113,7 +113,7 @@ def renderCalendar(request):
 		'template': 'agents/calendar.html',
 		'title': _("Contacts Calendar"),
 		'list': 'calendar',
-		'addurl': reverse('admin:agents_agent_add'),
+		'addurl': reverse('admin:agents_person_add'),
 		'events': getEvents(),
 		'icalendar_link': '/calendar.ics?key='+get_calendar_key(),
 	})

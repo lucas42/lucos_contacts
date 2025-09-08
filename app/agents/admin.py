@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from agents.loganne import contactCreated, contactUpdated, contactDeleted
 
 class NameInline(admin.TabularInline):
-	model = AgentName
+	model = PersonName
 	extra = 1
 	min_num = 1
 	verobse_name = "Name"
@@ -43,7 +43,7 @@ class RelationshipInline(admin.TabularInline):
 	fields = ('relationshipType', 'object')
 
 class RomanticRelationshipForm(forms.ModelForm):
-	romanticPartner = forms.ModelChoiceField(queryset=Agent.objects.all(), required=True, label="Romantic Partner")
+	romanticPartner = forms.ModelChoiceField(queryset=Person.objects.all(), required=True, label="Romantic Partner")
 
 	class Meta:
 		model = RomanticRelationship
@@ -53,11 +53,11 @@ class RomanticRelationshipForm(forms.ModelForm):
 		self.current_agent = kwargs.pop('current_agent', None)
 		super().__init__(*args, **kwargs)
 		if self.current_agent:
-			self.fields['romanticPartner'].queryset = Agent.objects.exclude(pk=self.current_agent.pk)
+			self.fields['romanticPartner'].queryset = Person.objects.exclude(pk=self.current_agent.pk)
 			if self.instance.pk:
 				self.fields['romanticPartner'].initial = self.instance.getOtherPerson(self.current_agent)
 	def save(self, commit=True):
-		# PersonA is set in the AgentAdmin save_formset, so just add personB here
+		# PersonA is set in the PersonAdmin save_formset, so just add personB here
 		self.instance.personB = self.cleaned_data['romanticPartner']
 		return super().save(commit=commit)
 
@@ -70,7 +70,7 @@ class RomanticRelationshipInline(admin.TabularInline):
 	def get_formset(self, request, obj=None, **kwargs):
 		FormSet = super().get_formset(request, obj, **kwargs)
 
-		class FormSetWithCurrentAgent(FormSet):
+		class FormSetWithCurrentPerson(FormSet):
 			def __init__(self, *args, **kwargs):
 				kwargs['form_kwargs'] = {'current_agent': obj}
 				super().__init__(*args, **kwargs)
@@ -78,13 +78,13 @@ class RomanticRelationshipInline(admin.TabularInline):
 			def get_queryset(self):
 				return RomanticRelationship.objects.filter_person(obj)
 
-		return FormSetWithCurrentAgent
+		return FormSetWithCurrentPerson
 	def get_fields(self, request, obj=None):
 		all_fields = [f.name for f in self.model._meta.fields if f.name not in self.form.Meta.exclude]
 		fields_order = ['romanticPartner'] + [f for f in all_fields if f != 'romanticPartner']
 		return fields_order
 
-class AgentAdmin(admin.ModelAdmin):
+class PersonAdmin(admin.ModelAdmin):
 	actions = ['merge','delete_all_relationships']
 	inlines = [
 		NameInline,
@@ -113,8 +113,8 @@ class AgentAdmin(admin.ModelAdmin):
 				Relationship.objects.filter(object=agent).update(object=mainagent)
 				RomanticRelationship.objects.filter(personA=agent).update(personA=mainagent)
 				RomanticRelationship.objects.filter(personB=agent).update(personB=mainagent)
-				ExternalAgent.objects.filter(agent=agent).update(agent=mainagent)
-				AgentName.objects.filter(agent=agent).update(agent=mainagent)
+				ExternalPerson.objects.filter(agent=agent).update(agent=mainagent)
+				PersonName.objects.filter(agent=agent).update(agent=mainagent)
 				PhoneNumber.objects.filter(agent=agent).update(agent=mainagent)
 				EmailAddress.objects.filter(agent=agent).update(agent=mainagent)
 				PostalAddress.objects.filter(agent=agent).update(agent=mainagent)
@@ -130,15 +130,15 @@ class AgentAdmin(admin.ModelAdmin):
 			Relationship.objects.filter(subject=agent).delete()
 			Relationship.objects.filter(object=agent).delete()
 	def response_add(self, request, agent):
-		res = super(AgentAdmin, self).response_add(request, agent)
+		res = super(PersonAdmin, self).response_add(request, agent)
 		contactCreated(agent)
 		return redirect(agent.get_absolute_url())
 	def response_change(self, request, agent):
-		res = super(AgentAdmin, self).response_change(request, agent)
+		res = super(PersonAdmin, self).response_change(request, agent)
 		contactUpdated(agent)
 		return redirect(agent.get_absolute_url())
 	def response_delete(self, request, agent_name, agent_id):
-		res = super(AgentAdmin, self).response_delete(request, agent_name, agent_id)
+		res = super(PersonAdmin, self).response_delete(request, agent_name, agent_id)
 		contactDeleted(agent_name, agent_id)
 		return res
 	def save_formset(self, request, form, formset, change):
@@ -146,10 +146,10 @@ class AgentAdmin(admin.ModelAdmin):
 			instances = formset.save(commit=False)
 			for instance in instances:
 				if not instance.personA_id:
-					instance.personA = form.instance  # parent Agent
+					instance.personA = form.instance  # parent Person
 				instance.save()
 			formset.save_m2m()
 		else:
 			super().save_formset(request, form, formset, change)
 
-admin.site.register(Agent, AgentAdmin)
+admin.site.register(Person, PersonAdmin)
