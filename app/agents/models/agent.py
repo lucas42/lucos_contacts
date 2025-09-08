@@ -2,6 +2,7 @@
 from django.db import models
 from django.db.models.functions import Lower
 import datetime
+from django.utils.translation import gettext_lazy as _
 
 def dayChoices():
 	choices = []
@@ -34,6 +35,8 @@ class Person(models.Model):
 	class Meta:
 		app_label = 'agents'
 		ordering = [Lower('_name')]
+		verbose_name = _('person')
+		verbose_name_plural = _('people')
 
 	def getName(self):
 		return self._name or "Unnamed"

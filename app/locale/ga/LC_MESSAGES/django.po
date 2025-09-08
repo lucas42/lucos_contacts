@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-26 00:28+0000\n"
+"POT-Creation-Date: 2025-09-08 15:07+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -119,6 +119,14 @@ msgstr "próifíleanna grianghraif google"
 msgid "Photos tagged with %(name)s"
 msgstr "Grianghraif clibáilte le %(name)s"
 
+#: agents/models/agent.py:38
+msgid "person"
+msgstr "duine"
+
+#: agents/models/agent.py:39
+msgid "people"
+msgstr "daoine"
+
 #: agents/models/relationshipTypes.py:55
 msgid "child"
 msgstr "páiste"
@@ -198,7 +206,7 @@ msgstr "Páirtí"
 msgid "Me"
 msgstr "Mise"
 
-#: agents/views.py:120
+#: agents/views.py:131
 msgid "Contacts"
 msgstr "Teagmhálacha"
 
