@@ -18,6 +18,8 @@ def agent_to_rdf(agent):
 		g.add((agent_uri, rdflib.FOAF.phone, rdflib.URIRef(f"tel:{num.number}")))
 	for email in EmailAddress.objects.filter(agent=agent, active=True):
 		g.add((agent_uri, rdflib.FOAF.mbox, rdflib.URIRef(f"mailto:{email.address}")))
+	for postaladdress in PostalAddress.objects.filter(agent=agent, active=True):
+		g.add((agent_uri, rdflib.SDO.address, rdflib.Literal(postaladdress.address.replace(',', ',\n'))))
 	for facebookaccount in FacebookAccount.objects.filter(agent=agent, active=True):
 		account_bnode = rdflib.BNode()
 		g.add((agent_uri, rdflib.FOAF.account, account_bnode))
