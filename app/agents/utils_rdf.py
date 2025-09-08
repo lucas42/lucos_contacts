@@ -4,10 +4,12 @@ from agents.models import *
 from .models.relationshipTypes import RELATIONSHIP_TYPES, getRelationshipTypeByKey
 
 BASE_URL = os.environ.get("BASE_URL")
+CONTACTS_NS = rdflib.Namespace(BASE_URL)
 
 def agent_to_rdf(agent):
-	agent_uri = rdflib.URIRef(f"{BASE_URL}{agent.get_absolute_url()}")
+	agent_uri = CONTACTS_NS[agent.get_absolute_url()]
 	g = rdflib.Graph()
+	g.bind('reltypes', BASE_URL+"/relationships/")
 	g.add((agent_uri, rdflib.RDF.type, rdflib.FOAF.Person))
 	g.add((agent_uri, rdflib.SKOS.prefLabel, rdflib.Literal(str(agent))))
 	for agentname in PersonName.objects.filter(agent=agent):
@@ -33,13 +35,12 @@ def agent_to_rdf(agent):
 		g.add((account_bnode, rdflib.FOAF.accountServiceHomepage, rdflib.URIRef("https://myaccount.google.com/")))
 	for relation in Relationship.objects.filter(subject=agent):
 		rel_type = getRelationshipTypeByKey(relation.relationshipType)
-		rel_type_uri = rdflib.URIRef(f"{BASE_URL}{rel_type.get_absolute_url()}")
-		rel_uri = rdflib.URIRef(f"{BASE_URL}{relation.object.get_absolute_url()}")
-		g.add((agent_uri, rel_type_uri, rel_uri))
+		g.add((agent_uri, CONTACTS_NS[rel_type.get_absolute_url()], CONTACTS_NS[relation.object.get_absolute_url()]))
 	return g
 
 def agent_list_to_rdf(agentlist):
 	g = rdflib.Graph()
+	g.bind('reltypes', BASE_URL+"/relationships/")
 	g += rel_types_rdf()
 	for agent in agentlist:
 		g += agent_to_rdf(agent)
@@ -48,6 +49,6 @@ def agent_list_to_rdf(agentlist):
 def rel_types_rdf():
 	g = rdflib.Graph()
 	for reltype in RELATIONSHIP_TYPES:
-		type_uri = rdflib.URIRef(f"{BASE_URL}{reltype.get_absolute_url()}")
+		type_uri = rdflib.URIRef(CONTACTS_NS[reltype.get_absolute_url()])
 		g.add((type_uri, rdflib.RDFS.subPropertyOf, rdflib.URIRef('https://dbpedia.org/ontology/relative')))
 	return g

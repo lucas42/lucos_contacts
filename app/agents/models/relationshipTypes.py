@@ -21,7 +21,7 @@ class BaseRelationshipType:
 	label = None
 	@classmethod
 	def get_absolute_url(cls):
-		return f"/relationships/{urllib.parse.quote_plus(cls.dbKey)}"
+		return f"/relationships/{urllib.parse.quote(cls.dbKey, safe='')}"
 
 def setInverse(typeA, typeB):
 	if typeA.inverse or typeB.inverse:
