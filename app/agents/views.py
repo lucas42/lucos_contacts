@@ -176,3 +176,29 @@ def info(request):
 		output['metrics']['agent-count']['value'] = -1
 		output['metrics']['agent-count']['debug'] = str(e)
 	return HttpResponse(content=json.dumps(output))
+
+def manifest(request):
+	output = {
+		'name': "lucOS Contacts",
+		'short_name': "Contacts",
+		'start_url': "/people/starred",
+		'scope': "/",
+		'theme_color': "#044E00",
+		'background_color': "#B9E7B7",
+		'display': "standalone",
+		'icons': [
+			{
+				"sizes": "434x425",
+				"src": "/resources/logo-highres.png",
+				"type": "image/png",
+				"purpose": "any monochrome",
+			},
+			{
+				"sizes": "510x510",
+				"src": "/resources/maskable_icon.png",
+				"type": "image/png",
+				"purpose": "maskable",
+			}
+		]
+		}
+	return HttpResponse(content=json.dumps(output), content_type="application/manifest+json")

@@ -34,6 +34,7 @@ urlpatterns = [
 	re_path(r'^admin/', admin.site.urls),
 	re_path(r'^accounts/login/', auth_views.loginview),
 	re_path(r'^_info$', agents_views.info),
+	re_path(r'^manifest.json$', agents_views.manifest),
 	re_path (r'^i18n/' ,include('django.conf.urls.i18n')),
 
 	re_path(r'^agents/(?P<subpath>.*)', RedirectView.as_view(url='/people/%(subpath)s', permanent=True)),
