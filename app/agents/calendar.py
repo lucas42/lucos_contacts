@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from lucosauth.decorators import calendar_auth
 from icalendar import Calendar, Event
 from lucosauth.envvars import get_calendar_key
+from django.conf import settings
 
 def getBirthdays():
 	agentlist = Person.objects.filter(starred=True).exclude(day_of_birth__isnull=True).exclude(month_of_birth__isnull=True)
@@ -132,4 +133,4 @@ def outputICalendar(request):
 		event.add('dtstart', eventData['date'])
 		event.add('dtstamp', datetime.now())
 		cal.add_component(event)
-	return HttpResponse(content=cal.to_ical(), content_type="text/calendar")
+	return HttpResponse(content=cal.to_ical(), content_type=f'text/calendar; charset={settings.DEFAULT_CHARSET}')

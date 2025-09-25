@@ -15,6 +15,7 @@ from agents.importer import importPerson
 from django.utils.translation import gettext as _
 from .utils_conneg import choose_rdf_over_html, pick_best_rdf_format
 from .utils_rdf import agent_to_rdf, agent_list_to_rdf
+from django.conf import settings
 
 @csrf_exempt
 @api_auth
@@ -47,7 +48,7 @@ def agent(request, extid, method=None):
 	if choose_rdf_over_html(request):
 		graph = agent_to_rdf(agent)
 		format, content_type = pick_best_rdf_format(request)
-		return HttpResponse(graph.serialize(format=format), content_type=content_type)
+		return HttpResponse(graph.serialize(format=format), content_type=f'{content_type}; charset={settings.DEFAULT_CHARSET}')
 	output = serializePerson(agent=agent, currentagent=request.user.agent, extended=True)
 	if (method == 'accounts'):
 		if (request.method == 'POST'):
@@ -114,7 +115,7 @@ def agentindex(request, list):
 	if choose_rdf_over_html(request):
 		graph = agent_list_to_rdf(agentlist)
 		format, content_type = pick_best_rdf_format(request)
-		return HttpResponse(graph.serialize(format=format), content_type=content_type)
+		return HttpResponse(graph.serialize(format=format), content_type=f'{content_type}; charset={settings.DEFAULT_CHARSET}')
 	for agent in agentlist.distinct():
 		data = serializePerson(agent=agent, currentagent=request.user.agent)
 
@@ -201,4 +202,4 @@ def manifest(request):
 			}
 		]
 		}
-	return HttpResponse(content=json.dumps(output), content_type="application/manifest+json")
+	return HttpResponse(content=json.dumps(output), content_type=f'application/manifest+json; charset={settings.DEFAULT_CHARSET}')
