@@ -130,17 +130,21 @@ class PersonAdmin(admin.ModelAdmin):
 			Relationship.objects.filter(subject=agent).delete()
 			Relationship.objects.filter(object=agent).delete()
 	def response_add(self, request, agent):
-		res = super(PersonAdmin, self).response_add(request, agent)
+		res = super().response_add(request, agent)
 		contactCreated(agent)
 		return redirect(agent.get_absolute_url())
 	def response_change(self, request, agent):
-		res = super(PersonAdmin, self).response_change(request, agent)
+		res = super().response_change(request, agent)
 		contactUpdated(agent)
 		return redirect(agent.get_absolute_url())
-	def response_delete(self, request, agent_name, agent_id):
-		res = super(PersonAdmin, self).response_delete(request, agent_name, agent_id)
-		contactDeleted(agent_name, agent_id)
-		return res
+	def delete_model(self, request, agent):
+		# Get details from object before delete
+		contact_name = str(agent)
+		contact_id = agent.id
+		contact_url = agent.get_absolute_url()
+		super().delete_model(request, agent)
+		contactDeleted(contact_name, contact_id, contact_url)
+
 	def save_formset(self, request, form, formset, change):
 		if isinstance(formset.model, RomanticRelationship):
 			instances = formset.save(commit=False)

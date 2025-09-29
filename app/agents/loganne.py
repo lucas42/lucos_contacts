@@ -34,12 +34,13 @@ def contactStarChanged(agent):
 	else:
 		agentAction(agent, "unstarred")
 
-def contactDeleted(agent_name, agent_id):
+def contactDeleted(agent_name, agent_id, url):
 	loganneRequest({
 		"type": "contactDeleted",
 		"humanReadable": "Contact \""+agent_name+"\" deleted",
 		"agent": {
 			"id": agent_id,
 			"name": agent_name,
-		}
+		},
+		"url": BASE_URL + url,
 	})
