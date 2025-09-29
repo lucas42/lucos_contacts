@@ -2,6 +2,8 @@ import requests
 from os import environ
 from agents.serialize import serializePerson
 
+BASE_URL = environ.get("BASE_URL")
+
 def loganneRequest(data):
 	data["source"] = "lucos_contacts"
 	if not environ.get("LOGANNE_ENDPOINT"):
@@ -17,7 +19,7 @@ def agentAction(agent, action):
 		"type": "contact"+action.title(),
 		"humanReadable": "Contact \""+agent.getName()+"\" "+action,
 		"agent": serializePerson(agent=agent),
-		"url": "https://contacts.l42.eu" + agent.get_absolute_url(),
+		"url": BASE_URL + agent.get_absolute_url(),
 	})
 
 def contactUpdated(agent):
