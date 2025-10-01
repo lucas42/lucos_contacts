@@ -184,8 +184,8 @@ def manifest(request):
 		'short_name': "Contacts",
 		'start_url': "/people/starred",
 		'scope': "/",
-		'theme_color': "#044E00",
-		'background_color': "#B9E7B7",
+		'theme_color': "#000000",
+		'background_color': "#DBFFE6",
 		'display': "standalone",
 		'icons': [
 			{
