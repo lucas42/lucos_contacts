@@ -50,6 +50,8 @@ def agent_list_to_rdf(agentlist):
 
 def rel_types_rdf():
 	g = rdflib.Graph()
+	g.add((rdflib.FOAF.Person, rdflib.RDF.type, rdflib.OWL.Class))
+	g.add((rdflib.FOAF.Person, rdflib.SKOS.prefLabel, rdflib.Literal("Person", lang='en')))
 	for reltype in RELATIONSHIP_TYPES:
 		type_uri = CONTACTS_NS[reltype.get_absolute_url()]
 		g.add((type_uri, rdflib.RDFS.subPropertyOf, rdflib.URIRef('https://dbpedia.org/ontology/relative')))
