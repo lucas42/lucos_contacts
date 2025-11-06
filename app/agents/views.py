@@ -46,7 +46,7 @@ def agent(request, extid, method=None):
 		return redirect(agent)
 	
 	if choose_rdf_over_html(request):
-		graph = agent_to_rdf(agent)
+		graph = agent_to_rdf(agent, include_type_label=True)
 		format, content_type = pick_best_rdf_format(request)
 		return HttpResponse(graph.serialize(format=format), content_type=f'{content_type}; charset={settings.DEFAULT_CHARSET}')
 	output = serializePerson(agent=agent, currentagent=request.user.agent, extended=True)

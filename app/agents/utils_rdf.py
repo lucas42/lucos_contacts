@@ -8,11 +8,13 @@ from django.utils import translation
 BASE_URL = os.environ.get("BASE_URL")
 CONTACTS_NS = rdflib.Namespace(BASE_URL)
 
-def agent_to_rdf(agent):
+def agent_to_rdf(agent, include_type_label=False):
 	agent_uri = CONTACTS_NS[agent.get_absolute_url()]
 	g = rdflib.Graph()
 	g.bind('reltypes', BASE_URL+"/relationships/")
 	g.add((agent_uri, rdflib.RDF.type, rdflib.FOAF.Person))
+	if include_type_label:
+		g.add((rdflib.FOAF.Person, rdflib.SKOS.prefLabel, rdflib.Literal("Person", lang='en')))
 	g.add((agent_uri, rdflib.SKOS.prefLabel, rdflib.Literal(str(agent))))
 	for agentname in PersonName.objects.filter(agent=agent):
 		g.add((agent_uri, rdflib.FOAF.name, rdflib.Literal(agentname.name)))
@@ -45,7 +47,7 @@ def agent_list_to_rdf(agentlist):
 	g.bind('reltypes', BASE_URL+"/relationships/")
 	g += rel_types_rdf()
 	for agent in agentlist:
-		g += agent_to_rdf(agent)
+		g += agent_to_rdf(agent, include_type_label=False)
 	return g
 
 def rel_types_rdf():
