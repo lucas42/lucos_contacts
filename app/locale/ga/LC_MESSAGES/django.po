@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 15:07+0000\n"
+"POT-Creation-Date: 2025-12-22 20:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,37 +19,37 @@ msgstr ""
 "Plural-Forms: nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
 "4);\n"
 
-#: agents/calendar.py:21
+#: agents/calendar.py:22
 #, python-format
 msgid "%(name)s's %(count)s Birthday"
 msgstr "Breithlá %(count)s %(name)s"
 
-#: agents/calendar.py:26
+#: agents/calendar.py:27
 #, python-format
 msgid "%(name)s's Birthday"
 msgstr "Breithlá %(name)s"
 
-#: agents/calendar.py:42
+#: agents/calendar.py:43
 #, python-format
 msgid "%(name)s's Deathday"
 msgstr "Lá táisc %(name)s"
 
-#: agents/calendar.py:59
+#: agents/calendar.py:60
 #, python-format
 msgid "%(names)s's %(count)s Anniversary"
 msgstr "Comóradh Pósta %(count)s %(names)s"
 
-#: agents/calendar.py:64
+#: agents/calendar.py:65
 #, python-format
 msgid "%(names)s's Anniversary"
 msgstr "Comóradh Pósta %(names)s"
 
-#: agents/calendar.py:71
+#: agents/calendar.py:72
 #, python-format
 msgid "%(names)s's Wedding"
 msgstr "Bainis %(names)s"
 
-#: agents/calendar.py:114
+#: agents/calendar.py:115
 msgid "Contacts Calendar"
 msgstr "Féilire Teagmhálaithe"
 
@@ -127,47 +127,47 @@ msgstr "duine"
 msgid "people"
 msgstr "daoine"
 
-#: agents/models/relationshipTypes.py:55
+#: agents/models/relationshipTypes.py:58
 msgid "child"
 msgstr "páiste"
 
-#: agents/models/relationshipTypes.py:59
+#: agents/models/relationshipTypes.py:62
 msgid "parent"
 msgstr "tuismitheoir"
 
-#: agents/models/relationshipTypes.py:68
+#: agents/models/relationshipTypes.py:71
 msgid "sibling"
 msgstr "siblín"
 
-#: agents/models/relationshipTypes.py:71
+#: agents/models/relationshipTypes.py:74
 msgid "half-sibling"
 msgstr "leath-siblín"
 
-#: agents/models/relationshipTypes.py:81
+#: agents/models/relationshipTypes.py:84
 msgid "grandchild"
 msgstr "garpháiste"
 
-#: agents/models/relationshipTypes.py:84
+#: agents/models/relationshipTypes.py:87
 msgid "grandparent"
 msgstr "seantuismitheoir"
 
-#: agents/models/relationshipTypes.py:92
+#: agents/models/relationshipTypes.py:95
 msgid "aunt/uncle"
 msgstr "aintín/uncail"
 
-#: agents/models/relationshipTypes.py:99
+#: agents/models/relationshipTypes.py:102
 msgid "nibling"
 msgstr "niblín"
 
-#: agents/models/relationshipTypes.py:105
+#: agents/models/relationshipTypes.py:108
 msgid "great aunt/uncle"
 msgstr "seanaintín/seanuncail"
 
-#: agents/models/relationshipTypes.py:112
+#: agents/models/relationshipTypes.py:115
 msgid "great nibling"
 msgstr "garniblín"
 
-#: agents/models/relationshipTypes.py:118
+#: agents/models/relationshipTypes.py:121
 msgid "cousin"
 msgstr "col ceathrair"
 
@@ -206,7 +206,7 @@ msgstr "Páirtí"
 msgid "Me"
 msgstr "Mise"
 
-#: agents/views.py:131
+#: agents/views.py:132
 msgid "Contacts"
 msgstr "Teagmhálacha"
 
@@ -353,7 +353,7 @@ msgstr ""
 
 #: templates/admin/500.html:7 templates/admin/app_index.html:10
 #: templates/admin/auth/user/change_password.html:13
-#: templates/admin/base.html:31 templates/admin/change_form.html:30
+#: templates/admin/base.html:32 templates/admin/change_form.html:30
 #: templates/admin/change_list.html:44
 #: templates/admin/delete_confirmation.html:15
 #: templates/admin/delete_selected_confirmation.html:15
@@ -364,7 +364,7 @@ msgstr "Liosta Teagmhálacha"
 
 #: templates/admin/500.html:8 templates/admin/app_index.html:11
 #: templates/admin/auth/user/change_password.html:14
-#: templates/admin/base.html:32 templates/admin/change_form.html:31
+#: templates/admin/base.html:33 templates/admin/change_form.html:31
 #: templates/admin/change_list.html:45
 #: templates/admin/delete_confirmation.html:16
 #: templates/admin/delete_selected_confirmation.html:16
@@ -444,7 +444,7 @@ msgstr ""
 msgid "Enter a new password for the user <strong>%(username)s</strong>."
 msgstr ""
 
-#: templates/admin/base.html:35
+#: templates/admin/base.html:36
 msgid "Log out"
 msgstr ""
 
@@ -767,5 +767,9 @@ msgid "Calendar"
 msgstr "Féilire"
 
 #: templates/agents/index.html:20
+msgid "Communications"
+msgstr "Cumarsáidí"
+
+#: templates/agents/index.html:21
 msgid "All"
 msgstr "Uilig"
