@@ -1,0 +1,7 @@
+{
+  "name": "lucos_contacts_ui",
+  "description": "Client side js components for lucos_contacts",
+  "dependencies": {
+    "lucos_navbar": "^2.0.18"
+  }
+}

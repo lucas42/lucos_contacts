@@ -4,3 +4,4 @@
 .env
 *.mo
 .DS_Store
+node_modules

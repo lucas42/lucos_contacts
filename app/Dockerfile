@@ -1,4 +1,10 @@
-FROM lucas42/lucos_navbar:latest AS navbar
+FROM node:25-alpine AS ui-builder
+
+WORKDIR /build
+COPY package* ./
+
+RUN npm ci
+
 FROM python:3.15.0a3-alpine
 
 # set working directory
@@ -22,7 +28,7 @@ RUN apk del build-deps gcc python3-dev musl-dev
 
 # Copy project after dependencies, so cached dependencies can be used if unchanged
 COPY . .
-COPY --from=navbar lucos_navbar.js templates/resources/
+COPY --from=ui-builder /build/node_modules/lucos_navbar/lucos_navbar.js templates/resources/
 
 # Compile Translations
 RUN django-admin compilemessages
