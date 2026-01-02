@@ -29,6 +29,8 @@ RUN apk del build-deps gcc python3-dev musl-dev
 # Copy project after dependencies, so cached dependencies can be used if unchanged
 COPY . .
 COPY --from=ui-builder /build/node_modules/lucos_navbar/lucos_navbar.js templates/resources/
+COPY --from=ui-builder /build/node_modules/tom-select/dist/js/tom-select.complete.js templates/resources/
+COPY --from=ui-builder /build/node_modules/tom-select/dist/css/tom-select.default.css templates/resources/
 
 # Compile Translations
 RUN django-admin compilemessages

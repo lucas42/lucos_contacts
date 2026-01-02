@@ -34,6 +34,17 @@ document.querySelectorAll(".agenttable .name a").forEach(link => {
 	link.href += "#giftideas";
 });
 
+document.querySelectorAll("#presents-group select").forEach(select => {
+	new TomSelect(select, {
+		plugins: {
+			remove_button:{
+				title:'Remove person from this present',
+			},
+		},
+
+	});
+});
+
 
 class LanguageSelector extends HTMLElement {
 	constructor() {
