@@ -7,6 +7,7 @@ from django.utils import translation
 
 BASE_URL = os.environ.get("BASE_URL")
 CONTACTS_NS = rdflib.Namespace(BASE_URL)
+EOLAS_NS = rdflib.Namespace(f"https://eolas.l42.eu/ontology/")
 
 def agent_to_rdf(agent, include_type_label=False):
 	agent_uri = CONTACTS_NS[agent.get_absolute_url()]
@@ -45,6 +46,7 @@ def agent_to_rdf(agent, include_type_label=False):
 def agent_list_to_rdf(agentlist):
 	g = rdflib.Graph()
 	g.bind('reltypes', BASE_URL+"/relationships/")
+	g.bind('eolas', EOLAS_NS)
 	g += rel_types_rdf()
 	for agent in agentlist:
 		g += agent_to_rdf(agent, include_type_label=False)
@@ -54,6 +56,7 @@ def rel_types_rdf():
 	g = rdflib.Graph()
 	g.add((rdflib.FOAF.Person, rdflib.RDF.type, rdflib.OWL.Class))
 	g.add((rdflib.FOAF.Person, rdflib.SKOS.prefLabel, rdflib.Literal("Person", lang='en')))
+	g.add((rdflib.FOAF.Person, EOLAS_NS.hasCategory, EOLAS_NS.People))
 	for reltype in RELATIONSHIP_TYPES:
 		type_uri = CONTACTS_NS[reltype.get_absolute_url()]
 		g.add((type_uri, rdflib.RDFS.subPropertyOf, rdflib.URIRef('https://dbpedia.org/ontology/relative')))
