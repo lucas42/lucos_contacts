@@ -16,6 +16,7 @@ def agent_to_rdf(agent, include_type_label=False):
 	g.add((agent_uri, rdflib.RDF.type, rdflib.FOAF.Person))
 	if include_type_label:
 		g.add((rdflib.FOAF.Person, rdflib.SKOS.prefLabel, rdflib.Literal("Person", lang='en')))
+		g.add((rdflib.FOAF.Person, EOLAS_NS.hasCategory, EOLAS_NS.People))
 	g.add((agent_uri, rdflib.SKOS.prefLabel, rdflib.Literal(str(agent))))
 	for agentname in PersonName.objects.filter(agent=agent):
 		g.add((agent_uri, rdflib.FOAF.name, rdflib.Literal(agentname.name)))
