@@ -13,10 +13,12 @@ def agent_to_rdf(agent, include_type_label=False):
 	agent_uri = CONTACTS_NS[agent.get_absolute_url()]
 	g = rdflib.Graph()
 	g.bind('reltypes', BASE_URL+"/relationships/")
+	g.bind('eolas', EOLAS_NS)
 	g.add((agent_uri, rdflib.RDF.type, rdflib.FOAF.Person))
 	if include_type_label:
 		g.add((rdflib.FOAF.Person, rdflib.SKOS.prefLabel, rdflib.Literal("Person", lang='en')))
 		g.add((rdflib.FOAF.Person, EOLAS_NS.hasCategory, EOLAS_NS.People))
+		g.add((EOLAS_NS.People, rdflib.SKOS.prefLabel, rdflib.Literal("People", lang='en')))
 	g.add((agent_uri, rdflib.SKOS.prefLabel, rdflib.Literal(str(agent))))
 	for agentname in PersonName.objects.filter(agent=agent):
 		g.add((agent_uri, rdflib.FOAF.name, rdflib.Literal(agentname.name)))
@@ -58,6 +60,7 @@ def rel_types_rdf():
 	g.add((rdflib.FOAF.Person, rdflib.RDF.type, rdflib.OWL.Class))
 	g.add((rdflib.FOAF.Person, rdflib.SKOS.prefLabel, rdflib.Literal("Person", lang='en')))
 	g.add((rdflib.FOAF.Person, EOLAS_NS.hasCategory, EOLAS_NS.People))
+	g.add((EOLAS_NS.People, rdflib.SKOS.prefLabel, rdflib.Literal("People", lang='en')))
 	for reltype in RELATIONSHIP_TYPES:
 		type_uri = CONTACTS_NS[reltype.get_absolute_url()]
 		g.add((type_uri, rdflib.RDFS.subPropertyOf, rdflib.URIRef('https://dbpedia.org/ontology/relative')))
