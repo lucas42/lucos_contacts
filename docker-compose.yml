@@ -3,7 +3,7 @@ services:
     build: ./web
     container_name: lucos_contacts_web
     ports:
-      - "8013:80"
+      - $PORT:80
     image: lucas42/lucos_contacts_web
     volumes:
       - "staticfiles:/usr/share/nginx/html/resources"
@@ -19,7 +19,7 @@ services:
       - PRODUCTION
       - CLIENT_KEYS
       - LOGANNE_ENDPOINT
-      - BASE_URL
+      - APP_ORIGIN
     volumes:
       - "staticfiles:/usr/src/app/static"
     restart: always
@@ -40,7 +40,7 @@ services:
     environment:
       - SECRET_KEY=test
       - CLIENT_KEYS=external_calendar:test=1234
-      - BASE_URL=http://localhost:8013
+      - APP_ORIGIN=http://localhost:8013
     depends_on:
       - db
     command: ./manage.py test agents.tests comms.tests lucosauth.tests

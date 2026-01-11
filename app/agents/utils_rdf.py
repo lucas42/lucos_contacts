@@ -5,7 +5,7 @@ from .models.relationshipTypes import RELATIONSHIP_TYPES, getRelationshipTypeByK
 from django.conf import settings
 from django.utils import translation
 
-BASE_URL = os.environ.get("BASE_URL")
+BASE_URL = os.environ.get("APP_ORIGIN")
 CONTACTS_NS = rdflib.Namespace(BASE_URL)
 EOLAS_NS = rdflib.Namespace(f"https://eolas.l42.eu/ontology/")
 

@@ -2,7 +2,7 @@ import requests
 from os import environ
 from agents.serialize import serializePerson
 
-BASE_URL = environ.get("BASE_URL")
+BASE_URL = environ.get("APP_ORIGIN")
 
 def loganneRequest(data):
 	data["source"] = "lucos_contacts"
