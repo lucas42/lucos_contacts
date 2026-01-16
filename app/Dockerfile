@@ -5,7 +5,7 @@ COPY package* ./
 
 RUN npm ci
 
-FROM python:3.15.0a3-alpine
+FROM python:3.15.0a5-alpine
 
 # set working directory
 WORKDIR /usr/src/app
