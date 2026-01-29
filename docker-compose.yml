@@ -44,6 +44,8 @@ services:
     depends_on:
       - db
     command: ./manage.py test agents.tests comms.tests lucosauth.tests
+    profiles:
+      - test
 volumes:
   staticfiles:
   db_data:

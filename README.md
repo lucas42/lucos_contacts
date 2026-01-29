@@ -19,7 +19,7 @@ Has three components:
 `docker-compose up --build`
 
 ## Running tests
-`docker run -e SECRET_KEY=test -e CI=true lucas42/lucos_contacts_app ./manage.py test agents.tests comms.tests lucosauth.tests`
+`docker compose --profile test up test --build --exit-code-from test`
 
 ## Database commands
 ### Manually creating a backup
