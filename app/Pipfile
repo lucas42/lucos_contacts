@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 django = "==6.0.1"
-gunicorn = "==25.0.0"
+gunicorn = "==25.0.1"
 requests = "*"
 django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
 icalendar = "*"
