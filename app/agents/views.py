@@ -176,7 +176,7 @@ def info(request):
 	except Exception as e:
 		output['metrics']['agent-count']['value'] = -1
 		output['metrics']['agent-count']['debug'] = str(e)
-	return HttpResponse(content=json.dumps(output))
+	return HttpResponse(content=json.dumps(output), content_type=f'application/json; charset={settings.DEFAULT_CHARSET}')
 
 def manifest(request):
 	output = {
