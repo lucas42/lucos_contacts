@@ -183,12 +183,12 @@
         },
         "icalendar": {
             "hashes": [
-                "sha256:5c69cf317177668748793bdecbe93d0850ceca8d450bbf27c8fa1a14e2e71223",
-                "sha256:ed874334e620a73b2cbf408706574f3e83210ae79f3960678c453131e465c1c7"
+                "sha256:1f577af3e4d022a701aa98f9366dd524f0f1134b90c73c28493f06d5371901d5",
+                "sha256:68a6295f31ed907885ae79f10336b53ba067e0a66075b6a956abbe5e89ac7b39"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==7.0.0"
+            "version": "==7.0.1"
         },
         "idna": {
             "hashes": [
