@@ -112,10 +112,22 @@ def agentindex(request, list):
 		agentlist = Person.objects.all()
 	else:
 		agentlist = Person.objects.filter(id=0)
+
+	agentlist = agentlist.prefetch_related(
+		'phonenumber_set', 'postaladdress_set', 'emailaddress_set',
+		'facebookaccount_set', 'googlecontact_set', 'googlephotosprofile_set',
+		'personname_set', 'subject', 'personA', 'personB'
+	)
+
 	if choose_rdf_over_html(request):
 		graph = agent_list_to_rdf(agentlist)
 		format, content_type = pick_best_rdf_format(request)
 		return HttpResponse(graph.serialize(format=format), content_type=f'{content_type}; charset={settings.DEFAULT_CHARSET}')
+	
+	current_agent = request.user.agent
+	if current_agent:
+		models.prefetch_related_objects([current_agent], 'subject', 'personA', 'personB')
+
 	for agent in agentlist.distinct():
 		data = serializePerson(agent=agent, currentagent=request.user.agent)
 
