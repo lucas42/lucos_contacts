@@ -24,12 +24,12 @@ Has three components:
 * `docker exec lucos_contacts_db pg_dump --user postgres postgres > /tmp/contacts.sql`
 
 ### Wiping database clean so restore doesn't cause any conflicts
-(on machine with docker & docker-compose installed)
+(on machine with docker & docker compose installed)
 * `docker compose exec db dropdb --user postgres postgres`
 * `docker compose exec db createdb --user postgres postgres`
 
 ### Restoring from backup
-(on machine with docker & docker-compose installed)
+(on machine with docker & docker compose installed)
 Assuming the backup file is available on the current machine's /tmp directory, run the following commands:
 
 * `docker compose cp /tmp/contacts.sql db:/tmp/`
@@ -39,5 +39,5 @@ Assuming the backup file is available on the current machine's /tmp directory, r
 
 ## Environment Variables:
 
-* **SECRET_KEY** a secret used by django for lots of its security mechanisms.  To generate a new one, run `docker-compose exec app python manage.py shell -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`
+* **SECRET_KEY** a secret used by django for lots of its security mechanisms.  To generate a new one, run `docker compose exec app python manage.py shell -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`
 * **PRODUCTION** Set in a production environment, as it increases security protections.  Not setting it will give detailed debug pages on error.
