@@ -12,6 +12,7 @@ import json, time, os
 from agents.loganne import contactCreated, contactUpdated, contactStarChanged
 from agents.serialize import serializePerson
 from agents.importer import importPerson
+from agents.utils_relations import get_relationship_info
 from django.utils.translation import gettext as _
 from .utils_conneg import choose_rdf_over_html, pick_best_rdf_format
 from .utils_rdf import agent_to_rdf, agent_list_to_rdf
@@ -99,10 +100,13 @@ def importer(request):
 def agentindex(request, list):
 	agents = []
 	template = 'agents/agentlist.html'
+	prefetches = []
 	if (list == 'postal'):
 		agentlist = Person.objects.filter(postaladdress__isnull=False)
+		prefetches.append('postaladdress_set')
 	elif (list == 'phone'):
 		agentlist = Person.objects.filter(phonenumber__isnull=False)
+		prefetches.append('phonenumber_set')
 	elif (list == 'gifts'):
 		agentlist = Person.objects.exclude(gift_ideas="")
 		template = 'agents/agenttable.html'
@@ -113,11 +117,7 @@ def agentindex(request, list):
 	else:
 		agentlist = Person.objects.filter(id=0)
 
-	agentlist = agentlist.prefetch_related(
-		'phonenumber_set', 'postaladdress_set', 'emailaddress_set',
-		'facebookaccount_set', 'googlecontact_set', 'googlephotosprofile_set',
-		'personname_set', 'subject', 'personA', 'personB'
-	)
+	agentlist = agentlist.prefetch_related(*prefetches)
 
 	if choose_rdf_over_html(request):
 		graph = agent_list_to_rdf(agentlist)
@@ -129,15 +129,28 @@ def agentindex(request, list):
 		models.prefetch_related_objects([current_agent], 'subject', 'personA', 'personB')
 
 	for agent in agentlist.distinct():
-		data = serializePerson(agent=agent, currentagent=request.user.agent)
+		data = {
+			'id': agent.id,
+			'name': agent.getName(),
+			'url': agent.get_absolute_url(),
+			'starred': agent.starred,
+			'isDead': agent.is_dead,
+		}
 
-		# Hide any agents who only have inactive postal addresses
-		# (the above filter only excludes agents with no postal addresses at all)
-		if (list == 'postal' and not data['addresses']):
-			continue
-		# Same for phone numbers
-		if (list == 'phone' and not data['phone']):
-			continue
+		if (list == 'postal'):
+			active_addresses = [p for p in agent.postaladdress_set.all() if p.active]
+			if not active_addresses:
+				continue
+			data['formattedaddresses'] = [p.address.replace(',', ',\n') for p in active_addresses]
+		elif (list == 'phone'):
+			active_phones = [p for p in agent.phonenumber_set.all() if p.active]
+			if not active_phones:
+				continue
+			data['phone'] = [str(p.number).replace('+44','0') for p in active_phones]
+		elif (list == 'gifts'):
+			data['giftideas'] = agent.gift_ideas
+
+		data['rel'], data['sortableRel'] = get_relationship_info(agent, current_agent)
 		agents.append(data)
 	return render(None, 'agents/index.html', {
 		'template': template,

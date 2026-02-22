@@ -2,6 +2,7 @@ from agents.models import *
 import datetime
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from agents.utils_relations import get_relationship_info
 
 
 # Formats a date given the year, month of day - any selection of which may be missing
@@ -91,19 +92,6 @@ def serializePerson(agent, currentagent=None, extended=False):
 			agentdataobj['relations'].append(serializePerson(agent=partner, currentagent=agent, extended=False))
 		agentdataobj['relations'].sort(key=lambda data: (data['sortableRel'], data['sortableBirthday']))
 
-	if currentagent:
-		agentdataobj['sortableRel'] = -1
-		if (agent == currentagent):
-			agentdataobj['rel'] = _('Me')
-		else:
-			combinedrels = ''
-			# Use the pre-fetched relationships on the current_agent we defined upstream
-			for rel in [r for r in currentagent.subject.all() if r.object_id == agent.id]:
-				combinedrels += rel.get_relationshipType_display() + "/"
-				agentdataobj['sortableRel'] = rel.getPriority()
-			for rel in [r for r in currentagent.personA.all() if r.active and r.personB_id == agent.id] + [r for r in currentagent.personB.all() if r.active and r.personA_id == agent.id]:
-				combinedrels += rel.getRelationshipLabel() + "/"
-				agentdataobj['sortableRel'] = rel.getPriority()
-			agentdataobj['rel'] = combinedrels.strip('/')
+	agentdataobj['rel'], agentdataobj['sortableRel'] = get_relationship_info(agent, currentagent)
 
 	return agentdataobj
