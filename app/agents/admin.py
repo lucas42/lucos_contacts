@@ -41,9 +41,15 @@ class RelationshipInline(admin.TabularInline):
 	model = Relationship
 	fk_name = 'subject'
 	fields = ('relationshipType', 'object')
+	autocomplete_fields = ['object']
 
 class RomanticRelationshipForm(forms.ModelForm):
-	romanticPartner = forms.ModelChoiceField(queryset=Person.objects.all(), required=True, label="Romantic Partner")
+	romanticPartner = forms.ModelChoiceField(
+		queryset=Person.objects.all(),
+		required=True,
+		label="Romantic Partner",
+		widget=admin.widgets.AutocompleteSelect(RomanticRelationship._meta.get_field('personB'), admin.site),
+	)
 
 	class Meta:
 		model = RomanticRelationship

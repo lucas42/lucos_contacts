@@ -18,7 +18,7 @@ class PresentInline(admin.TabularInline):
 	autocomplete_fields = ['agents']
 
 class OccasionListAdmin(admin.ModelAdmin):
-	filter_horizontal = ('gave_card_to', 'received_card_from')
+	autocomplete_fields = ['gave_card_to', 'received_card_from']
 	inlines = [
 		PresentInline
 	]
@@ -26,7 +26,7 @@ class OccasionListAdmin(admin.ModelAdmin):
 admin.site.register(OccasionList, OccasionListAdmin)
 
 class PresentAdmin(admin.ModelAdmin):
-	filter_horizontal = ('agents',)
+	autocomplete_fields = ['agents']
 	form = PresentForm
 
 admin.site.register(Present, PresentAdmin)
@@ -35,9 +35,6 @@ class BirthdayPresentForm(PresentForm):
 	class Meta:
 		model = BirthdayPresent
 		fields = ('agents', 'year', 'description')
-		widgets = {
-			'agents': forms.Select,
-		}
 		labels = {
 			'agents': _('Whose birthday it was'),
 			'description': _('What I gave them'),
@@ -45,5 +42,6 @@ class BirthdayPresentForm(PresentForm):
 
 class BirthdayPresentAdmin(admin.ModelAdmin):
 	form = BirthdayPresentForm
+	autocomplete_fields = ['agents']
 
 admin.site.register(BirthdayPresent, BirthdayPresentAdmin)
