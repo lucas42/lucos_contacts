@@ -116,8 +116,18 @@ class PersonAdmin(admin.ModelAdmin):
 			if not mainagent:
 				mainagent = agent
 			else:
-				Relationship.objects.filter(subject=agent).update(subject=mainagent)
-				Relationship.objects.filter(object=agent).update(object=mainagent)
+				# For relationships, we need to be careful of duplicates
+				for rel in Relationship.objects.filter(subject=agent):
+					if Relationship.objects.filter(subject=mainagent, object=rel.object, relationshipType=rel.relationshipType).exists():
+						rel.delete()
+					else:
+						Relationship.objects.filter(pk=rel.pk).update(subject=mainagent)
+				for rel in Relationship.objects.filter(object=agent):
+					if Relationship.objects.filter(subject=rel.subject, object=mainagent, relationshipType=rel.relationshipType).exists():
+						rel.delete()
+					else:
+						Relationship.objects.filter(pk=rel.pk).update(object=mainagent)
+
 				RomanticRelationship.objects.filter(personA=agent).update(personA=mainagent)
 				RomanticRelationship.objects.filter(personB=agent).update(personB=mainagent)
 				ExternalPerson.objects.filter(agent=agent).update(agent=mainagent)

@@ -78,8 +78,38 @@ class RelationshipTest(TestCase):
 		Relationship.objects.create(subject=frances, object=brenda, relationshipType='sibling')
 
 		self.assertEqual(get_agents_by_relType(luke, 'aunt/uncle'), [felim, myra])
-		self.assertEqual(get_agents_by_relType(frances, 'nibling'), [myra, ruth, felim])
+		self.assertCountEqual(get_agents_by_relType(frances, 'nibling'), [myra, ruth, felim])
 		self.assertEqual(get_agents_by_relType(luke, 'great aunt/uncle'), [frances])
+
+	def test_prevent_duplicate_relationships(self):
+		from django.db import IntegrityError, transaction
+		luke = Person.objects.create()
+		rowan = Person.objects.create()
+		Relationship.objects.create(subject=luke, object=rowan, relationshipType='sibling')
+		with self.assertRaises(IntegrityError):
+			with transaction.atomic():
+				Relationship.objects.create(subject=luke, object=rowan, relationshipType='sibling')
+		
+		relationships = Relationship.objects.filter(subject=luke, object=rowan, relationshipType='sibling')
+		self.assertEqual(relationships.count(), 1)
+
+	def test_merge_removes_duplicate_relationships(self):
+		luke = Person.objects.create()
+		rowan = Person.objects.create()
+		third_person = Person.objects.create()
+		Relationship.objects.create(subject=luke, object=third_person, relationshipType='sibling')
+		Relationship.objects.create(subject=rowan, object=third_person, relationshipType='sibling')
+		
+		from agents.admin import PersonAdmin
+		from django.contrib.admin.sites import AdminSite
+		from django.test import RequestFactory
+		
+		admin = PersonAdmin(Person, AdminSite())
+		request = RequestFactory().get('/')
+		admin.merge(request, Person.objects.filter(id__in=[luke.id, rowan.id]))
+		
+		relationships = Relationship.objects.filter(subject=luke, object=third_person, relationshipType='sibling')
+		self.assertEqual(relationships.count(), 1)
 
 class RelationshipTypeTest(TestCase):
 

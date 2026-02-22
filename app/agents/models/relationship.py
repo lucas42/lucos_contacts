@@ -14,6 +14,7 @@ class Relationship(models.Model):
 		# So easiest fix is just be more explicit here
 		# Note the the first two underscores are for separating the the model from the field; the third underscore is part of the field name.
 		ordering = [Lower('subject___name')]
+		unique_together = ('subject', 'object', 'relationshipType')
 	def save(self, *args, **kwargs):
 		super(Relationship, self).save(*args, **kwargs)
 		self.inferRelationships()
