@@ -12,11 +12,8 @@ Has three components:
 * app - a Django app served using gunicorn
 * web - an nginx server for routing traffic to app and serving static files
 
-## Running in Production
-`PRODUCTION=true SECRET_KEY=<secret> nice -19 docker-compose up -d --no-build`
-
 ## Running locally
-`docker-compose up --build`
+`docker compose up --build`
 
 ## Running tests
 `docker compose --profile test up test --build --exit-code-from test`
