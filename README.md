@@ -24,7 +24,7 @@ Has three components:
 ## Database commands
 ### Manually creating a backup
 (on machine with docker installed)
-* `docker exec lucos_contacts-db-1 pg_dump --user postgres postgres > /tmp/contacts.sql`
+* `docker exec lucos_contacts_db pg_dump --user postgres postgres > /tmp/contacts.sql`
 
 ### Wiping database clean so restore doesn't cause any conflicts
 (on machine with docker & docker-compose installed)
