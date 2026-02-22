@@ -1,103 +1,248 @@
-#bio, #notes, #giftideas, #birthday, #relations, .agentlist, .account, #altnames {
+#bio,
+#notes,
+#giftideas,
+#birthday,
+#relations,
+.agentlist,
+.account,
+#altnames {
 	max-width: 428px;
 	margin: 10px auto;
 }
 
-.agentlist { list-style-type: none; padding: 0; }
-.agentlist a { text-decoration: none; color: inherit; display:block; background: #FFE1CA; padding: 10px; margin: 1px;}
-.agentlist a:hover { background-color: #612B00; color: #FFE1CA; }
-.agentlist a.isdead { color: #888; }
-.agentlist a.isdead:hover { background-color: #333340; color: #FFE1CA; }
-.agentlist h3 { margin: 0; }
-.agentlist .relation { font-style: italic; font-size: smaller; }
+.agentlist {
+	list-style-type: none;
+	padding: 0;
+}
+
+.agentlist a {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+	background: #FFE1CA;
+	padding: 10px;
+	margin: 1px;
+}
+
+.agentlist a:hover {
+	background-color: #612B00;
+	color: #FFE1CA;
+}
+
+.agentlist a.isdead {
+	color: #888;
+}
+
+.agentlist a.isdead:hover {
+	background-color: #333340;
+	color: #FFE1CA;
+}
+
+.agentlist h3 {
+	margin: 0;
+}
+
+.agentlist .relation {
+	font-style: italic;
+	font-size: smaller;
+}
+
+.search-wrapper {
+	max-width: 428px;
+	margin: 10px auto;
+}
+
+.search-input {
+	width: 100%;
+	padding: 8px;
+	box-sizing: border-box;
+	border: 2px solid #612B00;
+	border-radius: 4px;
+	color: #612B00;
+}
+
+.search-input:focus {
+	outline: none;
+	background: #fff;
+}
 
 .agenttable {
 	margin: auto;
 	max-width: 700px;
 	border-collapse: collapse;
 }
+
 .agenttable thead {
 	font-weight: bold;
 	background: #559;
 	color: #fff;
 }
+
 .agenttable td {
 	padding: 5px 10px;
 	border: solid thin #559;
 }
+
 .agenttable td:first-child {
 	border-left: none;
 }
+
 .agenttable td:last-child {
 	border-right: none;
 }
+
 .agenttable tr:last-child td {
 	border-bottom: none;
 }
+
 .agenttable .name a {
 	text-decoration: none;
 	color: inherit;
 }
+
 .agenttable .name a:hover {
 	text-decoration: underline;
 }
 
-.tools { float: right; margin: 5px;}
-.toollink { font-size: 1em; color: #010F00; background-color: #E5B5D1; border-radius: 4px; display: inline-block; max-width: 100px; text-decoration: none; margin-bottom: 5px; padding: 10px 15px; vertical-align: middle; font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif; font-weight: 400; font-size: 13px; }
-#subnav a { cursor: pointer; }
-nav > a.primary { color: #E5B5D1; background-color: #4D002D; }
-nav { display: block; overflow: hidden; background: #B9E7B7; color: #612B00; margin-bottom: 10px; }
-.navback { float: left; }
-.toollink { background-repeat: no-repeat; background-position: right 7px center; padding-right: 26px; margin: 2px; }
-.navadd, .addlink { background-image: url(/resources/admin/img/icon-addlink.svg); }
-.navedit, .viewsitelink { background-image: url(/resources/admin/img/tooltag-arrowright.svg); }
-.toollink:link, .toollink:visited { background-color: #E5B5D1; color: #010F00; }
-.toollink:hover { background-color: #4D002D; color: #E5B5D1; }
-.navswitch { margin: 10px 0 }
-.navswitch a { display: inline; text-decoration: none; color: #B98E6C; }
-.navswitch a.current { font-weight: bold; color: #612B00; }
-.navswitch a:hover { text-decoration: underline; }
+.tools {
+	float: right;
+	margin: 5px;
+}
+
+.toollink {
+	font-size: 1em;
+	color: #010F00;
+	background-color: #E5B5D1;
+	border-radius: 4px;
+	display: inline-block;
+	max-width: 100px;
+	text-decoration: none;
+	margin-bottom: 5px;
+	padding: 10px 15px;
+	vertical-align: middle;
+	font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+	font-weight: 400;
+	font-size: 13px;
+}
+
+#subnav a {
+	cursor: pointer;
+}
+
+nav>a.primary {
+	color: #E5B5D1;
+	background-color: #4D002D;
+}
+
+nav {
+	display: block;
+	overflow: hidden;
+	background: #B9E7B7;
+	color: #612B00;
+	margin-bottom: 10px;
+}
+
+.navback {
+	float: left;
+}
+
+.toollink {
+	background-repeat: no-repeat;
+	background-position: right 7px center;
+	padding-right: 26px;
+	margin: 2px;
+}
+
+.navadd,
+.addlink {
+	background-image: url(/resources/admin/img/icon-addlink.svg);
+}
+
+.navedit,
+.viewsitelink {
+	background-image: url(/resources/admin/img/tooltag-arrowright.svg);
+}
+
+.toollink:link,
+.toollink:visited {
+	background-color: #E5B5D1;
+	color: #010F00;
+}
+
+.toollink:hover {
+	background-color: #4D002D;
+	color: #E5B5D1;
+}
+
+.navswitch {
+	margin: 10px 0
+}
+
+.navswitch a {
+	display: inline;
+	text-decoration: none;
+	color: #B98E6C;
+}
+
+.navswitch a.current {
+	font-weight: bold;
+	color: #612B00;
+}
+
+.navswitch a:hover {
+	text-decoration: underline;
+}
+
 .account {
 	display: block;
 	font-weight: bold;
 	text-align: center;
 	text-decoration: none;
 }
+
 .account img {
 	float: left;
 	height: 42px;
 	margin: 4px;
 }
+
 .account.postal {
 	white-space: pre;
 }
+
 .account.phonenum {
 	font-family: monospace;
 	font-size: 2em;
 	padding: 0.7em 0;
 }
+
 a.account.phonenum {
 	background: #E5B5D1;
 	color: #120800;
 }
+
 a.account.phonenum:hover {
 	background-color: #4D002D;
 	color: #E5B5D1;
 }
+
 .agentlist .account.phonenum {
 	padding: 0.3em 0;
 	margin: 0;
 }
+
 .account.email {
 	font-family: monospace;
 	font-size: 2em;
 	padding: 0.7em 0;
 	overflow-x: auto;
 }
+
 a.account.email {
 	background: #baf8ff;
 	color: #120800;
 }
+
 a.account.email:hover {
 	background-color: #0e3e44;
 	color: #baf8ff;
@@ -110,6 +255,7 @@ a.account.facebook {
 	background-color: #dfe3ee;
 	font-size: 22px;
 }
+
 a.account.facebook:hover {
 	background-color: #3b5998;
 	color: #dfe3ee;
@@ -121,6 +267,7 @@ a.account.googlecontact {
 	background-color: #fcfec6;
 	font-size: 22px;
 }
+
 a.account.googlecontact:hover {
 	background-color: #9a4800;
 	color: #fcfec6;
@@ -134,6 +281,7 @@ a.account.googlephotoprofile {
 	border: 1px solid #333;
 	border-radius: 3px;
 }
+
 a.account.googlephotoprofile:hover {
 	background-color: #333;
 	color: #fff;
@@ -147,39 +295,53 @@ a.account.googlephotoprofile:hover {
 	margin: 9px;
 	overflow: clip;
 }
+
 .content a {
 	color: inherit;
 	font-weight: bold;
 	text-decoration: none;
 }
+
 .content a:hover {
 	text-decoration: underline;
 }
+
 td.content {
 	display: table-cell;
 }
+
 #bio {
 	border: #ccc solid 1px;
 }
+
 #relations {
 	border: solid 2px #500094;
 	border-radius: 8px 8px 0 0;
 }
-#relations > h2 {
+
+#relations>h2 {
 	background: #500094;
 	color: #fff;
 	margin: 0;
 }
+
 #relations .agentlist {
 	margin: 0;
 }
-.relation { display: block;}
-h2 { text-align: center; }
+
+.relation {
+	display: block;
+}
+
+h2 {
+	text-align: center;
+}
 
 #giftideas {
 	border: solid #612b00;
 	border-radius: 3px 10px;
 }
+
 #giftideas summary {
 	font-size: 1.5em;
 	font-weight: bold;
@@ -188,22 +350,42 @@ h2 { text-align: center; }
 	padding: 5px;
 	cursor: pointer;
 }
+
 #notes {
 	border: solid 2px #000052;
 	border-radius: 0 0 8px 8px;
 }
+
 #notes h2 {
 	margin: 0;
 	background: #000052;
 	color: #fff;
 	padding: 5px;
 }
-#birthday .label { font-weight: bold; }
-#dead { background-color: #333340; color: #fff; font-family: Brush Script Std, cursive; padding: 0.7em; text-align: center; margin: 0.5em auto; }
-#dead .rest-in-peace { display: block; font-size: 2em; font-family: Snell Roundhand, Brush Script MT, Brush Script Std, cursive; }
+
+#birthday .label {
+	font-weight: bold;
+}
+
+#dead {
+	background-color: #333340;
+	color: #fff;
+	font-family: Brush Script Std, cursive;
+	padding: 0.7em;
+	text-align: center;
+	margin: 0.5em auto;
+}
+
+#dead .rest-in-peace {
+	display: block;
+	font-size: 2em;
+	font-family: Snell Roundhand, Brush Script MT, Brush Script Std, cursive;
+}
+
 #altnames {
 	border: solid thin grey;
 }
+
 #altnames h4 {
 	margin: 0;
 	background: #612b00;
@@ -211,16 +393,19 @@ h2 { text-align: center; }
 	padding: 1px 10px 4px;
 	font-family: 'Lucida', monospace;
 }
+
 #altnames ul {
 	list-style-type: none;
 	padding: 0;
 	margin: 0;
 }
+
 #altnames li {
 	padding: 5px 10px;
 	background: #B9E7B7;
 	color: #612B00;
 }
+
 .star {
 	color: #740acf;
 	font-weight: bold;
@@ -231,9 +416,11 @@ h2 { text-align: center; }
 	width: 1em;
 	height: 1.5em;
 }
+
 .star:before {
 	position: absolute;
 }
+
 .star.changed:before {
 	font-size: 5em;
 	margin-left: -0.4em;
@@ -241,39 +428,48 @@ h2 { text-align: center; }
 	color: #ffcf00;
 	transition: font-size 0.5s, margin 0.5s;
 }
+
 .star.changed-transition:not(.changed):before {
 	transition: font-size 2s, margin 2s, color 4s ease-in;
 }
+
 .star:hover {
 	color: #00b9ff;
 	text-shadow: none;
 }
+
 .star[data-starred=True]:before {
 	content: "★";
 }
+
 .star[data-starred=True]:not(.changed-transition):hover:before {
 	content: "☆";
 }
+
 .star[data-starred=False]:before {
 	content: "☆";
 }
+
 .star[data-starred=False]:not(.changed-transition):hover:before {
 	content: "★";
 }
+
 .star.loading {
 	animation: rotation 2s infinite linear;
 }
+
 .star.failed {
 	color: #cc0033;
 }
 
 @keyframes rotation {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(359deg);
-  }
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(359deg);
+	}
 }
 
 /* Calendar */
@@ -283,28 +479,35 @@ h2 { text-align: center; }
 	border-collapse: collapse;
 	clear: right;
 }
+
 #calendar td {
 	padding: 5px;
 }
+
 #calendar .monthheader {
 	background: #559;
 	color: #fff;
 	text-align: center;
 	font-weight: bold;
 }
+
 #calendar .monthheader td {
 	padding: 2px;
 }
+
 #calendar td:first-child {
 	font-weight: bold;
 }
+
 #calendar a {
 	text-decoration: none;
 	color: inherit;
 }
+
 #calendar a:hover {
 	text-decoration: underline;
 }
+
 .icalendar-link {
 	float: right;
 	color: inherit;
@@ -315,20 +518,67 @@ h2 { text-align: center; }
 	font-size: smaller;
 	margin: 0 1em 0.5em;
 }
+
 .icalendar-link:hover {
 	background: #eee;
 }
 
 /* Admin site */
-div.breadcrumbs { background: none; color: #612B00; padding: 5px; border: none; font-size: 14px; text-align: left; margin: 5px; font-family: "Helvetica Neue", sans-serif; }
-div.breadcrumbs a { color: #B98E6C; }
-div.breadcrumbs a:hover { color: inherit; }
-.module h2, .module caption, .inline-group h2 { background: #B9E7B7; color: #612B00; }
-a.section:link, a.section:visited { color: #612B00; }
-.module a { color: #91592C; }
-.module a:hover { background: inherit; }
-.button, input[type=submit], input[type=button], .submit-row input, a.button { background: #E5B5D1; color: #010F00; }
-.button.default, input[type=submit].default, .submit-row input.default { background: #732352; color: #E5B5D1;}
+div.breadcrumbs {
+	background: none;
+	color: #612B00;
+	padding: 5px;
+	border: none;
+	font-size: 14px;
+	text-align: left;
+	margin: 5px;
+	font-family: "Helvetica Neue", sans-serif;
+}
+
+div.breadcrumbs a {
+	color: #B98E6C;
+}
+
+div.breadcrumbs a:hover {
+	color: inherit;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+	background: #B9E7B7;
+	color: #612B00;
+}
+
+a.section:link,
+a.section:visited {
+	color: #612B00;
+}
+
+.module a {
+	color: #91592C;
+}
+
+.module a:hover {
+	background: inherit;
+}
+
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input,
+a.button {
+	background: #E5B5D1;
+	color: #010F00;
+}
+
+.button.default,
+input[type=submit].default,
+.submit-row input.default {
+	background: #732352;
+	color: #E5B5D1;
+}
+
 body {
 	margin: 0;
 	/* This already gets included by lucos_navbar, but it's overridden by django's admin base.css, so make it !important */
@@ -337,23 +587,68 @@ body {
 
 /* Colour Palette guide */
 
-.color-primary-0 { color: #287624 }	/* Main Primary color */
-.color-primary-1 { color: #B9E7B7 }
-.color-primary-2 { color: #5A9657 }
-.color-primary-3 { color: #044E00 }
-.color-primary-4 { color: #010F00 }
+.color-primary-0 {
+	color: #287624
+}
 
-.color-secondary-1-0 { color: #91592C }	/* Main Secondary color (1) */
-.color-secondary-1-1 { color: #FFE1CA }
-.color-secondary-1-2 { color: #B98E6C }
-.color-secondary-1-3 { color: #612B00 }
-.color-secondary-1-4 { color: #120800 }
+/* Main Primary color */
+.color-primary-1 {
+	color: #B9E7B7
+}
 
-.color-secondary-2-0 { color: #732352 }	/* Main Secondary color (2) */
-.color-secondary-2-1 { color: #E5B5D1 }
-.color-secondary-2-2 { color: #93567A }
-.color-secondary-2-3 { color: #4D002D }
-.color-secondary-2-4 { color: #0E0008 }
+.color-primary-2 {
+	color: #5A9657
+}
+
+.color-primary-3 {
+	color: #044E00
+}
+
+.color-primary-4 {
+	color: #010F00
+}
+
+.color-secondary-1-0 {
+	color: #91592C
+}
+
+/* Main Secondary color (1) */
+.color-secondary-1-1 {
+	color: #FFE1CA
+}
+
+.color-secondary-1-2 {
+	color: #B98E6C
+}
+
+.color-secondary-1-3 {
+	color: #612B00
+}
+
+.color-secondary-1-4 {
+	color: #120800
+}
+
+.color-secondary-2-0 {
+	color: #732352
+}
+
+/* Main Secondary color (2) */
+.color-secondary-2-1 {
+	color: #E5B5D1
+}
+
+.color-secondary-2-2 {
+	color: #93567A
+}
+
+.color-secondary-2-3 {
+	color: #4D002D
+}
+
+.color-secondary-2-4 {
+	color: #0E0008
+}
 
 /* Overrides for django admin autocomplete fields */
 .select2-selection__choice {

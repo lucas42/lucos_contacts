@@ -107,3 +107,27 @@ class LanguageSelector extends HTMLElement {
 	}
 }
 customElements.define('language-selector', LanguageSelector);
+
+document.querySelectorAll(".agentlist").forEach((list, index) => {
+	if (list.closest("#relations")) return;
+	const searchWrapper = document.createElement("div");
+	searchWrapper.classList.add("search-wrapper");
+	const searchInput = document.createElement("input");
+	searchInput.type = "text";
+	searchInput.placeholder = list.dataset.filterPlaceholder || "Filter...";
+	searchInput.id = `contact-search-${index}`;
+	searchInput.name = `contact-search-${index}`;
+	searchInput.setAttribute("aria-label", list.dataset.filterLabel || "Filter contacts");
+	searchInput.classList.add("search-input");
+	searchWrapper.appendChild(searchInput);
+	list.parentNode.insertBefore(searchWrapper, list);
+
+	searchInput.addEventListener("input", () => {
+		const query = searchInput.value.toLowerCase();
+		list.querySelectorAll("li").forEach(li => {
+			const names = li.dataset.allNames.toLowerCase().split("|");
+			const matches = names.some(name => name.includes(query));
+			li.style.display = matches ? "" : "none";
+		});
+	});
+});

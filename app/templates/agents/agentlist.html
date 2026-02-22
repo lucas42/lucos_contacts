@@ -1,20 +1,23 @@
-
-		<ul class='agentlist'>
-		{%for agent in agents %}
-			<li><a href="{{agent.url}}" {% if agent.isDead %}class="isdead"{% endif %}>
-				<span class="star" data-agentid="{{agent.id}}" data-starred="{{agent.starred}}"></span>
-				<h3>{{ agent.name }}</h3>
-				<span class='relation'>{{agent.rel}}</span>
+{% load i18n %}
+<ul class='agentlist' data-filter-placeholder="{% trans 'Filter...' %}"
+	data-filter-label="{% trans 'Filter contacts' %}">
+	{% for agent in agents %}
+	<li data-all-names="{{ agent.names|join:'|' }}">
+		<a href="{{ agent.url }}" {% if agent.isDead %} class="isdead" {% endif %}>
+			<span class="star" data-agentid="{{ agent.id }}" data-starred="{{ agent.starred }}"></span>
+			<h3>{{ agent.name }}</h3>
+			<span class='relation'>{{ agent.rel }}</span>
 			{% if list == "postal" %}
-				{%for address in agent.formattedaddresses %}
-					<span class='account postal'>{{address}}</span>
-				{%endfor%}
+			{% for address in agent.formattedaddresses %}
+			<span class='account postal'>{{ address }}</span>
+			{% endfor %}
 			{% endif %}
 			{% if list == "phone" %}
-				{%for num in agent.phone %}
-					<span class='account phonenum'>{{num}}</span>
-				{%endfor%}
+			{% for num in agent.phone %}
+			<span class='account phonenum'>{{ num }}</span>
+			{% endfor %}
 			{% endif %}
-			</a></li>
-		{% endfor %}
-		</ul>
+		</a>
+	</li>
+	{% endfor %}
+</ul>

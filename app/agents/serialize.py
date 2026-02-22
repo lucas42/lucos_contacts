@@ -56,6 +56,8 @@ def serializePerson(agent, currentagent=None, extended=False):
 	for agentname in [p for p in agent.personname_set.all() if not p.is_primary]:
 		altnames.append(agentname.name)
 
+	all_names = [p.name for p in agent.personname_set.all()]
+
 	formattedBirthday = formatDate(agent.year_of_birth, agent.month_of_birth, agent.day_of_birth)
 	sortableBirthday = sortableDate(agent.year_of_birth, agent.month_of_birth, agent.day_of_birth)
 	formattedDeathDate = formatDate(agent.year_of_death, agent.month_of_death, agent.day_of_death)
@@ -64,6 +66,7 @@ def serializePerson(agent, currentagent=None, extended=False):
 		'id': agent.id,
 		'name': agent.getName(),
 		'altnames': altnames,
+		'names': all_names,
 		'phone': phonenums,
 		'email': emailaddresses,
 		'url': agent.get_absolute_url(),

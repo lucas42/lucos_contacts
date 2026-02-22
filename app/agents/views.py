@@ -100,13 +100,13 @@ def importer(request):
 def agentindex(request, list):
 	agents = []
 	template = 'agents/agentlist.html'
-	prefetches = []
+	prefetches = ['personname_set']
 	if (list == 'postal'):
 		agentlist = Person.objects.filter(postaladdress__isnull=False)
 		prefetches.append('postaladdress_set')
 	elif (list == 'phone'):
-		agentlist = Person.objects.filter(phonenumber__isnull=False)
 		prefetches.append('phonenumber_set')
+		agentlist = Person.objects.filter(phonenumber__isnull=False)
 	elif (list == 'gifts'):
 		agentlist = Person.objects.exclude(gift_ideas="")
 		template = 'agents/agenttable.html'
@@ -132,6 +132,7 @@ def agentindex(request, list):
 		data = {
 			'id': agent.id,
 			'name': agent.getName(),
+			'names': [p.name for p in agent.personname_set.all()],
 			'url': agent.get_absolute_url(),
 			'starred': agent.starred,
 			'isDead': agent.is_dead,

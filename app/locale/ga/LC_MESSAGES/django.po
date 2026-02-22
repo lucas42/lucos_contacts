@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-22 20:46+0000\n"
+"POT-Creation-Date: 2026-02-22 13:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -131,11 +131,11 @@ msgstr "daoine"
 msgid "child"
 msgstr "páiste"
 
-#: agents/models/relationshipTypes.py:62
+#: agents/models/relationshipTypes.py:62 agents/tests/utils_relations.py:28
 msgid "parent"
 msgstr "tuismitheoir"
 
-#: agents/models/relationshipTypes.py:71
+#: agents/models/relationshipTypes.py:71 agents/tests/utils_relations.py:68
 msgid "sibling"
 msgstr "siblín"
 
@@ -187,34 +187,34 @@ msgstr "Geallta"
 msgid "Married"
 msgstr "Pósta"
 
-#: agents/models/romanticRelationship.py:83
+#: agents/models/romanticRelationship.py:83 agents/tests/utils_relations.py:36
 msgid "Spouse"
 msgstr "Céile"
 
 #. Translators: Using this in a gender-neutral sense here.
 #. Whilst there's often a spelling difference based on gender, there seems to be
 #. growing acceptance of using the previously male form in a gender-neutral way now
-#: agents/models/romanticRelationship.py:88
+#: agents/models/romanticRelationship.py:88 agents/tests/utils_relations.py:69
 msgid "Fiancé"
 msgstr ""
 
-#: agents/models/romanticRelationship.py:89
+#: agents/models/romanticRelationship.py:89 agents/tests/utils_relations.py:43
 msgid "Partner"
 msgstr "Páirtí"
 
-#: agents/serialize.py:97
+#: agents/tests/utils_relations.py:18 agents/utils_relations.py:8
 msgid "Me"
 msgstr "Mise"
 
-#: agents/views.py:132
+#: agents/views.py:158
 msgid "Contacts"
 msgstr "Teagmhálacha"
 
-#: comms/admin.py:41
+#: comms/admin.py:39
 msgid "Whose birthday it was"
 msgstr "Cé leis an breithlá a bhí ann"
 
-#: comms/admin.py:42
+#: comms/admin.py:40
 msgid "What I gave them"
 msgstr "Cad a thug mé dóibh"
 
@@ -745,6 +745,14 @@ msgstr "Gaoil"
 #: templates/agents/agent.html:75
 msgid "Edit"
 msgstr "Cuir in Eagar"
+
+#: templates/agents/agentlist.html:2
+msgid "Filter..."
+msgstr "Scag..."
+
+#: templates/agents/agentlist.html:3
+msgid "Filter contacts"
+msgstr "Scag teagmhálacha"
 
 #: templates/agents/index.html:15
 msgid "Starred"
