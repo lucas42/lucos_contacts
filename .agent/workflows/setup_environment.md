@@ -15,7 +15,7 @@ Example of running a simple Django command:
 docker compose run --rm app python manage.py check
 
 # If you need to run the test suite:
-docker compose run --rm test
+docker compose --profile test up test --build --exit-code-from test
 ```
 
 ## Approach 2: Virtual Environment with System Python
