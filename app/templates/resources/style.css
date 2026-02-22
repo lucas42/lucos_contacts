@@ -354,3 +354,13 @@ body {
 .color-secondary-2-2 { color: #93567A }
 .color-secondary-2-3 { color: #4D002D }
 .color-secondary-2-4 { color: #0E0008 }
+
+/* Overrides for django admin autocomplete fields */
+.select2-selection__choice {
+	--darkened-bg: #044E00;
+	--border-color: #033100;
+	--body-fg: #ffffff;
+	--body-quiet-color: #ffffff;
+	color: var(--body-fg);
+
+}
