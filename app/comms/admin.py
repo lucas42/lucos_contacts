@@ -15,6 +15,7 @@ class PresentInline(admin.TabularInline):
 	model = Present
 	form = PresentForm
 	extra = 1
+	autocomplete_fields = ['agents']
 
 class OccasionListAdmin(admin.ModelAdmin):
 	filter_horizontal = ('gave_card_to', 'received_card_from')

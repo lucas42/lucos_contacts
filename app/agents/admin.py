@@ -98,6 +98,7 @@ class PersonAdmin(admin.ModelAdmin):
 		RelationshipInline,
 		RomanticRelationshipInline,
 	]
+	search_fields = ['_name', 'personname__name']
 	list_max_show_all = 1000
 	def merge(self, request, queryset):
 		agents = queryset.order_by('id')

@@ -354,24 +354,3 @@ body {
 .color-secondary-2-2 { color: #93567A }
 .color-secondary-2-3 { color: #4D002D }
 .color-secondary-2-4 { color: #0E0008 }
-
-[data-model-ref="person"] {
-	--select-field-background: #044E00;
-	--select-field-border: #033100;
-	--select-field-text: #ffffff;
-}
-
-/* Override the tom-select colour settings */
-.ts-wrapper.multi .ts-control .item {
-	background-image: linear-gradient(to bottom, #ffffff63, #24232347) !important;
-	background-color: var(--select-field-background) !important;
-	border-color: var(--select-field-border) !important;
-	color: var(--select-field-text) !important;
-}
-.ts-wrapper.multi .ts-control .item .remove {
-	border-left-color: var(--select-field-border) !important;
-}
-
-.ts-wrapper.plugin-remove_button .item .remove:not( [role="button"], #header a, #nav-sidebar a, #content-main.app-list a, .object-tools a ) {
-	text-decoration: none;
-}

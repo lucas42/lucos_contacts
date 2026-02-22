@@ -34,22 +34,11 @@ document.querySelectorAll(".agenttable .name a").forEach(link => {
 	link.href += "#giftideas";
 });
 
-document.querySelectorAll("#presents-group select").forEach(select => {
-	new TomSelect(select, {
-		plugins: {
-			remove_button:{
-				title:'Remove person from this present',
-			},
-		},
-
-	});
-});
-
 
 class LanguageSelector extends HTMLElement {
 	constructor() {
 		super();
-		const shadow = this.attachShadow({mode: 'closed'});
+		const shadow = this.attachShadow({ mode: 'closed' });
 		const languages = JSON.parse(this.getAttribute("languages"));
 		const currentLanguage = this.getAttribute("current-language");
 		const endpoint = this.getAttribute("endpoint");
