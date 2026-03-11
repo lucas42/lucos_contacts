@@ -107,7 +107,7 @@ SECURE_PROXY_SSL_HEADER = (
 	'HTTP_X_FORWARDED_PROTO', 'https'
 )
 
-ALLOWED_HOSTS = ["contacts.l42.eu", "localhost", "host.docker.internal"]
+ALLOWED_HOSTS = ["contacts.l42.eu", "localhost", "host.docker.internal", "127.0.0.1"]
 
 if os.environ.get("PRODUCTION"):
     DEBUG = False
