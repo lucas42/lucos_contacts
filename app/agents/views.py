@@ -14,7 +14,7 @@ from agents.serialize import serializePerson
 from agents.importer import importPerson
 from agents.utils_relations import get_relationship_info
 from django.utils.translation import gettext as _
-from .utils_conneg import choose_json, choose_rdf_over_html, pick_best_rdf_format
+from .utils_conneg import negotiate_response_format
 from .utils_rdf import agent_to_rdf, agent_list_to_rdf
 from django.conf import settings
 
@@ -46,13 +46,13 @@ def agent(request, extid, method=None):
 	if (agent.id != ext.id):
 		return redirect(agent)
 	
-	if choose_json(request):
+	fmt, rdf_info = negotiate_response_format(request)
+	if fmt == "json":
 		return JsonResponse({'id': agent.id, 'name': agent.getName(), 'url': agent.get_absolute_url()})
-
-	if choose_rdf_over_html(request):
+	if fmt == "rdf":
 		graph = agent_to_rdf(agent, include_type_label=True)
-		format, content_type = pick_best_rdf_format(request)
-		return HttpResponse(graph.serialize(format=format), content_type=f'{content_type}; charset={settings.DEFAULT_CHARSET}')
+		rdflib_format, content_type = rdf_info
+		return HttpResponse(graph.serialize(format=rdflib_format), content_type=f'{content_type}; charset={settings.DEFAULT_CHARSET}')
 	output = serializePerson(agent=agent, currentagent=request.user.agent, extended=True)
 	if (method == 'accounts'):
 		if (request.method == 'POST'):
@@ -122,17 +122,17 @@ def agentindex(request, list):
 
 	agentlist = agentlist.prefetch_related(*prefetches)
 
-	if choose_json(request):
+	fmt, rdf_info = negotiate_response_format(request)
+	if fmt == "json":
 		people = [
 			{'id': agent.id, 'name': agent.getName(), 'url': agent.get_absolute_url()}
 			for agent in agentlist.distinct()
 		]
 		return JsonResponse(people, safe=False)
-
-	if choose_rdf_over_html(request):
+	if fmt == "rdf":
 		graph = agent_list_to_rdf(agentlist)
-		format, content_type = pick_best_rdf_format(request)
-		return HttpResponse(graph.serialize(format=format), content_type=f'{content_type}; charset={settings.DEFAULT_CHARSET}')
+		rdflib_format, content_type = rdf_info
+		return HttpResponse(graph.serialize(format=rdflib_format), content_type=f'{content_type}; charset={settings.DEFAULT_CHARSET}')
 
 	current_agent = request.user.agent
 	if current_agent:

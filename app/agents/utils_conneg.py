@@ -8,6 +8,7 @@ RDF_FORMATS = {
 	"application/n-triples": "nt",
 	"application/xml": "xml",  # Sometimes used for RDF/XML
 }
+
 def parse_accept_header(request):
 	"""
 	Parses an Accept header and returns a list of (mime, qvalue) sorted by qvalue descending.
@@ -29,56 +30,41 @@ def parse_accept_header(request):
 	mimes.sort(key=lambda tup: tup[1], reverse=True)
 	return mimes
 
-def pick_best_rdf_format(request):
-	"""
-	Returns the best RDF mime type and rdflib serialization format for the Accept header.
-	"""
-	parsed = parse_accept_header(request)
-	for mime, _ in parsed:
-		if mime in RDF_FORMATS.keys():
-			return RDF_FORMATS.get(mime, "turtle"), mime
-		elif mime == "*/*":
-			# Once */* is reached in priority order, don't consider anything lower
-			continue
-	# If no priority mime is found, return the default (first in RDF_FORMATS)
-	return next(iter(RDF_FORMATS.items()))[::-1]
-	
 
-def choose_json(request):
+def negotiate_response_format(request):
 	"""
-	Returns True if the client prefers application/json over HTML and RDF.
+	Determines the best response format based on the Accept header.
+
+	Returns a tuple of (format, rdf_info) where:
+	  - format is one of "json", "rdf", or "html"
+	  - rdf_info is a (rdflib_format, content_type) tuple when format is "rdf", else None
+
+	Priority: json > rdf > html. Explicit q-values are respected.
+	*/* falls through to "html".
 	"""
 	parsed = parse_accept_header(request)
 	json_weight = 0
 	html_weight = 0
 	rdf_weight = 0
+	best_rdf_mime = None
+
 	for mime, q in parsed:
 		if mime == "application/json":
 			if q > json_weight:
 				json_weight = q
-		if mime == "text/html":
+		elif mime == "text/html":
 			if q > html_weight:
 				html_weight = q
-		if mime in RDF_FORMATS.keys():
+		elif mime in RDF_FORMATS:
 			if q > rdf_weight:
 				rdf_weight = q
-	return (json_weight > 0 and json_weight >= html_weight and json_weight >= rdf_weight)
+				best_rdf_mime = mime
 
+	if json_weight > 0 and json_weight >= html_weight and json_weight >= rdf_weight:
+		return "json", None
 
-def choose_rdf_over_html(request):
-	"""
-	Returns True if the client would prefer some form of RDF more than HTML.
-	Otherwise returns False
-	"""
-	parsed = parse_accept_header(request)
-	rdf_weight = 0
-	html_weight = 0
-	for mime, q in parsed:
-		if mime in RDF_FORMATS.keys():
-			if q > rdf_weight:
-				rdf_weight = q
-		if mime == "text/html":
-			if q > html_weight:
-				html_weight = q
-	# Only redirect to RDF if rdf_weight is non-zero and is preferred or equal to html
-	return (rdf_weight > 0 and rdf_weight >= html_weight)
+	if rdf_weight > 0 and rdf_weight >= html_weight:
+		rdflib_format = RDF_FORMATS[best_rdf_mime]
+		return "rdf", (rdflib_format, best_rdf_mime)
+
+	return "html", None
