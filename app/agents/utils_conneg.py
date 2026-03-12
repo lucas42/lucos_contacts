@@ -44,6 +44,27 @@ def pick_best_rdf_format(request):
 	return next(iter(RDF_FORMATS.items()))[::-1]
 	
 
+def choose_json(request):
+	"""
+	Returns True if the client prefers application/json over HTML and RDF.
+	"""
+	parsed = parse_accept_header(request)
+	json_weight = 0
+	html_weight = 0
+	rdf_weight = 0
+	for mime, q in parsed:
+		if mime == "application/json":
+			if q > json_weight:
+				json_weight = q
+		if mime == "text/html":
+			if q > html_weight:
+				html_weight = q
+		if mime in RDF_FORMATS.keys():
+			if q > rdf_weight:
+				rdf_weight = q
+	return (json_weight > 0 and json_weight >= html_weight and json_weight >= rdf_weight)
+
+
 def choose_rdf_over_html(request):
 	"""
 	Returns True if the client would prefer some form of RDF more than HTML.
