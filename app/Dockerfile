@@ -33,4 +33,9 @@ COPY --from=ui-builder /build/node_modules/lucos_navbar/lucos_navbar.js template
 # Compile Translations
 RUN django-admin compilemessages
 
+# Collect static files at build time so startup.sh doesn't need to.
+# Uses a minimal settings file that only declares what collectstatic needs,
+# avoiding the env var requirements of the full settings module.
+RUN python manage.py collectstatic --noinput --settings=settings_collectstatic
+
 CMD ["./startup.sh"]
