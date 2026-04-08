@@ -8,7 +8,7 @@ def api_auth(func):
 		from django.contrib.auth import login
 		if 'HTTP_AUTHORIZATION' in request.META:
 			authmeth, auth = request.META['HTTP_AUTHORIZATION'].split(' ', 1)
-			if authmeth.lower() == 'key':
+			if authmeth.lower() in ('key', 'bearer'):
 				user = getUserByKey(apikey=auth)
 				if user:
 					request.user = user
