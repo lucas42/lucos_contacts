@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "==6.0.3"
+django = "==6.0.4"
 gunicorn = "==25.3.0"
 requests = "*"
 django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
