@@ -1,7 +1,7 @@
 from datetime import date
 from unittest.mock import patch, MagicMock
 from django.test import TestCase
-from agents.calendar import occurrencesInWindow, _windowStart, getBirthdays, getDeathdays, getWeddings
+from agents.calendar import occurrencesInWindow, _windowStart, _windowEnd, getBirthdays, getDeathdays, getWeddings
 from agents.models import Person, PersonName, RomanticRelationship
 
 
@@ -104,6 +104,25 @@ class WindowStartEdgeCaseTest(TestCase):
     def test_jan_15_gives_dec_15_previous_year(self):
         result = self._window_start_for_today(date(2026, 1, 15))
         self.assertEqual(result, date(2025, 12, 15))
+
+
+class WindowEndEdgeCaseTest(TestCase):
+    """Tests _windowEnd() handles Feb 29 correctly."""
+
+    def _window_end_for_today(self, today):
+        with patch('agents.calendar.date') as mock_date:
+            mock_date.today.return_value = today
+            mock_date.side_effect = lambda *args, **kwargs: date(*args, **kwargs)
+            return _windowEnd()
+
+    def test_feb29_leap_year_gives_feb28_next_year(self):
+        # Feb 29, 2028 -> window end should be Feb 28, 2029 (not a leap year)
+        result = self._window_end_for_today(date(2028, 2, 29))
+        self.assertEqual(result, date(2029, 2, 28))
+
+    def test_normal_date_unchanged(self):
+        result = self._window_end_for_today(date(2026, 4, 9))
+        self.assertEqual(result, date(2027, 4, 9))
 
 
 class GetBirthdaysTest(TestCase):

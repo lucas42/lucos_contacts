@@ -30,10 +30,17 @@ def _windowStart():
 # Returns all occurrences of (day, month) within the rolling window
 # [today - 1 month, today + 1 year].
 # For Feb 29, non-leap years are skipped silently.
+def _windowEnd():
+	today = date.today()
+	end_year = today.year + 1
+	end_day = min(today.day, calendar_module.monthrange(end_year, today.month)[1])
+	return date(end_year, today.month, end_day)
+
+
 def occurrencesInWindow(day, month):
 	today = date.today()
 	window_start = _windowStart()
-	window_end = date(today.year + 1, today.month, today.day)
+	window_end = _windowEnd()
 	occurrences = []
 	for year in [today.year - 1, today.year, today.year + 1]:
 		try:
