@@ -9,6 +9,7 @@ from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 from django.core.exceptions import MultipleObjectsReturned
 import json, time, os
+from agents.calendar import getEvents, buildICalendar
 from agents.loganne import contactCreated, contactUpdated, contactStarChanged
 from agents.serialize import serializePerson
 from agents.importer import importPerson
@@ -191,7 +192,13 @@ def info(request):
 		'metrics': {
 			'agent-count': {
 				'techDetail': "Counts the number of agents in the database",
-			}
+			},
+			'calendar-event-count': {
+				'techDetail': "Number of events in the generated ICS file",
+			},
+			'calendar-file-size-bytes': {
+				'techDetail': "Size of the generated ICS file in bytes",
+			},
 		},
 		'ci': {
 			'circle': "gh/lucas42/lucos_contacts",
@@ -212,6 +219,16 @@ def info(request):
 	except Exception as e:
 		output['metrics']['agent-count']['value'] = -1
 		output['metrics']['agent-count']['debug'] = str(e)
+	try:
+		calendar_events = getEvents()
+		ical_bytes = buildICalendar(calendar_events)
+		output['metrics']['calendar-event-count']['value'] = len(calendar_events)
+		output['metrics']['calendar-file-size-bytes']['value'] = len(ical_bytes)
+	except Exception as e:
+		output['metrics']['calendar-event-count']['value'] = -1
+		output['metrics']['calendar-event-count']['debug'] = str(e)
+		output['metrics']['calendar-file-size-bytes']['value'] = -1
+		output['metrics']['calendar-file-size-bytes']['debug'] = str(e)
 	return HttpResponse(content=json.dumps(output), content_type=f'application/json; charset={settings.DEFAULT_CHARSET}')
 
 def manifest(request):
