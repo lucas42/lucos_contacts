@@ -9,7 +9,7 @@ def loganneRequest(data):
 	if not environ.get("LOGANNE_ENDPOINT"):
 		return
 	try:
-		loganne_reponse = requests.post(environ.get("LOGANNE_ENDPOINT"), json=data);
+		loganne_reponse = requests.post(environ.get("LOGANNE_ENDPOINT"), json=data, headers={"User-Agent": environ.get("SYSTEM")});
 		loganne_reponse.raise_for_status()
 	except Exception as error:
 		print("Error from Loganne: {}".format(error))
