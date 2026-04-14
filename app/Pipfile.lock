@@ -222,12 +222,12 @@
         },
         "phonenumbers": {
             "hashes": [
-                "sha256:a7ba9f362e2fe8e2d6756e415cf44f4c8f0c33b40ba07b27a8450909021d7e37",
-                "sha256:f99f533cfb052546d181f6dbd981bfbdd6a1527784585482173ff95ae6d1602e"
+                "sha256:ee8caabab4fd554efb6119e7b95cb69da40e0f04050611730eed839d93f39920",
+                "sha256:f1d810aaa43fbf3a5cb1ee54733218f8333a2a92c85c4d579a810403d6260a8c"
             ],
             "index": "pypi",
             "markers": "python_version >= '2.5'",
-            "version": "==9.0.27"
+            "version": "==9.0.28"
         },
         "psycopg": {
             "hashes": [
