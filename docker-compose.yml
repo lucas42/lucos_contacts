@@ -4,7 +4,7 @@ services:
     container_name: lucos_contacts_web
     ports:
       - $PORT:80
-    image: lucas42/lucos_contacts_web
+    image: lucas42/lucos_contacts_web:${VERSION:-latest}
     volumes:
       - "staticfiles:/usr/share/nginx/html/resources"
     restart: always
@@ -20,7 +20,7 @@ services:
   app:
     build: ./app
     container_name: lucos_contacts_app
-    image: lucas42/lucos_contacts_app
+    image: lucas42/lucos_contacts_app:${VERSION:-latest}
     environment:
       - SECRET_KEY
       - PRODUCTION
@@ -50,7 +50,7 @@ services:
   test:
     build: ./app
     container_name: lucos_contacts_test
-    image: lucas42/lucos_contacts_app
+    image: lucas42/lucos_contacts_app:${VERSION:-latest}
     environment:
       - SECRET_KEY=test
       - CLIENT_KEYS=external_calendar:test=1234
