@@ -52,6 +52,40 @@
 	margin: 10px auto;
 }
 
+.pagination {
+	max-width: 428px;
+	margin: 10px auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.pagination-link {
+	background: #E5B5D1;
+	color: #010F00;
+	text-decoration: none;
+	padding: 8px 15px;
+	border-radius: 4px;
+	font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+	font-size: 13px;
+	display: inline-block;
+}
+
+a.pagination-link:hover {
+	background-color: #4D002D;
+	color: #E5B5D1;
+}
+
+.pagination-disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+.pagination-info {
+	color: #612B00;
+	font-size: 14px;
+}
+
 .search-input {
 	width: 100%;
 	padding: 8px;
