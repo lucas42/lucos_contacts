@@ -1,9 +1,8 @@
 services:
   web:
     build:
-      context: ./web
-      additional_contexts:
-        app: "target:app"
+      context: .
+      target: web
     container_name: lucos_contacts_web
     ports:
       - $PORT:80
@@ -19,7 +18,9 @@ services:
       retries: 3
       start_period: 15s
   app:
-    build: ./app
+    build:
+      context: .
+      target: app
     container_name: lucos_contacts_app
     image: lucas42/lucos_contacts_app:${VERSION:-latest}
     environment:
@@ -47,7 +48,9 @@ services:
       - POSTGRES_HOST_AUTH_METHOD=trust
     restart: always
   test:
-    build: ./app
+    build:
+      context: .
+      target: app
     container_name: lucos_contacts_test
     image: lucas42/lucos_contacts_app:${VERSION:-latest}
     environment:
