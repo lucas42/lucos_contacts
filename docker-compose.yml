@@ -1,12 +1,13 @@
 services:
   web:
-    build: ./web
+    build:
+      context: ./web
+      additional_contexts:
+        app: "target:app"
     container_name: lucos_contacts_web
     ports:
       - $PORT:80
     image: lucas42/lucos_contacts_web:${VERSION:-latest}
-    volumes:
-      - "staticfiles:/usr/share/nginx/html/resources"
     restart: always
     depends_on:
       app:
@@ -27,8 +28,6 @@ services:
       - CLIENT_KEYS
       - LOGANNE_ENDPOINT
       - APP_ORIGIN
-    volumes:
-      - "staticfiles:/usr/src/app/static"
     restart: always
     depends_on:
       db:
@@ -61,5 +60,4 @@ services:
     profiles:
       - test
 volumes:
-  staticfiles:
   db_data:
