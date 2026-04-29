@@ -1,4 +1,5 @@
 {% load i18n %}
+{% include "agents/pagination.html" %}
 <ul class='agentlist' data-filter-placeholder="{% trans 'Filter...' %}"
 	data-filter-label="{% trans 'Filter contacts' %}">
 	{% for agent in agents %}
@@ -21,3 +22,4 @@
 	</li>
 	{% endfor %}
 </ul>
+{% include "agents/pagination.html" %}

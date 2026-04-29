@@ -9,6 +9,7 @@ from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 from django.core.exceptions import MultipleObjectsReturned
 import json, time, os
+from django.core.paginator import Paginator
 from agents.calendar import getEvents, buildICalendar
 from agents.loganne import contactCreated, contactUpdated, contactStarChanged
 from agents.serialize import serializePerson
@@ -99,6 +100,9 @@ def importer(request):
 	output = importPerson(data)
 	return JsonResponse(output)
 
+PAGE_SIZE = 50
+PAGINATED_LISTS = {'all', 'phone'}
+
 @api_auth
 @login_required
 def agentindex(request, list):
@@ -164,12 +168,21 @@ def agentindex(request, list):
 
 		data['rel'], data['sortableRel'] = get_relationship_info(agent, current_agent)
 		agents.append(data)
+	if list in PAGINATED_LISTS:
+		paginator = Paginator(agents, PAGE_SIZE)
+		page_obj = paginator.get_page(request.GET.get('page', 1))
+		agents_page = page_obj.object_list
+	else:
+		page_obj = None
+		agents_page = agents
+
 	return render(None, 'agents/index.html', {
 		'template': template,
 		'title': _("Contacts"),
-		'agents': agents,
+		'agents': agents_page,
 		'list': list,
 		'addurl': reverse('admin:agents_person_add'),
+		'page_obj': page_obj,
 	})
 
 def identify(request):
