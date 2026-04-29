@@ -1,12 +1,12 @@
 services:
   web:
-    build: ./web
+    build:
+      context: .
+      target: web
     container_name: lucos_contacts_web
     ports:
       - $PORT:80
     image: lucas42/lucos_contacts_web:${VERSION:-latest}
-    volumes:
-      - "staticfiles:/usr/share/nginx/html/resources"
     restart: always
     depends_on:
       app:
@@ -18,7 +18,9 @@ services:
       retries: 3
       start_period: 15s
   app:
-    build: ./app
+    build:
+      context: .
+      target: app
     container_name: lucos_contacts_app
     image: lucas42/lucos_contacts_app:${VERSION:-latest}
     environment:
@@ -27,8 +29,6 @@ services:
       - CLIENT_KEYS
       - LOGANNE_ENDPOINT
       - APP_ORIGIN
-    volumes:
-      - "staticfiles:/usr/src/app/static"
     restart: always
     depends_on:
       db:
@@ -48,7 +48,9 @@ services:
       - POSTGRES_HOST_AUTH_METHOD=trust
     restart: always
   test:
-    build: ./app
+    build:
+      context: .
+      target: app
     container_name: lucos_contacts_test
     image: lucas42/lucos_contacts_app:${VERSION:-latest}
     environment:
@@ -61,5 +63,4 @@ services:
     profiles:
       - test
 volumes:
-  staticfiles:
   db_data:
