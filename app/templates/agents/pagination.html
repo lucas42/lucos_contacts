@@ -1,4 +1,4 @@
-{% if page_obj %}
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
 <nav class="pagination" aria-label="Page navigation">
 	{% if page_obj.has_previous %}
 		<a href="?page={{ page_obj.previous_page_number }}" class="pagination-link pagination-prev">&#8592; Previous</a>
