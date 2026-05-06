@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.core.exceptions import MultipleObjectsReturned
 import json, time, os
 from django.core.paginator import Paginator
-from agents.calendar import getEvents, buildICalendar
+from agents.calendar import getEvents, buildICalendar, getContactEventsToday
 from agents.loganne import contactCreated, contactUpdated, contactStarChanged
 from agents.serialize import serializePerson
 from agents.importer import importPerson
@@ -184,6 +184,13 @@ def agentindex(request, list):
 		'addurl': reverse('admin:agents_person_add'),
 		'page_obj': page_obj,
 	})
+
+@api_auth
+@login_required
+def events_today(request):
+	events = getContactEventsToday()
+	return JsonResponse(events, safe=False)
+
 
 def identify(request):
 	try:

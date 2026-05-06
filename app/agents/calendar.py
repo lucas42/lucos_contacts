@@ -138,6 +138,90 @@ def getEvents():
 	return events
 
 
+def getContactEventsToday():
+	"""Return all contact events (birthdays, deathdays, anniversaries) for today.
+
+	Unlike getEvents(), this:
+	- Filters to today only (not the rolling window)
+	- Includes all contacts (no starred filter)
+	- Returns person-centric JSON for machine consumption
+	- Produces one entry per person for anniversary events
+	"""
+	today = date.today()
+	events = []
+
+	# Birthdays
+	for person in Person.objects.exclude(day_of_birth__isnull=True).exclude(month_of_birth__isnull=True):
+		if person.day_of_birth != today.day or person.month_of_birth != today.month:
+			continue
+		# Don't show birthdays before the year of birth
+		if person.year_of_birth and today.year < person.year_of_birth:
+			continue
+		if person.year_of_birth:
+			age = today.year - person.year_of_birth
+			label = _('%(name)s\'s %(count)s Birthday') % {
+				'name': person.getName(),
+				'count': ordinal(age)
+			}
+		else:
+			label = _('%(name)s\'s Birthday') % {'name': person.getName()}
+		events.append({
+			'type': 'birthday',
+			'person_id': person.id,
+			'person_name': person.getName(),
+			'person_uri': person.get_absolute_url(),
+			'label': label,
+		})
+
+	# Deathdays
+	for person in Person.objects.exclude(day_of_death__isnull=True).exclude(month_of_death__isnull=True):
+		if person.day_of_death != today.day or person.month_of_death != today.month:
+			continue
+		# Don't show deathdays before the year of death
+		if person.year_of_death and today.year < person.year_of_death:
+			continue
+		label = _('%(name)s\'s Deathday') % {'name': person.getName()}
+		events.append({
+			'type': 'deathday',
+			'person_id': person.id,
+			'person_name': person.getName(),
+			'person_uri': person.get_absolute_url(),
+			'label': label,
+		})
+
+	# Anniversaries — one entry per person in the relationship
+	for relationship in RomanticRelationship.objects.filter(active=True).exclude(wedding_day__isnull=True).exclude(wedding_month__isnull=True):
+		if relationship.wedding_day != today.day or relationship.wedding_month != today.month:
+			continue
+		if relationship.milestone == 'married':
+			if relationship.wedding_year and today.year < relationship.wedding_year:
+				continue
+			if relationship.wedding_year:
+				age = today.year - relationship.wedding_year
+				label = _('%(names)s\'s %(count)s Anniversary') % {
+					'names': relationship.getFirstNames(),
+					'count': ordinal(age)
+				}
+			else:
+				label = _('%(names)s\'s Anniversary') % {'names': relationship.getFirstNames()}
+		elif relationship.milestone == 'engaged':
+			if today.year != relationship.wedding_year:
+				continue
+			label = _('%(names)s\'s Wedding') % {'names': relationship.getFirstNames()}
+		else:
+			continue
+		for person in [relationship.personA, relationship.personB]:
+			events.append({
+				'type': 'anniversary',
+				'person_id': person.id,
+				'person_name': person.getName(),
+				'person_uri': person.get_absolute_url(),
+				'label': label,
+			})
+
+	return events
+
+
 def buildICalendar(events=None):
 	"""Build and return the ICalendar bytes for all events in the rolling window.
 	Accepts an optional pre-computed events list to avoid duplicate DB queries."""
