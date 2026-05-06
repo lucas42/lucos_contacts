@@ -22,6 +22,7 @@ urlpatterns = [
 	re_path(r'^people/(?P<list>(phone|postal|gifts|starred|all))$', agents_views.agentindex),
 	re_path(r'^calendar/?$', calendar_views.renderCalendar),
 	re_path(r'^calendar.ics$', calendar_views.outputICalendar),
+	re_path(r'^events/today$', agents_views.events_today),
 	re_path(r'^people/import$', agents_views.importer),
 	re_path(r'^identify/?$', agents_views.identify),
 	re_path(r'^(?:people/?)?$', RedirectView.as_view(url='/people/starred')),
