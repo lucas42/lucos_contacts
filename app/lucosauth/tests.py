@@ -18,7 +18,7 @@ class ApiAuthDecoratorTest(TestCase):
 		"""A request with a recognised-but-wrong key is rejected with 403."""
 		response = self.client.get(
 			'/people/all',
-			HTTP_AUTHORIZATION='key wrongkey',
+			HTTP_AUTHORIZATION='bearer wrongkey',
 			HTTP_ACCEPT='application/json',
 		)
 		self.assertEqual(response.status_code, 403)
