@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 
 
-AUTH_HEADER = {'HTTP_AUTHORIZATION': 'key 1234'}
+AUTH_HEADER = {'HTTP_AUTHORIZATION': 'bearer 1234'}
 
 
 class ApiAuthDecoratorTest(TestCase):

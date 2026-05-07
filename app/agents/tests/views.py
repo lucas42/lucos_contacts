@@ -5,7 +5,10 @@ from django.test import TestCase, Client
 from agents.models import Person, PersonName, RomanticRelationship
 
 
-AUTH_HEADER = {'HTTP_AUTHORIZATION': 'key 1234'}
+AUTH_HEADER = {'HTTP_AUTHORIZATION': 'bearer 1234'}
+
+# Calendar key set by CLIENT_KEYS=external_calendar:test=1234 in the test environment.
+CALENDAR_KEY = '1234'
 
 
 def make_person(name=None):
@@ -229,3 +232,98 @@ class EventsTodayTest(TestCase):
 	def test_requires_auth(self):
 		response = self.client.get('/events/today')
 		self.assertEqual(response.status_code, 302)  # redirect to login
+
+
+class InfoEndpointTest(TestCase):
+	"""Tests for the /_info endpoint."""
+
+	def setUp(self):
+		self.client = Client()
+
+	def test_returns_200_without_authentication(self):
+		"""/_info must be reachable without auth — used by monitoring."""
+		response = self.client.get('/_info')
+		self.assertEqual(response.status_code, 200)
+
+	def test_returns_json_content_type(self):
+		response = self.client.get('/_info')
+		self.assertIn('application/json', response['Content-Type'])
+
+	def test_response_contains_system_name(self):
+		response = self.client.get('/_info')
+		data = json.loads(response.content)
+		self.assertEqual(data['system'], 'lucos_contacts')
+
+	def test_response_contains_checks_and_metrics(self):
+		response = self.client.get('/_info')
+		data = json.loads(response.content)
+		self.assertIn('checks', data)
+		self.assertIn('metrics', data)
+
+
+class CalendarIcsEndpointTest(TestCase):
+	"""Tests for the /calendar.ics HTTP endpoint."""
+
+	def setUp(self):
+		self.client = Client()
+
+	def test_returns_200_with_valid_key(self):
+		response = self.client.get(f'/calendar.ics?key={CALENDAR_KEY}')
+		self.assertEqual(response.status_code, 200)
+
+	def test_returns_text_calendar_content_type(self):
+		response = self.client.get(f'/calendar.ics?key={CALENDAR_KEY}')
+		self.assertIn('text/calendar', response['Content-Type'])
+
+	def test_body_contains_vcalendar_envelope(self):
+		response = self.client.get(f'/calendar.ics?key={CALENDAR_KEY}')
+		self.assertIn(b'BEGIN:VCALENDAR', response.content)
+		self.assertIn(b'END:VCALENDAR', response.content)
+
+	def test_invalid_key_returns_403(self):
+		response = self.client.get('/calendar.ics?key=badkey')
+		self.assertEqual(response.status_code, 403)
+
+	def test_no_key_redirects_to_login(self):
+		response = self.client.get('/calendar.ics')
+		self.assertEqual(response.status_code, 302)
+		self.assertIn('/accounts/login', response['Location'])
+
+
+class ContentNegotiationTest(TestCase):
+	"""Tests that a person endpoint returns the correct format for complex Accept headers."""
+
+	def setUp(self):
+		self.client = Client()
+		self.person = make_person('Alice')
+
+	def _get(self, accept):
+		return self.client.get(
+			f'/people/{self.person.id}',
+			HTTP_ACCEPT=accept,
+			**AUTH_HEADER,
+		)
+
+	def test_browser_accept_header_returns_html(self):
+		"""A typical browser Accept header (text/html highest q) returns HTML."""
+		response = self._get('text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+		self.assertEqual(response.status_code, 200)
+		self.assertIn('text/html', response['Content-Type'])
+
+	def test_rdf_preferred_over_html_returns_rdf(self):
+		"""When text/turtle has higher q than text/html, RDF is returned."""
+		response = self._get('text/turtle;q=0.9,text/html;q=0.5,*/*;q=0.1')
+		self.assertEqual(response.status_code, 200)
+		self.assertIn('text/turtle', response['Content-Type'])
+
+	def test_json_preferred_over_rdf_and_html_returns_json(self):
+		"""When application/json has highest q, JSON is returned."""
+		response = self._get('application/json,text/html;q=0.9,text/turtle;q=0.8,*/*;q=0.5')
+		self.assertEqual(response.status_code, 200)
+		self.assertIn('application/json', response['Content-Type'])
+
+	def test_no_accept_header_returns_html(self):
+		"""Without an Accept header, HTML is the default."""
+		response = self.client.get(f'/people/{self.person.id}', **AUTH_HEADER)
+		self.assertEqual(response.status_code, 200)
+		self.assertIn('text/html', response['Content-Type'])
