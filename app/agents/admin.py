@@ -90,7 +90,25 @@ class RomanticRelationshipInline(admin.TabularInline):
 		fields_order = ['romanticPartner'] + [f for f in all_fields if f != 'romanticPartner']
 		return fields_order
 
+class PersonAdminForm(forms.ModelForm):
+	merge_into = forms.ModelChoiceField(
+		queryset=Person.objects.all(),
+		required=False,
+		label="Merge into this person",
+		widget=admin.widgets.AutocompleteSelect(RomanticRelationship._meta.get_field('personA'), admin.site),
+	)
+
+	class Meta:
+		model = Person
+		fields = '__all__'
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		if self.instance.pk:
+			self.fields['merge_into'].queryset = Person.objects.exclude(pk=self.instance.pk)
+
 class PersonAdmin(admin.ModelAdmin):
+	form = PersonAdminForm
 	actions = ['merge','delete_all_relationships']
 	inlines = [
 		NameInline,
@@ -106,6 +124,34 @@ class PersonAdmin(admin.ModelAdmin):
 	]
 	search_fields = ['_name', 'personname__name']
 	list_max_show_all = 1000
+
+	def _merge_two_agents(self, mainagent, secondary):
+		"""Merge secondary person's data into mainagent, then delete secondary."""
+		# For relationships, we need to be careful of duplicates
+		for rel in Relationship.objects.filter(subject=secondary):
+			if Relationship.objects.filter(subject=mainagent, object=rel.object, relationshipType=rel.relationshipType).exists():
+				rel.delete()
+			else:
+				Relationship.objects.filter(pk=rel.pk).update(subject=mainagent)
+		for rel in Relationship.objects.filter(object=secondary):
+			if Relationship.objects.filter(subject=rel.subject, object=mainagent, relationshipType=rel.relationshipType).exists():
+				rel.delete()
+			else:
+				Relationship.objects.filter(pk=rel.pk).update(object=mainagent)
+
+		RomanticRelationship.objects.filter(personA=secondary).update(personA=mainagent)
+		RomanticRelationship.objects.filter(personB=secondary).update(personB=mainagent)
+		ExternalPerson.objects.filter(agent=secondary).update(agent=mainagent)
+		PersonName.objects.filter(agent=secondary).update(agent=mainagent)
+		PhoneNumber.objects.filter(agent=secondary).update(agent=mainagent)
+		EmailAddress.objects.filter(agent=secondary).update(agent=mainagent)
+		PostalAddress.objects.filter(agent=secondary).update(agent=mainagent)
+		FacebookAccount.objects.filter(agent=secondary).update(agent=mainagent)
+		GoogleAccount.objects.filter(agent=secondary).update(agent=mainagent)
+		GoogleContact.objects.filter(agent=secondary).update(agent=mainagent)
+		GooglePhotosProfile.objects.filter(agent=secondary).update(agent=mainagent)
+		secondary.delete()
+
 	def merge(self, request, queryset):
 		agents = queryset.order_by('id')
 		if (agents.count() < 2):
@@ -116,36 +162,20 @@ class PersonAdmin(admin.ModelAdmin):
 			if not mainagent:
 				mainagent = agent
 			else:
-				# For relationships, we need to be careful of duplicates
-				for rel in Relationship.objects.filter(subject=agent):
-					if Relationship.objects.filter(subject=mainagent, object=rel.object, relationshipType=rel.relationshipType).exists():
-						rel.delete()
-					else:
-						Relationship.objects.filter(pk=rel.pk).update(subject=mainagent)
-				for rel in Relationship.objects.filter(object=agent):
-					if Relationship.objects.filter(subject=rel.subject, object=mainagent, relationshipType=rel.relationshipType).exists():
-						rel.delete()
-					else:
-						Relationship.objects.filter(pk=rel.pk).update(object=mainagent)
+				self._merge_two_agents(mainagent, agent)
 
-				RomanticRelationship.objects.filter(personA=agent).update(personA=mainagent)
-				RomanticRelationship.objects.filter(personB=agent).update(personB=mainagent)
-				ExternalPerson.objects.filter(agent=agent).update(agent=mainagent)
-				PersonName.objects.filter(agent=agent).update(agent=mainagent)
-				PhoneNumber.objects.filter(agent=agent).update(agent=mainagent)
-				EmailAddress.objects.filter(agent=agent).update(agent=mainagent)
-				PostalAddress.objects.filter(agent=agent).update(agent=mainagent)
-				FacebookAccount.objects.filter(agent=agent).update(agent=mainagent)
-				GoogleAccount.objects.filter(agent=agent).update(agent=mainagent)
-				GoogleContact.objects.filter(agent=agent).update(agent=mainagent)
-				GooglePhotosProfile.objects.filter(agent=agent).update(agent=mainagent)
-
-				agent.delete()
 	def delete_all_relationships(self, request, queryset):
 		agents = queryset.order_by('id')
 		for agent in agents:
 			Relationship.objects.filter(subject=agent).delete()
 			Relationship.objects.filter(object=agent).delete()
+
+	def save_model(self, request, obj, form, change):
+		super().save_model(request, obj, form, change)
+		merge_into = form.cleaned_data.get('merge_into')
+		if merge_into:
+			self._merge_two_agents(obj, merge_into)
+
 	def response_add(self, request, agent):
 		res = super().response_add(request, agent)
 		contactCreated(agent)

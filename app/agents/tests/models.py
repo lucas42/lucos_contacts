@@ -99,17 +99,73 @@ class RelationshipTest(TestCase):
 		third_person = Person.objects.create()
 		Relationship.objects.create(subject=luke, object=third_person, relationshipType='sibling')
 		Relationship.objects.create(subject=rowan, object=third_person, relationshipType='sibling')
-		
+
 		from agents.admin import PersonAdmin
 		from django.contrib.admin.sites import AdminSite
 		from django.test import RequestFactory
-		
+
 		admin = PersonAdmin(Person, AdminSite())
 		request = RequestFactory().get('/')
 		admin.merge(request, Person.objects.filter(id__in=[luke.id, rowan.id]))
-		
+
 		relationships = Relationship.objects.filter(subject=luke, object=third_person, relationshipType='sibling')
 		self.assertEqual(relationships.count(), 1)
+
+	def test_merge_two_agents_transfers_relationships(self):
+		"""_merge_two_agents moves secondary's relationships to mainagent and deletes secondary."""
+		from agents.admin import PersonAdmin
+		from django.contrib.admin.sites import AdminSite
+
+		main_person = Person.objects.create()
+		secondary_person = Person.objects.create()
+		third_person = Person.objects.create()
+		Relationship.objects.create(subject=secondary_person, object=third_person, relationshipType='sibling')
+
+		admin_instance = PersonAdmin(Person, AdminSite())
+		admin_instance._merge_two_agents(main_person, secondary_person)
+
+		# secondary should be deleted
+		self.assertFalse(Person.objects.filter(pk=secondary_person.pk).exists())
+		# main should now have the relationship
+		self.assertEqual(
+			Relationship.objects.filter(subject=main_person, object=third_person, relationshipType='sibling').count(),
+			1,
+		)
+
+	def test_merge_two_agents_removes_duplicate_relationships(self):
+		"""_merge_two_agents drops duplicate relationships rather than violating the unique constraint."""
+		from agents.admin import PersonAdmin
+		from django.contrib.admin.sites import AdminSite
+
+		main_person = Person.objects.create()
+		secondary_person = Person.objects.create()
+		third_person = Person.objects.create()
+		Relationship.objects.create(subject=main_person, object=third_person, relationshipType='sibling')
+		Relationship.objects.create(subject=secondary_person, object=third_person, relationshipType='sibling')
+
+		admin_instance = PersonAdmin(Person, AdminSite())
+		admin_instance._merge_two_agents(main_person, secondary_person)
+
+		self.assertFalse(Person.objects.filter(pk=secondary_person.pk).exists())
+		self.assertEqual(
+			Relationship.objects.filter(subject=main_person, object=third_person, relationshipType='sibling').count(),
+			1,
+		)
+
+	def test_merge_two_agents_main_person_survives(self):
+		"""The main person always survives; the secondary is deleted."""
+		from agents.admin import PersonAdmin
+		from django.contrib.admin.sites import AdminSite
+
+		main_person = Person.objects.create()
+		secondary_person = Person.objects.create()
+		main_id = main_person.pk
+
+		admin_instance = PersonAdmin(Person, AdminSite())
+		admin_instance._merge_two_agents(main_person, secondary_person)
+
+		self.assertTrue(Person.objects.filter(pk=main_id).exists())
+		self.assertFalse(Person.objects.filter(pk=secondary_person.pk).exists())
 
 class RelationshipTypeTest(TestCase):
 
