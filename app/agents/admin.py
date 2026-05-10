@@ -4,6 +4,7 @@ from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
+from django.utils.html import format_html
 from agents.loganne import contactCreated, contactUpdated, contactDeleted
 
 class NameInline(admin.TabularInline):
@@ -42,9 +43,18 @@ class GooglePhotosProfileInline(AccountInline):
 class RelationshipInline(admin.TabularInline):
 	model = Relationship
 	fk_name = 'subject'
-	fields = ('relationshipType', 'object')
+	fields = ('relationshipType', 'object', 'delete_link')
+	readonly_fields = ('delete_link',)
 	autocomplete_fields = ['object']
 	can_delete = False  # Deletions must go through RelationshipAdmin which enforces the closure-check rule
+
+	def delete_link(self, obj):
+		"""Render a delete link that routes through RelationshipAdmin's closure-checked delete view."""
+		if obj.pk:
+			url = reverse('admin:agents_relationship_delete', args=[obj.pk])
+			return format_html('<a href="{}">Delete</a>', url)
+		return ''
+	delete_link.short_description = ''
 
 class RomanticRelationshipForm(forms.ModelForm):
 	romanticPartner = forms.ModelChoiceField(
