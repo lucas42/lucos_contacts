@@ -46,7 +46,7 @@
     will be deleted in total.
 </p>
 
-<form method="post">
+<form method="post" action="{% url 'admin:agents_relationship_bulk_delete_confirm' %}">
     {% csrf_token %}
     <input type="hidden" name="staged_rows" value="{{ staged_rows_json }}" />
 

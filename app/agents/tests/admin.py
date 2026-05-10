@@ -278,6 +278,11 @@ class RelationshipAdminDeletionTest(TestCase):
         )
         # Bob (the sibling mediator) must be named on the confirmation page
         self.assertContains(response, 'Bob')
+        # The form must POST to the bulk-confirm URL, not back to the delete URL.
+        # A missing action= would send the form to the current URL (the single-item
+        # delete URL), where delete_view sees no post=yes and falls through to the
+        # single-item confirmation page — breaking the flow entirely.
+        self.assertContains(response, self._bulk_confirm_url())
         # staged_rows_json must be in the template context for the hidden field
         self.assertIn('staged_rows_json', response.context)
         staged_rows_json = response.context['staged_rows_json']
