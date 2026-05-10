@@ -43,28 +43,28 @@ def compute_closure(initial_rows):
         # (A, T, B) + (B, T, C) → (A, T, C)   [forward]
         # (X, T, A) + (A, T, B) → (X, T, B)   [backward]
         if rel_type.transitive:
-            for s2, o2, k2 in closure:
-                if k2 == rel_key:
-                    if s2 == obj_id and o2 != subj_id:
-                        candidates.add((subj_id, o2, rel_key))
-                    if o2 == subj_id and s2 != obj_id:
-                        candidates.add((s2, obj_id, rel_key))
+            for other_subj, other_obj, other_key in closure:
+                if other_key == rel_key:
+                    if other_subj == obj_id and other_obj != subj_id:
+                        candidates.add((subj_id, other_obj, rel_key))
+                    if other_obj == subj_id and other_subj != obj_id:
+                        candidates.add((other_subj, obj_id, rel_key))
 
         # ── OutgoingRels ──────────────────────────────────────────────────────
         # For setInference(rel1, rel2, inferred): (A, rel1, B) + (B, rel2, C) → (A, inferred, C)
         # When processing (A, rel1, B), look for (B, rel2, C) in closure.
         for conn in rel_type.outgoingRels:
-            for s2, o2, k2 in closure:
-                if k2 == conn.existingRel.dbKey and s2 == obj_id:
-                    candidates.add((subj_id, o2, conn.inferredRel.dbKey))
+            for other_subj, other_obj, other_key in closure:
+                if other_key == conn.existingRel.dbKey and other_subj == obj_id:
+                    candidates.add((subj_id, other_obj, conn.inferredRel.dbKey))
 
         # ── IncomingRels ──────────────────────────────────────────────────────
         # For setInference(rel1, rel2, inferred): (A, rel1, B) + (B, rel2, C) → (A, inferred, C)
         # When processing (B, rel2, C), look for (A, rel1, B) in closure.
         for conn in rel_type.incomingRels:
-            for s2, o2, k2 in closure:
-                if k2 == conn.existingRel.dbKey and o2 == subj_id:
-                    candidates.add((s2, obj_id, conn.inferredRel.dbKey))
+            for other_subj, other_obj, other_key in closure:
+                if other_key == conn.existingRel.dbKey and other_obj == subj_id:
+                    candidates.add((other_subj, obj_id, conn.inferredRel.dbKey))
 
         for candidate in candidates:
             if candidate not in closure:

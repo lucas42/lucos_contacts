@@ -119,8 +119,9 @@ class Relationship(models.Model):
 		For a staged set where the target row is of sibling type, expand the
 		staged set to include all of the target object's sibling-group members.
 
-		Specifically: for the original target (A, T, B), add (A, T, Bj) and
-		its mirror (Bj, T, A) for every Bj in B's sibling group as found in db_rows.
+		Specifically: if we're deleting (Alice, sibling, Bob), we also stage
+		(Alice, sibling, Carol), (Carol, sibling, Alice), etc. for every Carol
+		in Bob's sibling group as found in db_rows.
 
 		Returns the expanded frozenset.
 		"""
@@ -128,11 +129,11 @@ class Relationship(models.Model):
 		obj_id = self.object_id
 		rel_key = self.relationshipType
 
-		# B's sibling group = all X such that (B, sibling, X) is in db_rows (plus B itself)
+		# Bob's sibling group = all X such that (Bob, sibling, X) is in db_rows (plus Bob himself)
 		sibling_group = {obj_id}
-		for s2, o2, k2 in db_rows:
-			if k2 == 'sibling' and s2 == obj_id:
-				sibling_group.add(o2)
+		for other_subj, other_obj, other_key in db_rows:
+			if other_key == 'sibling' and other_subj == obj_id:
+				sibling_group.add(other_obj)
 
 		expanded = set(staged)
 		for member_id in sibling_group:
@@ -178,29 +179,29 @@ class Relationship(models.Model):
 		paths = []
 
 		# ── Transitive ────────────────────────────────────────────────────────
-		# (A, T, X) + (X, T, B) → (A, T, B) where T is transitive
+		# e.g. Alice is a sibling of Bob, and Bob is a sibling of Carol → Alice is a sibling of Carol
 		if rel_type.transitive:
-			for s2, o2, k2 in rows_set:
-				if k2 == rel_key and s2 == subj_id and o2 != obj_id:
-					if (o2, obj_id, rel_key) in rows_set:
+			for other_subj, other_obj, other_key in rows_set:
+				if other_key == rel_key and other_subj == subj_id and other_obj != obj_id:
+					if (other_obj, obj_id, rel_key) in rows_set:
 						paths.append(
-							f"{name_of(subj_id)} is a {rel_display(rel_key)} of {name_of(o2)}, "
-							f"and {name_of(o2)} is a {rel_display(rel_key)} of {name_of(obj_id)}"
+							f"{name_of(subj_id)} is a {rel_display(rel_key)} of {name_of(other_obj)}, "
+							f"and {name_of(other_obj)} is a {rel_display(rel_key)} of {name_of(obj_id)}"
 						)
 
 		# ── SetInference rules ────────────────────────────────────────────────
 		# Find all (rel1, rel2) pairs that produce rel_key as inferred type.
-		# For setInference(rel1_class, rel2_class, T): (A, rel1, X) + (X, rel2, B) → (A, T, B)
+		# e.g. Alice is a parent of Bob, and Bob is a parent of Carol → Alice is a grandparent of Carol
 		for rel1_class in RELATIONSHIP_TYPES:
 			for conn in rel1_class.outgoingRels:
 				if conn.inferredRel.dbKey == rel_key:
-					# Rule: (A, rel1_class.dbKey, X) + (X, conn.existingRel.dbKey, B) → (A, rel_key, B)
-					for s2, o2, k2 in rows_set:
-						if k2 == rel1_class.dbKey and s2 == subj_id:
-							if (o2, obj_id, conn.existingRel.dbKey) in rows_set:
+					# Rule: (Alice, rel1, Bob) + (Bob, rel2, Carol) → (Alice, rel_key, Carol)
+					for other_subj, other_obj, other_key in rows_set:
+						if other_key == rel1_class.dbKey and other_subj == subj_id:
+							if (other_obj, obj_id, conn.existingRel.dbKey) in rows_set:
 								paths.append(
-									f"{name_of(subj_id)} is a {rel_display(rel1_class.dbKey)} of {name_of(o2)}, "
-									f"and {name_of(o2)} is a {rel_display(conn.existingRel.dbKey)} of {name_of(obj_id)}"
+									f"{name_of(subj_id)} is a {rel_display(rel1_class.dbKey)} of {name_of(other_obj)}, "
+									f"and {name_of(other_obj)} is a {rel_display(conn.existingRel.dbKey)} of {name_of(obj_id)}"
 								)
 
 		return paths
@@ -245,13 +246,8 @@ class Relationship(models.Model):
 
 	def delete(self, using=None, keep_parents=False):
 		"""
-		Delete this Relationship, enforcing the closure-check rule when
-		RELATIONSHIP_CLOSURE_CHECK_ENABLED is True.
+		Delete this Relationship, enforcing the closure-check rule (ADR-0001).
 
-		When the flag is off, behaves identically to the default Django delete
-		(removes only this row, leaves inverses/inferred rows untouched).
-
-		When the flag is on:
 		  1. Stages this row plus its inverse/symmetric pair.
 		  2. Runs compute_closure on the hypothetical post-deletion state.
 		  3. If the staged set is not re-inferred: deletes atomically, emits Loganne.
@@ -260,10 +256,6 @@ class Relationship(models.Model):
 		     SiblingGroupExpansionRequired for the caller to handle.
 		  5. Otherwise: raises RelationshipRefusedError with supporting paths.
 		"""
-		from django.conf import settings
-		if not getattr(settings, 'RELATIONSHIP_CLOSURE_CHECK_ENABLED', False):
-			return super().delete(using=using, keep_parents=keep_parents)
-
 		from agents.models.closure import compute_closure
 
 		# ── Stage ─────────────────────────────────────────────────────────────

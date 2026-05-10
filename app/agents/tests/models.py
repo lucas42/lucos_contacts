@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from unittest.mock import patch
 from agents.models import Person, Relationship
 from agents.models.relationship import RelationshipRefusedError, SiblingGroupExpansionRequired
@@ -200,11 +200,9 @@ class DeathTest(TestCase):
 		self.assertFalse(luke.is_dead)
 
 
-@override_settings(RELATIONSHIP_CLOSURE_CHECK_ENABLED=True)
 class RelationshipDeletionSemanticsTest(TestCase):
 	"""
 	Tests for the closure-check deletion semantics (ADR-0001).
-	All tests run with RELATIONSHIP_CLOSURE_CHECK_ENABLED=True.
 	"""
 
 	def test_inverse_cascade_on_delete(self):
