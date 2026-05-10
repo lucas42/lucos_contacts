@@ -154,6 +154,12 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 
+## Relationship Deletion Semantics (ADR-0001)
+# Enables the closure-check rule on Relationship.delete().
+# Requires the one-time audit (manage.py audit_relationship_closure) to have
+# been run and the database confirmed closed before enabling in production.
+RELATIONSHIP_CLOSURE_CHECK_ENABLED = os.environ.get('RELATIONSHIP_CLOSURE_CHECK_ENABLED', 'false').lower() == 'true'
+
 ## Phone Number Settings
 PHONENUMBER_DB_FORMAT = 'E164'
 PHONENUMBER_DEFAULT_REGION = 'GB' # NB: there's some hardcoded logic in models.py which assumes this

@@ -1,0 +1,62 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ media }}
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-agents model-relationship delete-confirmation{% endblock %}
+
+{% block breadcrumbs %}
+<nav id="subnav">
+    <div class="breadcrumbs">
+        <a href="/">{% trans 'Contact List' %}</a>
+        &rsaquo; <a href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>
+        &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+        &rsaquo; <a href="{% url 'admin:agents_relationship_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+        &rsaquo; {% trans 'Confirm bulk deletion' %}
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<h1>{% trans 'Confirm bulk deletion' %}</h1>
+
+{% if original_relationship %}
+<p>
+    You requested deletion of: <strong>{{ original_relationship }}</strong>
+</p>
+{% endif %}
+
+<p>
+    Removing this relationship requires also removing it for
+    {% if sibling_members %}
+        {{ original_relationship.object.getName }}'s sibling{{ sibling_members|pluralize }}:
+        {% for person in sibling_members %}
+            <strong>{{ person.getName }}</strong>{% if not forloop.last %}, {% endif %}
+        {% endfor %}.
+    {% else %}
+        related sibling relationships.
+    {% endif %}
+</p>
+
+<p>
+    <strong>{{ staged_rows_count }} relationship{{ staged_rows_count|pluralize }}</strong>
+    will be deleted in total.
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="staged_rows" value="{{ staged_rows_json }}" />
+
+    <div>
+        <input type="hidden" name="confirm" value="yes" />
+        <input type="submit" value="{% trans 'Yes, remove all' %}" class="default" />
+        &nbsp;
+        <a href="{% url 'admin:agents_relationship_changelist' %}" class="button cancel-link">
+            {% trans 'No, take me back' %}
+        </a>
+    </div>
+</form>
+{% endblock %}

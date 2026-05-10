@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from unittest.mock import patch
 from agents.models import Person, Relationship
+from agents.models.relationship import RelationshipRefusedError, SiblingGroupExpansionRequired
 from agents.models.relationshipTypes import Parent, Child, Sibling
 
 def get_agents_by_relType(subject, relType):
@@ -196,3 +198,229 @@ class DeathTest(TestCase):
 		luke = Person.objects.create()
 		luke.is_dead =False
 		self.assertFalse(luke.is_dead)
+
+
+@override_settings(RELATIONSHIP_CLOSURE_CHECK_ENABLED=True)
+class RelationshipDeletionSemanticsTest(TestCase):
+	"""
+	Tests for the closure-check deletion semantics (ADR-0001).
+	All tests run with RELATIONSHIP_CLOSURE_CHECK_ENABLED=True.
+	"""
+
+	def test_inverse_cascade_on_delete(self):
+		"""
+		Deleting (A, parent, B) must also delete the inverse (B, child, A).
+		Both rows must be absent after the call.
+		"""
+		alice = Person.objects.create()
+		bob = Person.objects.create()
+		Relationship.objects.create(subject=alice, object=bob, relationshipType='parent')
+		# inference creates the inverse: (bob, child, alice)
+
+		self.assertTrue(
+			Relationship.objects.filter(subject=alice, object=bob, relationshipType='parent').exists()
+		)
+		self.assertTrue(
+			Relationship.objects.filter(subject=bob, object=alice, relationshipType='child').exists()
+		)
+
+		target = Relationship.objects.get(subject=alice, object=bob, relationshipType='parent')
+		target.delete()
+
+		self.assertFalse(
+			Relationship.objects.filter(subject=alice, object=bob, relationshipType='parent').exists(),
+			"The parent row should be gone",
+		)
+		self.assertFalse(
+			Relationship.objects.filter(subject=bob, object=alice, relationshipType='child').exists(),
+			"The inverse child row must also be deleted",
+		)
+
+	def test_symmetric_cascade_on_delete(self):
+		"""
+		Deleting (A, sibling, B) must also delete the symmetric mirror (B, sibling, A).
+		"""
+		alice = Person.objects.create()
+		bob = Person.objects.create()
+		Relationship.objects.create(subject=alice, object=bob, relationshipType='sibling')
+		# inference creates (bob, sibling, alice)
+
+		target = Relationship.objects.get(subject=alice, object=bob, relationshipType='sibling')
+		target.delete()
+
+		self.assertFalse(
+			Relationship.objects.filter(subject=alice, object=bob, relationshipType='sibling').exists(),
+			"Original sibling row should be gone",
+		)
+		self.assertFalse(
+			Relationship.objects.filter(subject=bob, object=alice, relationshipType='sibling').exists(),
+			"Mirror sibling row must also be deleted",
+		)
+
+	def test_refused_multi_relation_chain(self):
+		"""
+		When (A, aunt/uncle, C) is implied by (A, parent, B) + (B, sibling, C),
+		attempting to delete the aunt/uncle row must raise RelationshipRefusedError.
+		The two supporting rows must remain in the database after the refusal.
+		"""
+		alice = Person.objects.create()
+		bob = Person.objects.create()
+		carol = Person.objects.create()
+
+		# alice parent bob → inference creates (bob, child, alice)
+		Relationship.objects.create(subject=alice, object=bob, relationshipType='parent')
+		# bob sibling carol → inference creates (carol, sibling, bob) and
+		# setInference(Parent, Sibling, AuntOrUncle): (alice, aunt/uncle, carol)
+		Relationship.objects.create(subject=bob, object=carol, relationshipType='sibling')
+
+		# Verify inference created the aunt/uncle row
+		self.assertTrue(
+			Relationship.objects.filter(subject=alice, object=carol, relationshipType='aunt/uncle').exists(),
+			"Inference should have created alice aunt/uncle carol",
+		)
+
+		# Attempt to delete — must be refused
+		target = Relationship.objects.get(subject=alice, object=carol, relationshipType='aunt/uncle')
+		with self.assertRaises(RelationshipRefusedError) as ctx:
+			target.delete()
+
+		# Supporting rows must still exist
+		self.assertTrue(
+			Relationship.objects.filter(subject=alice, object=bob, relationshipType='parent').exists(),
+			"alice→parent→bob must remain",
+		)
+		self.assertTrue(
+			Relationship.objects.filter(subject=bob, object=carol, relationshipType='sibling').exists(),
+			"bob→sibling→carol must remain",
+		)
+
+		# Error message must mention at least one supporting path
+		self.assertIn("can't be removed", str(ctx.exception))
+
+	def test_refused_transitive_sibling(self):
+		"""
+		With (A, sib, B) + (B, sib, C) transitively implying (A, sib, C),
+		attempting to delete (A, sib, C) alone must be refused.
+		"""
+		alice = Person.objects.create()
+		bob = Person.objects.create()
+		carol = Person.objects.create()
+
+		Relationship.objects.create(subject=alice, object=bob, relationshipType='sibling')
+		Relationship.objects.create(subject=bob, object=carol, relationshipType='sibling')
+		# Now (alice, sibling, carol) is transitively inferred
+
+		self.assertTrue(
+			Relationship.objects.filter(subject=alice, object=carol, relationshipType='sibling').exists(),
+			"Transitive sibling should exist",
+		)
+
+		# Attempting to delete the transitive sibling alone must raise
+		# SiblingGroupExpansionRequired (the sibling-group expansion can break this)
+		target = Relationship.objects.get(subject=alice, object=carol, relationshipType='sibling')
+		with self.assertRaises(SiblingGroupExpansionRequired):
+			target.delete()
+
+		# The row must still exist — no partial deletion
+		self.assertTrue(
+			Relationship.objects.filter(subject=alice, object=carol, relationshipType='sibling').exists(),
+			"The sibling row must remain after a refused/expansion-required deletion",
+		)
+
+	def test_sibling_group_bulk_delete(self):
+		"""
+		When (A, sib, C) is implied transitively via bob, deleting (A, sib, C)
+		alone raises SiblingGroupExpansionRequired.  After the expansion is
+		accepted (simulated by calling _perform_staged_deletion with the full
+		staged set), all relevant sibling rows are gone and the database is closed.
+		"""
+		alice = Person.objects.create()
+		bob = Person.objects.create()
+		carol = Person.objects.create()
+
+		Relationship.objects.create(subject=alice, object=bob, relationshipType='sibling')
+		Relationship.objects.create(subject=bob, object=carol, relationshipType='sibling')
+		# Transitive: (alice, sibling, carol) now exists
+
+		target = Relationship.objects.get(subject=alice, object=carol, relationshipType='sibling')
+		exc = None
+		try:
+			target.delete()
+			self.fail("Expected SiblingGroupExpansionRequired")
+		except SiblingGroupExpansionRequired as e:
+			exc = e
+
+		# The exception must include all three people's sibling relationships
+		# staged_rows should contain all rows connecting alice with bob and carol
+		self.assertIsNotNone(exc)
+		self.assertIn(
+			(alice.pk, carol.pk, 'sibling'),
+			exc.staged_rows,
+			"Expansion must include the originally targeted row",
+		)
+		self.assertIn(
+			(alice.pk, bob.pk, 'sibling'),
+			exc.staged_rows,
+			"Expansion must include alice-bob sibling (breaks the transitive chain)",
+		)
+
+		# Simulate user confirming: perform the expanded deletion
+		target._perform_staged_deletion(exc.staged_rows)
+
+		# All sibling rows for alice must now be gone
+		self.assertFalse(
+			Relationship.objects.filter(subject=alice, relationshipType='sibling').exists(),
+			"alice must have no remaining sibling relationships",
+		)
+		self.assertFalse(
+			Relationship.objects.filter(object=alice, relationshipType='sibling').exists(),
+			"No sibling row should point to alice",
+		)
+
+	def test_loganne_emissions_on_delete(self):
+		"""
+		A successful deletion emits one relationshipDeleted event per row in the
+		staged set (target + inverse).  A refused deletion emits zero events.
+		"""
+		alice = Person.objects.create()
+		bob = Person.objects.create()
+		carol = Person.objects.create()
+
+		# ── Successful deletion: parent+child pair (2 rows → 2 events) ──────
+		Relationship.objects.create(subject=alice, object=bob, relationshipType='parent')
+		# inverse (bob, child, alice) inferred
+
+		target = Relationship.objects.get(subject=alice, object=bob, relationshipType='parent')
+
+		with patch('agents.loganne.loganneRequest') as mock_loganne:
+			with self.captureOnCommitCallbacks(execute=True):
+				target.delete()
+
+		# parent + child = 2 rows staged → 2 Loganne calls
+		self.assertEqual(
+			mock_loganne.call_count,
+			2,
+			"Expected one Loganne event per deleted row (parent + child inverse)",
+		)
+		mock_loganne.reset_mock()
+
+		# ── Refused deletion: zero events ────────────────────────────────────
+		# Build a scenario that will be refused (transitive sibling expansion
+		# will be proposed, which means SiblingGroupExpansionRequired is raised,
+		# not RelationshipRefusedError — so check on a multi-relation chain instead)
+		Relationship.objects.create(subject=alice, object=carol, relationshipType='parent')
+		Relationship.objects.create(subject=carol, object=bob, relationshipType='sibling')
+		# Now (alice, aunt/uncle, bob) is inferred
+
+		refused_target = Relationship.objects.get(
+			subject=alice, object=bob, relationshipType='aunt/uncle'
+		)
+		with patch('agents.loganne.loganneRequest') as mock_refused:
+			with self.assertRaises(RelationshipRefusedError):
+				refused_target.delete()
+
+		self.assertEqual(
+			mock_refused.call_count,
+			0,
+			"A refused deletion must emit no Loganne events",
+		)

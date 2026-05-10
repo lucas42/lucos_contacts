@@ -2,6 +2,8 @@ from agents.models import *
 from django import forms
 from django.contrib import admin, messages
 from django.shortcuts import redirect
+from django.template.response import TemplateResponse
+from django.urls import path, reverse
 from agents.loganne import contactCreated, contactUpdated, contactDeleted
 
 class NameInline(admin.TabularInline):
@@ -48,7 +50,7 @@ class RomanticRelationshipForm(forms.ModelForm):
 		queryset=Person.objects.all(),
 		required=True,
 		label="Romantic Partner",
-		widget=admin.widgets.AutocompleteSelect(RomanticRelationship._meta.get_field('personB'), admin.site),
+		widget=admin.widgets.AutocompleteSelect(RomanticRelationship._meta.get_field('personA'), admin.site),
 	)
 
 	class Meta:
@@ -127,15 +129,17 @@ class PersonAdmin(admin.ModelAdmin):
 
 	def _merge_two_agents(self, mainagent, secondary):
 		"""Merge secondary person's data into mainagent, then delete secondary."""
-		# For relationships, we need to be careful of duplicates
+		# For relationships, we need to be careful of duplicates.
+		# Use queryset delete (bypasses model-level delete() override) so that
+		# duplicate-removal is not subject to the closure-check rule.
 		for rel in Relationship.objects.filter(subject=secondary):
 			if Relationship.objects.filter(subject=mainagent, object=rel.object, relationshipType=rel.relationshipType).exists():
-				rel.delete()
+				Relationship.objects.filter(pk=rel.pk).delete()
 			else:
 				Relationship.objects.filter(pk=rel.pk).update(subject=mainagent)
 		for rel in Relationship.objects.filter(object=secondary):
 			if Relationship.objects.filter(subject=rel.subject, object=mainagent, relationshipType=rel.relationshipType).exists():
-				rel.delete()
+				Relationship.objects.filter(pk=rel.pk).delete()
 			else:
 				Relationship.objects.filter(pk=rel.pk).update(object=mainagent)
 
@@ -204,3 +208,155 @@ class PersonAdmin(admin.ModelAdmin):
 			super().save_formset(request, form, formset, change)
 
 admin.site.register(Person, PersonAdmin)
+
+
+class RelationshipAdmin(admin.ModelAdmin):
+	"""
+	Admin interface for directly managing Relationship rows.
+
+	Overrides the standard delete_view to enforce the closure-check rule
+	(ADR-0001).  When a deletion is refused, the user sees the supporting
+	inference paths.  When a sibling-group expansion is needed and passes
+	the extended closure check, the user is routed to a bulk-delete
+	confirmation page.
+	"""
+	list_display = ('subject', 'relationshipType', 'object')
+	list_filter = ('relationshipType',)
+	search_fields = ['subject___name', 'object___name']
+
+	def get_urls(self):
+		custom_urls = [
+			path(
+				'bulk-delete-confirm/',
+				self.admin_site.admin_view(self.bulk_delete_confirmation_view),
+				name='agents_relationship_bulk_delete_confirm',
+			),
+		]
+		return custom_urls + super().get_urls()
+
+	def delete_view(self, request, object_id, extra_context=None):
+		"""
+		Override to intercept RelationshipRefusedError and
+		SiblingGroupExpansionRequired raised by Relationship.delete().
+		"""
+		import json
+		from agents.models.relationship import RelationshipRefusedError, SiblingGroupExpansionRequired
+
+		if request.method == 'POST' and request.POST.get('post') == 'yes':
+			try:
+				return super().delete_view(request, object_id, extra_context=extra_context)
+			except SiblingGroupExpansionRequired as exc:
+				# Route to the bulk-delete confirmation page.
+				# Serialize staged_rows so the confirmation form can echo them back.
+				staged_list = [list(row) for row in exc.staged_rows]
+				members_info = [
+					{'id': p.pk, 'name': p.getName()}
+					for p in exc.sibling_members
+				]
+				obj = self.get_object(request, object_id)
+				context = {
+					**self.admin_site.each_context(request),
+					'title': 'Confirm bulk deletion',
+					'original_relationship': obj,
+					'sibling_members': exc.sibling_members,
+					'staged_rows_count': len(exc.staged_rows),
+					'staged_rows_json': json.dumps(staged_list),
+					'opts': self.model._meta,
+				}
+				return TemplateResponse(
+					request,
+					'admin/agents/relationship/bulk_delete_confirmation.html',
+					context,
+				)
+			except RelationshipRefusedError as exc:
+				messages.error(request, str(exc))
+				return redirect(
+					reverse(
+						'admin:agents_relationship_change',
+						args=[object_id],
+					)
+				)
+
+		return super().delete_view(request, object_id, extra_context=extra_context)
+
+	def bulk_delete_confirmation_view(self, request):
+		"""
+		Custom view for sibling-group bulk-delete confirmation.
+
+		GET:  Not used — we render the confirmation page directly from delete_view.
+		POST: Performs the deletion and emits Loganne events.
+		"""
+		import json
+		from agents.models.relationship import RelationshipRefusedError, SiblingGroupExpansionRequired
+
+		if request.method == 'POST':
+			if request.POST.get('confirm') == 'yes':
+				staged_rows_json = request.POST.get('staged_rows', '[]')
+				try:
+					staged_list = json.loads(staged_rows_json)
+					staged_rows = frozenset(tuple(row) for row in staged_list)
+				except (ValueError, TypeError):
+					messages.error(request, "Invalid deletion request.")
+					return redirect(reverse('admin:agents_relationship_changelist'))
+
+				# Re-run closure check before committing.
+				from agents.models.closure import compute_closure
+				db_rows = frozenset(
+					(rel.subject_id, rel.object_id, rel.relationshipType)
+					for rel in Relationship.objects.all()
+				)
+				remaining = db_rows - staged_rows
+				re_inferred = staged_rows & compute_closure(remaining)
+
+				if re_inferred:
+					messages.error(
+						request,
+						"The deletion can no longer proceed — the relationship graph "
+						"has changed since this page was loaded. Please try again.",
+					)
+					return redirect(reverse('admin:agents_relationship_changelist'))
+
+				# Perform deletion using _perform_staged_deletion logic directly.
+				from django.db import transaction
+				from agents.loganne import relationshipDeleted
+
+				events = []
+				staged_pks = []
+				for subj_id, obj_id, rel_key in staged_rows:
+					try:
+						rel = Relationship.objects.get(
+							subject_id=subj_id, object_id=obj_id, relationshipType=rel_key
+						)
+						staged_pks.append(rel.pk)
+						events.append((
+							rel.subject.getName(),
+							rel.object.getName(),
+							rel.get_relationshipType_display(),
+						))
+					except Relationship.DoesNotExist:
+						pass
+
+				captured_events = list(events)
+
+				def emit():
+					for subj_name, obj_name, rel_display in captured_events:
+						relationshipDeleted(subj_name, obj_name, rel_display)
+
+				with transaction.atomic():
+					Relationship.objects.filter(pk__in=staged_pks).delete()
+					transaction.on_commit(emit)
+
+				messages.success(
+					request,
+					f"Deleted {len(staged_pks)} relationship{'s' if len(staged_pks) != 1 else ''}.",
+				)
+				return redirect(reverse('admin:agents_relationship_changelist'))
+
+			# User cancelled
+			return redirect(reverse('admin:agents_relationship_changelist'))
+
+		# Direct GET to this URL — redirect to list
+		return redirect(reverse('admin:agents_relationship_changelist'))
+
+
+admin.site.register(Relationship, RelationshipAdmin)
