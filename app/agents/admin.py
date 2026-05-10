@@ -44,6 +44,7 @@ class RelationshipInline(admin.TabularInline):
 	fk_name = 'subject'
 	fields = ('relationshipType', 'object')
 	autocomplete_fields = ['object']
+	can_delete = False  # Deletions must go through RelationshipAdmin which enforces the closure-check rule
 
 class RomanticRelationshipForm(forms.ModelForm):
 	romanticPartner = forms.ModelChoiceField(
