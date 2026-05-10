@@ -114,19 +114,6 @@ class Relationship(models.Model):
 
 		return frozenset(staged)
 
-	def _is_sibling_propagation_type(self, rel_key):
-		"""
-		Return True if rel_key can be inferred via a setInference(Sibling, *, rel_key)
-		rule or is the transitive Sibling type itself.
-		"""
-		if rel_key == 'sibling':
-			return True
-		from .relationshipTypes import Sibling
-		for conn in Sibling.outgoingRels:
-			if conn.inferredRel.dbKey == rel_key:
-				return True
-		return False
-
 	def _compute_sibling_group_expansion(self, staged, db_rows):
 		"""
 		For a staged set where the target row is of sibling type, expand the
@@ -218,7 +205,8 @@ class Relationship(models.Model):
 
 		return paths
 
-	def _perform_staged_deletion(self, staged_rows):
+	@staticmethod
+	def _perform_staged_deletion(staged_rows):
 		"""
 		Atomically delete all rows in staged_rows and emit a Loganne
 		relationshipDeleted event per row after the transaction commits.

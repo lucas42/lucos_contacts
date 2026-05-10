@@ -316,39 +316,11 @@ class RelationshipAdmin(admin.ModelAdmin):
 					)
 					return redirect(reverse('admin:agents_relationship_changelist'))
 
-				# Perform deletion using _perform_staged_deletion logic directly.
-				from django.db import transaction
-				from agents.loganne import relationshipDeleted
-
-				events = []
-				staged_pks = []
-				for subj_id, obj_id, rel_key in staged_rows:
-					try:
-						rel = Relationship.objects.get(
-							subject_id=subj_id, object_id=obj_id, relationshipType=rel_key
-						)
-						staged_pks.append(rel.pk)
-						events.append((
-							rel.subject.getName(),
-							rel.object.getName(),
-							rel.get_relationshipType_display(),
-						))
-					except Relationship.DoesNotExist:
-						pass
-
-				captured_events = list(events)
-
-				def emit():
-					for subj_name, obj_name, rel_display in captured_events:
-						relationshipDeleted(subj_name, obj_name, rel_display)
-
-				with transaction.atomic():
-					Relationship.objects.filter(pk__in=staged_pks).delete()
-					transaction.on_commit(emit)
+				deleted_count = Relationship._perform_staged_deletion(staged_rows)
 
 				messages.success(
 					request,
-					f"Deleted {len(staged_pks)} relationship{'s' if len(staged_pks) != 1 else ''}.",
+					f"Deleted {deleted_count} relationship{'s' if deleted_count != 1 else ''}.",
 				)
 				return redirect(reverse('admin:agents_relationship_changelist'))
 
