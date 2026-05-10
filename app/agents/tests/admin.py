@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-Journey-level test scaffolding for admin functionality touching relationships.
+Journey-level test scaffolding for Relationship admin functionality.
 
 These tests drive admin URLs end-to-end using django.test.Client, asserting on
 visible outcomes (rendered HTML, HTTP status codes, database state) rather than
 calling model methods or admin class methods directly.
 
-Sanity tests in this file exercise the admin behaviour already present on
-``main`` (pre-#698): the standard Django admin for ``Person``, which exposes
-relationships via ``RelationshipInline`` on the change form.
+Sanity tests in this file exercise the stock Django admin for ``Relationship``
+(registered in admin.py via ``admin.site.register(Relationship)`` with the
+default ``ModelAdmin``).  This registration is the pre-authorised exception to
+the "no production code changes" criterion in #699 — the architect's issue body
+explicitly names registering ``Relationship`` in admin as the example of a
+legitimate prerequisite change; the coordinator confirmed scope before it was
+applied.
 
-Admin tests that exercise ADR-0001 deletion-semantics behaviour — closure
-checks, the refusal page, sibling-group bulk-confirm expansion, Loganne
-emission on admin delete, or the inline delete-link routing introduced by
-``can_delete = False`` — belong in #700 and #701, alongside the production
-code that introduces those behaviours.  They are explicitly out of scope here.
-
-Note: ``Relationship`` is not registered directly in Django admin on ``main``
-(only via ``RelationshipInline`` on ``PersonAdmin``).  Relationship-specific
-admin URLs (changelist, change-form, standalone delete confirmation) require
-that registration, which is tracked as prerequisite infrastructure for #700.
+Admin tests that exercise ADR-0001 deletion-semantics behaviour — the custom
+``RelationshipAdmin`` with its closure-check ``delete_view``, refusal page,
+sibling-group bulk-confirm expansion, Loganne emission on admin delete, or the
+inline delete-link routing introduced by ``can_delete = False`` — belong in
+#700 and #701, alongside the production code that introduces those behaviours.
+They are explicitly out of scope here.
 """
 
 from django.contrib.auth.models import User
@@ -66,80 +66,94 @@ class AdminJourneyTestCase(TestCase):
 		)
 
 
-class PersonAdminSanityTest(AdminJourneyTestCase):
+class RelationshipAdminSanityTest(AdminJourneyTestCase):
 	"""
-	Sanity journey tests proving the harness drives Django admin URLs correctly.
+	Sanity journey tests proving the harness drives Relationship admin URLs
+	correctly.
 
-	All three tests operate through the ``Person`` admin (``PersonAdmin``),
-	which exposes relationship data via ``RelationshipInline``.  They verify:
-
-	1. The harness authenticates and reaches admin views.
-	2. The admin change form renders inline relationship rows.
-	3. The harness can drive a multi-step admin POST (GET confirmation →
-	   POST confirm) through to completion and assert on final DB state.
+	All three tests operate against the stock Django admin for ``Relationship``
+	(bare registration, default ``ModelAdmin``).  The custom ``RelationshipAdmin``
+	with ADR-0001 deletion semantics is not present on ``main`` and its tests
+	belong in #700/#701.
 	"""
 
 	# ── Test 1: changelist GET ─────────────────────────────────────────────────
 
-	def test_person_changelist_renders_seeded_row(self):
+	def test_relationship_changelist_renders_seeded_row(self):
 		"""
-		GET the Person changelist → 200; rendered HTML contains the seeded
-		person's name.
+		GET the Relationship changelist → 200; rendered HTML contains the seeded
+		relationship's string representation.
 
-		Proves the harness authenticates correctly and reaches real admin views.
-		"""
-		make_person('Alice')
-		response = self.client.get(reverse('admin:agents_person_changelist'))
-		self.assertEqual(response.status_code, 200)
-		self.assertContains(response, 'Alice')
+		``Relationship.__str__`` returns ``"subject – type – object"``, so the
+		changelist row includes the names of both agents.
 
-	# ── Test 2: change-form GET with RelationshipInline ───────────────────────
-
-	def test_person_change_form_renders_relationship_inline(self):
-		"""
-		GET a Person's change-form → 200; the rendered HTML includes the
-		``RelationshipInline`` section showing the seeded relationship type.
-
-		Proves the harness can reach the change-form view and that the inline
-		renders relationship data correctly.
+		Proves the harness authenticates and reaches the Relationship admin
+		changelist view.
 		"""
 		alice = make_person('Alice')
 		bob = make_person('Bob')
 		Relationship.objects.create(subject=alice, object=bob, relationshipType='sibling')
 
+		response = self.client.get(reverse('admin:agents_relationship_changelist'))
+		self.assertEqual(response.status_code, 200)
+		# The changelist uses Relationship.__str__ which includes both names
+		self.assertContains(response, 'Alice')
+		self.assertContains(response, 'Bob')
+
+	# ── Test 2: change-form GET ────────────────────────────────────────────────
+
+	def test_relationship_change_form_names_involved_agents(self):
+		"""
+		GET an individual Relationship change-form → 200; the rendered HTML
+		names both agents involved in the relationship.
+
+		The default ``ModelAdmin`` renders ``subject`` and ``object`` as select
+		widgets, with the currently selected ``Person`` visible in the option
+		list.
+
+		Proves the harness can reach the change-form and that agent identities
+		are present in the rendered output.
+		"""
+		alice = make_person('Alice')
+		bob = make_person('Bob')
+		rel = Relationship.objects.create(
+			subject=alice, object=bob, relationshipType='sibling'
+		)
+
 		response = self.client.get(
-			reverse('admin:agents_person_change', args=[alice.pk])
+			reverse('admin:agents_relationship_change', args=[rel.pk])
 		)
 		self.assertEqual(response.status_code, 200)
-		# The RelationshipInline renders a <select> for relationshipType;
-		# 'sibling' must appear as a selected/available option.
-		self.assertContains(response, 'sibling')
+		self.assertContains(response, 'Alice')
+		self.assertContains(response, 'Bob')
 
-	# ── Test 3: multi-step admin delete journey ────────────────────────────────
+	# ── Test 3: multi-step admin delete confirmation flow ─────────────────────
 
-	def test_person_admin_delete_journey(self):
+	def test_stock_django_admin_delete_journey(self):
 		"""
-		Drive the stock Django admin delete confirmation flow for a Person:
+		Drive the stock Django admin delete confirmation flow for a Relationship:
 
 		1. GET the delete confirmation page → 200 with the standard
 		   "Are you sure?" prompt.
-		2. POST with ``post=yes`` to confirm → success; the Person and their
-		   Relationship rows are gone from the database.
+		2. POST with ``post=yes`` to confirm → success; the targeted row is
+		   absent from the database.
 
-		This is the pre-#698 delete behaviour: no closure check, no refusal,
-		no sibling-group expansion.  Proves the harness can drive a multi-step
-		admin POST through to a successful DB mutation.
+		This is the pre-#698 / pre-ADR-0001 delete behaviour: no closure check,
+		no refusal, no sibling-group expansion.  The default ``ModelAdmin``
+		calls ``obj.delete()`` directly.
 
-		``PersonAdmin.delete_model`` calls ``contactDeleted`` → ``loganneRequest``
-		internally, but ``loganneRequest`` returns immediately when
-		``LOGANNE_ENDPOINT`` is not set (which is the case in the test
-		environment), so no mocking is required.
+		Proves the harness can drive a multi-step admin POST (GET confirmation
+		→ POST confirm) through to a successful DB mutation.
 		"""
 		alice = make_person('Alice')
 		bob = make_person('Bob')
-		Relationship.objects.create(subject=alice, object=bob, relationshipType='sibling')
+		rel = Relationship.objects.create(
+			subject=alice, object=bob, relationshipType='half-sibling'
+		)
+		# half-sibling is symmetric (creates an inverse) but not transitive,
+		# so the target row itself is unambiguous for assertion.
 
-		delete_url = reverse('admin:agents_person_delete', args=[alice.pk])
+		delete_url = reverse('admin:agents_relationship_delete', args=[rel.pk])
 
 		# ── Step 1: GET delete confirmation page ─────────────────────────────
 		response = self.client.get(delete_url)
@@ -150,12 +164,6 @@ class PersonAdminSanityTest(AdminJourneyTestCase):
 		self.assertEqual(response.status_code, 200)
 
 		self.assertFalse(
-			Person.objects.filter(pk=alice.pk).exists(),
-			"Alice must be absent from the database after admin delete",
-		)
-		self.assertFalse(
-			Relationship.objects.filter(
-				subject=alice, object=bob, relationshipType='sibling'
-			).exists(),
-			"Alice's relationships must be cascade-deleted",
+			Relationship.objects.filter(pk=rel.pk).exists(),
+			"The targeted Relationship row must be absent after admin delete",
 		)

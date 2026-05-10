@@ -204,3 +204,4 @@ class PersonAdmin(admin.ModelAdmin):
 			super().save_formset(request, form, formset, change)
 
 admin.site.register(Person, PersonAdmin)
+admin.site.register(Relationship)
