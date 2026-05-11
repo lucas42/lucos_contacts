@@ -24,35 +24,23 @@
 
 {% block content %}
 
-{% if original_relationship %}
+{% if sibling_group %}
 <p>
-    {% blocktrans with relationship=original_relationship %}You requested deletion of: <strong>{{ relationship }}</strong>{% endblocktrans %}
-</p>
-{% endif %}
-
-<p>
-{% if sibling_members %}
-    {% with person=original_relationship.object.getName %}
-    {% if sibling_members|length == 1 %}
-        {% blocktrans with person=person %}Because {{ person }}'s sibling is part of the same relationship, removing this also removes it for {{ person }}'s sibling:{% endblocktrans %}
-    {% else %}
-        {% blocktrans with person=person %}Because {{ person }}'s siblings are part of the same relationship, removing this also removes it for {{ person }}'s siblings:{% endblocktrans %}
-    {% endif %}
+    {# Name the full sibling group. For large groups (8+), show the first 5 and summarise the rest. #}
+    {% if sibling_group|length >= 8 %}
+        {% for member in sibling_group %}{% if forloop.counter <= 5 %}<strong>{{ member.getName }}</strong>{% if forloop.counter < 5 %}, {% endif %}{% endif %}{% endfor %}
+        {% with remainder=sibling_group|length|add:"-5" %}
+        {% blocktrans with n=remainder %}and {{ n }} others{% endblocktrans %}
     {% endwith %}
-    {% for member in sibling_members %}
-        <strong>{{ member.getName }}</strong>{% if not forloop.last %}, {% endif %}
-    {% endfor %}.
-{% else %}
-    {% trans 'Removing this relationship requires also removing related sibling relationships.' %}
-{% endif %}
+    {% else %}
+        {% for member in sibling_group %}<strong>{{ member.getName }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
+    {% endif %}
+    {% blocktrans %}are all recorded as siblings of each other. Sibling relationships apply to the whole group — they can only be removed together.{% endblocktrans %}
 </p>
+{% endif %}
 
 <p>
-    {% if staged_rows_count == 1 %}
-        <strong>1 {% trans 'relationship' %}</strong> {% trans 'will be deleted in total.' %}
-    {% else %}
-        <strong>{{ staged_rows_count }} {% trans 'relationships' %}</strong> {% trans 'will be deleted in total.' %}
-    {% endif %}
+    {% blocktrans with count=staged_rows_count %}Confirm to delete all {{ count }} sibling relationships.{% endblocktrans %}
 </p>
 
 <form method="post" action="{% url 'admin:agents_relationship_bulk_delete_confirm' %}">
@@ -61,7 +49,9 @@
 
     <div>
         <input type="hidden" name="confirm" value="yes" />
-        <input type="submit" value="{% trans 'Yes, remove all' %}" class="default" />
+        {% blocktrans with count=staged_rows_count %}
+        <input type="submit" value="Delete {{ count }} sibling relationships" class="default" />
+        {% endblocktrans %}
         &nbsp;
         <a href="{% url 'admin:agents_relationship_changelist' %}" class="button cancel-link">
             {% trans 'No, take me back' %}

@@ -289,7 +289,9 @@ class RelationshipAdmin(admin.ModelAdmin):
 				re_inferred_after = expanded & compute_closure(db_rows - expanded)
 
 				if not re_inferred_after:
-					# Expansion passes — render bulk-delete confirmation directly
+					# Expansion passes — render bulk-delete confirmation directly.
+					# Build the full sibling group list (subject + object + extras)
+					# for the "all recorded as siblings" copy.
 					extra_ids = set()
 					for s, o, _ in expanded - staged:
 						extra_ids.add(s)
@@ -298,11 +300,12 @@ class RelationshipAdmin(admin.ModelAdmin):
 					extra_people = list(
 						Person.objects.filter(pk__in=extra_ids).order_by('_name')
 					)
+					sibling_group = [obj.subject, obj.object] + extra_people
 					context = {
 						**self.admin_site.each_context(request),
 						'title': 'Confirm bulk deletion',
 						'original_relationship': obj,
-						'sibling_members': extra_people,
+						'sibling_group': sibling_group,
 						'staged_rows_count': len(expanded),
 						'staged_rows_json': json.dumps([list(row) for row in expanded]),
 						'opts': self.model._meta,
@@ -317,7 +320,7 @@ class RelationshipAdmin(admin.ModelAdmin):
 			supporting_paths = obj._get_supporting_paths(remaining)
 			context = {
 				**self.admin_site.each_context(request),
-				'title': 'Cannot delete relationship',
+				'title': "This relationship can't be deleted yet",
 				'original_relationship': obj,
 				'supporting_paths': supporting_paths,
 				'opts': self.model._meta,

@@ -149,8 +149,10 @@ class Relationship(models.Model):
 		"""
 		Find all inference paths in remaining_rows that re-infer this relationship.
 
-		Returns a list of human-readable strings suitable for display in the
-		refusal UI.
+		Returns a list of dicts, each with:
+		  - 'text': human-readable description of the inference path
+		  - 'rel_pk': primary key of the first relationship in the path (for
+		    linking to its admin change page), or None if the row cannot be found
 		"""
 		subj_id = self.subject_id
 		obj_id = self.object_id
@@ -176,6 +178,13 @@ class Relationship(models.Model):
 			except Exception:
 				return key
 
+		def lookup_pk(s_id, o_id, key):
+			"""Return the PK of the first relationship in a path, or None."""
+			try:
+				return Relationship.objects.get(subject_id=s_id, object_id=o_id, relationshipType=key).pk
+			except Relationship.DoesNotExist:
+				return None
+
 		paths = []
 
 		# ── Transitive ────────────────────────────────────────────────────────
@@ -184,10 +193,13 @@ class Relationship(models.Model):
 			for other_subj, other_obj, other_key in rows_set:
 				if other_key == rel_key and other_subj == subj_id and other_obj != obj_id:
 					if (other_obj, obj_id, rel_key) in rows_set:
-						paths.append(
-							f"{name_of(subj_id)} is a {rel_display(rel_key)} of {name_of(other_obj)}, "
-							f"and {name_of(other_obj)} is a {rel_display(rel_key)} of {name_of(obj_id)}"
-						)
+						paths.append({
+							'text': (
+								f"{name_of(subj_id)} is a {rel_display(rel_key)} of {name_of(other_obj)}, "
+								f"and {name_of(other_obj)} is a {rel_display(rel_key)} of {name_of(obj_id)}"
+							),
+							'rel_pk': lookup_pk(subj_id, other_obj, rel_key),
+						})
 
 		# ── SetInference rules ────────────────────────────────────────────────
 		# Find all (rel1, rel2) pairs that produce rel_key as inferred type.
@@ -199,10 +211,13 @@ class Relationship(models.Model):
 					for other_subj, other_obj, other_key in rows_set:
 						if other_key == rel1_class.dbKey and other_subj == subj_id:
 							if (other_obj, obj_id, conn.existingRel.dbKey) in rows_set:
-								paths.append(
-									f"{name_of(subj_id)} is a {rel_display(rel1_class.dbKey)} of {name_of(other_obj)}, "
-									f"and {name_of(other_obj)} is a {rel_display(conn.existingRel.dbKey)} of {name_of(obj_id)}"
-								)
+								paths.append({
+									'text': (
+										f"{name_of(subj_id)} is a {rel_display(rel1_class.dbKey)} of {name_of(other_obj)}, "
+										f"and {name_of(other_obj)} is a {rel_display(conn.existingRel.dbKey)} of {name_of(obj_id)}"
+									),
+									'rel_pk': lookup_pk(subj_id, other_obj, rel1_class.dbKey),
+								})
 
 		return paths
 

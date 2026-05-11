@@ -395,8 +395,8 @@ class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
 		)
 		# Must render the dedicated refusal page title
 		self.assertContains(
-			response, 'Cannot delete relationship',
-			msg_prefix="Refusal page must include the page title",
+			response, "can't be deleted yet",
+			msg_prefix="Refusal page must include the 'can't be deleted yet' page title",
 		)
 		# Must contain at least one supporting-path entry naming the relevant people
 		content = response.content.decode()
