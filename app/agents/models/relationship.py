@@ -116,32 +116,74 @@ class Relationship(models.Model):
 
 	def _compute_sibling_group_expansion(self, staged, db_rows):
 		"""
-		For a staged set where the target row is of sibling type, expand the
-		staged set to include all of the target object's sibling-group members.
+		Expand staged to include sibling rows whose removal eliminates the
+		re-inference of the staged set.
 
-		Specifically: if we're deleting (Alice, sibling, Bob), we also stage
-		(Alice, sibling, Carol), (Carol, sibling, Alice), etc. for every Carol
-		in Bob's sibling group as found in db_rows.
+		Two strategies are combined:
 
-		Returns the expanded frozenset.
+		Strategy 1 — target IS a sibling row (transitive propagation):
+		    Expand to the full sibling group of the target's object, staging
+		    all subject→member and member→subject sibling rows that exist in
+		    db_rows.  This covers the common case where deleting one sibling
+		    pair would be re-inferred via other members of the group.
+
+		Strategy 2 — staged rows are inferred FROM sibling relationships:
+		    Find supporting sibling rows in the inference chains and stage them.
+		    Two sub-cases:
+
+		    Case 2a — sibling is the first leg:
+		        (A, sibling, B) + (B, rel2, C) → (A, T, C)
+		        e.g. Sibling+Parent→Parent: deleting inferred (Alice, parent, Bob)
+		        also stages Alice-sibling-Carol when Alice-sibling-Carol +
+		        Carol-parent-Bob implies Alice-parent-Bob.
+
+		    Case 2b — sibling is the second leg:
+		        (A, rel1, B) + (B, sibling, C) → (A, T, C)
+		        e.g. Parent+Sibling→AuntOrUncle: deleting inferred
+		        (Alice, aunt/uncle, Carol) also stages Bob-sibling-Carol when
+		        Alice-parent-Bob + Bob-sibling-Carol implies Alice-aunt/uncle-Carol.
 		"""
-		subj_id = self.subject_id
-		obj_id = self.object_id
-		rel_key = self.relationshipType
-
-		# Bob's sibling group = all X such that (Bob, sibling, X) is in db_rows (plus Bob himself)
-		sibling_group = {obj_id}
-		for other_subj, other_obj, other_key in db_rows:
-			if other_key == 'sibling' and other_subj == obj_id:
-				sibling_group.add(other_obj)
-
 		expanded = set(staged)
-		for member_id in sibling_group:
-			# Stage (A, T, member) and mirror (member, T, A) where they exist
-			if (subj_id, member_id, rel_key) in db_rows:
-				expanded.add((subj_id, member_id, rel_key))
-			if (member_id, subj_id, rel_key) in db_rows:
-				expanded.add((member_id, subj_id, rel_key))
+		rows_set = frozenset(db_rows)
+
+		# ── Strategy 1: target IS a sibling — expand to full sibling group ──────
+		if self.relationshipType == 'sibling':
+			subj_id = self.subject_id
+			obj_id = self.object_id
+			# Sibling group of the target's object (everything obj_id is sibling of)
+			sibling_group = {obj_id}
+			for s, o, k in rows_set:
+				if k == 'sibling' and s == obj_id:
+					sibling_group.add(o)
+			for member_id in sibling_group:
+				if (subj_id, member_id, 'sibling') in rows_set:
+					expanded.add((subj_id, member_id, 'sibling'))
+				if (member_id, subj_id, 'sibling') in rows_set:
+					expanded.add((member_id, subj_id, 'sibling'))
+
+		# ── Strategy 2: staged rows inferred from sibling relationships ──────────
+		sibling_type = getRelationshipTypeByKey('sibling')
+		for target_subj, target_obj, target_rel_key in list(staged):
+			# Case 2a: (A, sibling, B) + (B, rel2, C) → (A, target_rel, C)
+			for conn in sibling_type.outgoingRels:
+				if conn.inferredRel.dbKey == target_rel_key:
+					for s, o, k in rows_set:
+						if k == 'sibling' and s == target_subj:
+							if (o, target_obj, conn.existingRel.dbKey) in rows_set:
+								expanded.add((s, o, 'sibling'))
+								if (o, s, 'sibling') in rows_set:
+									expanded.add((o, s, 'sibling'))
+
+			# Case 2b: (A, rel1, B) + (B, sibling, C) → (A, target_rel, C)
+			for rel1_class in RELATIONSHIP_TYPES:
+				for conn in rel1_class.outgoingRels:
+					if conn.inferredRel.dbKey == target_rel_key and conn.existingRel.dbKey == 'sibling':
+						for s, o, k in rows_set:
+							if k == rel1_class.dbKey and s == target_subj:
+								if (o, target_obj, 'sibling') in rows_set:
+									expanded.add((o, target_obj, 'sibling'))
+									if (target_obj, o, 'sibling') in rows_set:
+										expanded.add((target_obj, o, 'sibling'))
 
 		return frozenset(expanded)
 
@@ -292,32 +334,30 @@ class Relationship(models.Model):
 			self._perform_staged_deletion(staged)
 			return
 
-		# ── Check for sibling-propagation ─────────────────────────────────────
-		# If ALL re-inferred rows are of the transitive Sibling type, the
-		# sibling-group expansion can break the propagation chain.
-		all_re_inferred_sibling = all(rel_key == 'sibling' for _, _, rel_key in re_inferred)
+		# ── Try sibling-aware expansion ───────────────────────────────────────
+		# Whether the target is itself a sibling row (transitive propagation) or
+		# a non-sibling row implied by a sibling connection, the expansion may be
+		# able to resolve the re-inference by staging the supporting sibling rows.
+		expanded = self._compute_sibling_group_expansion(staged, db_rows)
+		remaining_after_expansion = db_rows - expanded
+		re_inferred_after = expanded & compute_closure(remaining_after_expansion)
 
-		if all_re_inferred_sibling:
-			expanded = self._compute_sibling_group_expansion(staged, db_rows)
-			remaining_after_expansion = db_rows - expanded
-			re_inferred_after = expanded & compute_closure(remaining_after_expansion)
+		if not re_inferred_after:
+			# Expansion passes — ask the caller to confirm
+			extra_ids = set()
+			for subj_id, obj_id, _ in expanded - staged:
+				extra_ids.add(subj_id)
+				extra_ids.add(obj_id)
+			# Remove the original subject/object from the "extra" set
+			extra_ids -= {self.subject_id, self.object_id}
 
-			if not re_inferred_after:
-				# Expansion passes — ask the caller to confirm
-				extra_ids = set()
-				for subj_id, obj_id, _ in expanded - staged:
-					extra_ids.add(subj_id)
-					extra_ids.add(obj_id)
-				# Remove the original subject/object from the "extra" set
-				extra_ids -= {self.subject_id, self.object_id}
-
-				extra_people = list(
-					Person.objects.filter(pk__in=extra_ids).order_by('_name')
-				)
-				raise SiblingGroupExpansionRequired(
-					staged_rows=expanded,
-					sibling_members=extra_people,
-				)
+			extra_people = list(
+				Person.objects.filter(pk__in=extra_ids).order_by('_name')
+			)
+			raise SiblingGroupExpansionRequired(
+				staged_rows=expanded,
+				sibling_members=extra_people,
+			)
 
 		# ── Refuse ────────────────────────────────────────────────────────────
 		paths = self._get_supporting_paths(remaining)

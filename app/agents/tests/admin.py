@@ -232,16 +232,22 @@ class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
 	outcomes (DB state, Loganne events), and structural invariants (single h1,
 	correct form action).
 
-	Three deletion scenarios are exercised:
+	Four deletion scenarios are exercised:
 
 	- **Clean**: Alice parent Bob (no re-inference after deletion) → stock
 	  Django confirmation → POST → success, row gone, Loganne emitted.
-	- **Expansion**: Alice sibling Bob + Bob sibling Carol (deletion would be
-	  re-inferred; sibling-group expansion resolves it) → bulk-delete
-	  confirmation rendered directly → POST → success, all sibling rows gone.
-	- **Refusal**: Alice parent Bob inferred from (Alice sibling Carol) +
-	  (Carol parent Bob) → refusal page rendered directly, supporting path
-	  listed.
+	- **Expansion (sibling group)**: Alice sibling Bob + Bob sibling Carol
+	  (deletion would be re-inferred via transitivity; sibling-group expansion
+	  resolves it) → bulk-delete confirmation rendered directly → POST →
+	  success, all sibling rows gone.
+	- **Expansion (sibling implies parent)**: Inferred Alice parent Bob, where
+	  Alice sibling Carol + Carol parent Bob implies Alice parent Bob →
+	  bulk-delete confirmation rendered directly (sibling-aware expansion stages
+	  the supporting sibling connection) → POST → all staged rows gone, Carol
+	  parent Bob survives.
+	- **Refusal**: Inferred Alice grandparent Charlie (via Alice parent Bob +
+	  Bob parent Charlie); no sibling rows involved → refusal page rendered
+	  directly with supporting path listed.
 	"""
 
 	# ── Helpers ───────────────────────────────────────────────────────────────
@@ -354,29 +360,141 @@ class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
 			"At least one relationshipDeleted Loganne event must be emitted",
 		)
 
-	# ── Test 3: GET-path decision — refusal ───────────────────────────────────
+	# ── Test 3: GET-path decision — sibling-implies-parent expansion ─────────
 
-	def test_refusal_renders_dedicated_page_with_supporting_paths(self):
+	def test_sibling_implies_parent_expansion_renders_bulk_confirmation_and_deletes(self):
 		"""
-		When deleting a relationship that would be re-inferred from other facts
-		in the graph (here: Alice parent Bob, implied by Alice sibling Carol +
+		When the sibling-aware expansion resolves a non-sibling re-inference
+		(here: inferred Alice parent Bob, implied by Alice sibling Carol +
 		Carol parent Bob):
 
-		- GET → dedicated refusal page rendered directly (not a messages.error toast).
-		- Rendered HTML contains at least one non-empty supporting-path entry.
-		- Rendered HTML does NOT contain a ``post=yes`` form input (no delete path).
+		- GET → bulk-delete confirmation page rendered directly (not the refusal
+		  page), because the expansion stages Alice-sibling-Carol alongside
+		  Alice-parent-Bob and that passes the closure check.
+		- Rendered HTML names Carol (the extra sibling being staged).
+		- POST with ``confirm=yes`` and the staged rows → all four rows deleted:
+		  Alice-parent-Bob, Bob-child-Alice, Alice-sibling-Carol, Carol-sibling-Alice.
+		- Carol-parent-Bob (asserted, not staged) must survive.
 		"""
 		carol = make_person('Carol')
 		bob = make_person('Bob')
 		alice = make_person('Alice')
 
-		# Carol parent Bob (asserted)
+		# Carol parent Bob (asserted; creates inverse Bob-child-Carol)
 		Relationship.objects.create(subject=carol, object=bob, relationshipType='parent')
-		# Alice sibling Carol (asserted; also infers Alice parent Bob via sibling+parent rule)
+		# Alice sibling Carol (asserted; creates inverse Carol-sibling-Alice;
+		# also infers Alice-parent-Bob via Sibling+Parent→Parent rule)
 		Relationship.objects.create(subject=alice, object=carol, relationshipType='sibling')
 
 		# The inferred Alice-parent-Bob row
 		inferred_rel = Relationship.objects.get(subject=alice, object=bob, relationshipType='parent')
+		delete_url = self._delete_url(inferred_rel)
+
+		# ── GET: must render bulk-delete confirmation, not stock confirmation ──
+		get_response = self.client.get(delete_url)
+		self.assertEqual(get_response.status_code, 200)
+
+		# Must NOT show stock Django confirmation (no post=yes input)
+		self.assertNotContains(
+			get_response, 'name="post"',
+			msg_prefix="Expansion path must skip stock confirmation (no post=yes input)",
+		)
+		# Must NOT show the refusal page title
+		self.assertNotContains(
+			get_response, "can't be deleted yet",
+			msg_prefix="Expansion path must not show the refusal page",
+		)
+		# Must show bulk-delete confirmation heading
+		self.assertContains(
+			get_response, 'Confirm bulk deletion',
+			msg_prefix="Expansion path must render bulk-delete confirmation page",
+		)
+		# Carol must be named (Alice-sibling-Carol is being staged as the
+		# supporting sibling connection)
+		self.assertContains(
+			get_response, 'Carol',
+			msg_prefix="Bulk confirmation must name Carol (the supporting sibling)",
+		)
+
+		# Single h1
+		h1_count = get_response.content.decode().count('<h1')
+		self.assertEqual(h1_count, 1, "Bulk confirmation page must have exactly one <h1>")
+
+		# Form action targets the bulk handler URL
+		bulk_confirm_url = reverse('admin:agents_relationship_bulk_delete_confirm')
+		self.assertContains(
+			get_response,
+			f'action="{bulk_confirm_url}"',
+			msg_prefix="Form action must target the bulk handler URL",
+		)
+
+		# ── POST: extract staged_rows from the response and perform deletion ──
+		content = get_response.content.decode()
+		staged_rows_match = re.search(
+			r'name="staged_rows" value="([^"]*)"', content
+		)
+		self.assertIsNotNone(staged_rows_match, "Response must contain staged_rows hidden input")
+		staged_rows_json = staged_rows_match.group(1).replace('&quot;', '"')
+
+		subject_pk_match = re.search(r'name="subject_pk" value="([^"]*)"', content)
+		subject_pk = subject_pk_match.group(1) if subject_pk_match else ''
+
+		post_response = self.client.post(
+			bulk_confirm_url,
+			{'confirm': 'yes', 'staged_rows': staged_rows_json, 'subject_pk': subject_pk},
+		)
+		self.assertEqual(post_response.status_code, 302, "POST should redirect after bulk deletion")
+
+		# The four staged rows must be gone
+		self.assertFalse(
+			Relationship.objects.filter(subject=alice, object=bob, relationshipType='parent').exists(),
+			"Alice-parent-Bob must be deleted",
+		)
+		self.assertFalse(
+			Relationship.objects.filter(subject=bob, object=alice, relationshipType='child').exists(),
+			"Bob-child-Alice (inverse) must be deleted",
+		)
+		self.assertFalse(
+			Relationship.objects.filter(subject=alice, object=carol, relationshipType='sibling').exists(),
+			"Alice-sibling-Carol (the supporting sibling) must be deleted",
+		)
+		self.assertFalse(
+			Relationship.objects.filter(subject=carol, object=alice, relationshipType='sibling').exists(),
+			"Carol-sibling-Alice (inverse) must be deleted",
+		)
+
+		# Carol-parent-Bob (asserted, not in the staged set) must survive
+		self.assertTrue(
+			Relationship.objects.filter(subject=carol, object=bob, relationshipType='parent').exists(),
+			"Carol-parent-Bob must survive the bulk deletion",
+		)
+
+	# ── Test 4 (was Test 4): GET-path decision — refusal ─────────────────────
+
+	def test_refusal_renders_dedicated_page_with_supporting_paths(self):
+		"""
+		When deleting a relationship that would be re-inferred and the
+		sibling-aware expansion cannot resolve it (here: inferred Alice
+		grandparent Charlie, implied by Alice parent Bob + Bob parent Charlie;
+		no sibling rows involved):
+
+		- GET → dedicated refusal page rendered directly (not a messages.error toast).
+		- Rendered HTML contains at least one supporting-path entry naming the
+		  intermediate person (Bob).
+		- Rendered HTML does NOT contain a ``post=yes`` form input (no delete path).
+		"""
+		alice = make_person('Alice')
+		bob = make_person('Bob')
+		charlie = make_person('Charlie')
+
+		# Alice parent Bob (asserted; creates inverse Bob-child-Alice)
+		Relationship.objects.create(subject=alice, object=bob, relationshipType='parent')
+		# Bob parent Charlie (asserted; creates inverse Charlie-child-Bob;
+		# also infers Alice-grandparent-Charlie via Parent+Parent→Grandparent)
+		Relationship.objects.create(subject=bob, object=charlie, relationshipType='parent')
+
+		# The inferred Alice-grandparent-Charlie row
+		inferred_rel = Relationship.objects.get(subject=alice, object=charlie, relationshipType='grandparent')
 
 		delete_url = self._delete_url(inferred_rel)
 
@@ -398,15 +516,11 @@ class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
 			response, "can't be deleted yet",
 			msg_prefix="Refusal page must include the 'can't be deleted yet' page title",
 		)
-		# Must contain at least one supporting-path entry naming the relevant people
+		# Must contain at least one supporting-path entry naming the intermediate person
 		content = response.content.decode()
 		self.assertIn(
-			'Alice', content,
-			"Refusal page must name Alice in a supporting path",
-		)
-		self.assertIn(
-			'Carol', content,
-			"Refusal page must name Carol in a supporting path",
+			'Bob', content,
+			"Refusal page must name Bob in the supporting path",
 		)
 
 		# Single h1 on the refusal page
@@ -480,9 +594,12 @@ class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
 		self.assertIsNotNone(staged_rows_match, "Response must contain staged_rows hidden input")
 		staged_rows_json = staged_rows_match.group(1).replace('&quot;', '"')
 
+		subject_pk_match = re.search(r'name="subject_pk" value="([^"]*)"', content)
+		subject_pk = subject_pk_match.group(1) if subject_pk_match else ''
+
 		post_response = self.client.post(
 			bulk_confirm_url,
-			{'confirm': 'yes', 'staged_rows': staged_rows_json},
+			{'confirm': 'yes', 'staged_rows': staged_rows_json, 'subject_pk': subject_pk},
 		)
 		self.assertEqual(post_response.status_code, 302, "POST should redirect after bulk deletion")
 

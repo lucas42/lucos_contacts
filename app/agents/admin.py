@@ -5,6 +5,7 @@ from agents.models.relationship import RelationshipRefusedError, SiblingGroupExp
 from agents.models.closure import compute_closure
 from django import forms
 from django.contrib import admin, messages
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
@@ -227,18 +228,32 @@ admin.site.register(Person, PersonAdmin)
 
 class RelationshipAdmin(admin.ModelAdmin):
 	"""
-	Admin interface for directly managing Relationship rows.
+	Admin interface for managing Relationship rows via the deletion journey.
 
-	Overrides the standard delete_view to enforce the closure-check rule
-	(ADR-0001).  The GET path computes the staged set and closure check up
-	front and renders the appropriate page directly — stock confirmation for
-	clean deletions, bulk-delete confirmation for sibling-group expansion, or
-	a dedicated refusal page when deletion is structurally impossible without
-	first retracting a supporting fact.
+	Registered with get_model_perms() returning {} so Relationships do NOT
+	appear as a standalone item on the admin index — they are managed
+	exclusively through the RelationshipInline on the Person change form.
+	The registration exists solely to provide the custom delete_view URLs
+	that the inline's delete-link routes through.
+
+	Overrides delete_view to enforce the closure-check rule (ADR-0001).
+	The GET path computes the staged set and closure check up front and
+	renders the appropriate page directly — stock confirmation for clean
+	deletions, bulk-delete confirmation when a sibling-aware expansion
+	resolves the re-inference, or a dedicated refusal page when deletion
+	is structurally impossible without first retracting a supporting fact.
 	"""
 	list_display = ('subject', 'relationshipType', 'object')
 	list_filter = ('relationshipType',)
 	search_fields = ['subject___name', 'object___name']
+
+	def get_model_perms(self, request):
+		"""
+		Return empty permissions so Relationship does not appear on the admin
+		index page.  The delete_view URLs are still accessible — they are
+		linked from the RelationshipInline's delete_link field.
+		"""
+		return {}
 
 	def get_urls(self):
 		custom_urls = [
@@ -256,18 +271,29 @@ class RelationshipAdmin(admin.ModelAdmin):
 		the appropriate page directly.
 
 		- Clean: delegate to super().delete_view() — stock Django confirmation.
-		- Expansion needed: render bulk-delete confirmation page directly.
+		- Expansion resolves re-inference: render bulk-delete confirmation directly.
 		- Refused: render dedicated refusal page directly.
 
 		POST (clean path via stock confirmation): delegate to super().delete_view().
 		The underlying delete() raises RelationshipRefusedError or
 		SiblingGroupExpansionRequired only if the graph changes between the
 		GET and POST — treated as a race condition with a user-facing error.
+
+		On all paths (success or error), redirects to the relationship subject's
+		Person edit page rather than the Relationship changelist.
+
+		Note: Django names this parameter ``object_id`` in the URL routing
+		contract.  Internally we use ``relationship_id`` where possible to avoid
+		confusion with ``Relationship.object`` (a Person FK).
 		"""
+		# Alias for clarity: Relationship has an `object` field (a Person FK),
+		# so `object_id` is ambiguous.  `relationship_id` is the Relationship PK.
+		relationship_id = object_id
+
 		if request.method == 'GET':
-			obj = self.get_object(request, object_id)
+			obj = self.get_object(request, relationship_id)
 			if obj is None:
-				return self._get_obj_does_not_exist_redirect(request, self.model._meta, object_id)
+				return self._get_obj_does_not_exist_redirect(request, self.model._meta, relationship_id)
 
 			staged = obj._build_staged_set()
 			db_rows = frozenset(
@@ -279,19 +305,20 @@ class RelationshipAdmin(admin.ModelAdmin):
 
 			if not re_inferred:
 				# Clean deletion — show stock Django confirmation
-				return super().delete_view(request, object_id, extra_context=extra_context)
+				return super().delete_view(request, relationship_id, extra_context=extra_context)
 
-			# Check whether all re-inferred rows are due to sibling propagation
-			all_re_inferred_sibling = all(rel_key == 'sibling' for _, _, rel_key in re_inferred)
+			# Try sibling-aware expansion (covers both transitive sibling
+			# propagation and non-sibling rows implied by sibling connections).
+			expanded = obj._compute_sibling_group_expansion(staged, db_rows)
+			re_inferred_after = expanded & compute_closure(db_rows - expanded)
 
-			if all_re_inferred_sibling:
-				expanded = obj._compute_sibling_group_expansion(staged, db_rows)
-				re_inferred_after = expanded & compute_closure(db_rows - expanded)
+			if not re_inferred_after:
+				# Expansion resolves the re-inference — render bulk-delete confirmation.
+				is_sibling_only = all(rel_key == 'sibling' for _, _, rel_key in expanded)
 
-				if not re_inferred_after:
-					# Expansion passes — render bulk-delete confirmation directly.
-					# Build the full sibling group list (subject + object + extras)
-					# for the "all recorded as siblings" copy.
+				if is_sibling_only:
+					# Build the full sibling group list for the "all recorded as
+					# siblings" copy.
 					extra_ids = set()
 					for s, o, _ in expanded - staged:
 						extra_ids.add(s)
@@ -301,20 +328,44 @@ class RelationshipAdmin(admin.ModelAdmin):
 						Person.objects.filter(pk__in=extra_ids).order_by('_name')
 					)
 					sibling_group = [obj.subject, obj.object] + extra_people
-					context = {
-						**self.admin_site.each_context(request),
-						'title': 'Confirm bulk deletion',
-						'original_relationship': obj,
-						'sibling_group': sibling_group,
-						'staged_rows_count': len(expanded),
-						'staged_rows_json': json.dumps([list(row) for row in expanded]),
-						'opts': self.model._meta,
+					supporting_rel_descriptions = []
+				else:
+					# Mixed expansion: show the extra sibling rows being deleted.
+					sibling_group = []
+					extra_rows = expanded - staged
+					people_ids = set()
+					for s_id, o_id, _ in extra_rows:
+						people_ids.add(s_id)
+						people_ids.add(o_id)
+					people_names = {
+						p.pk: p.getName()
+						for p in Person.objects.filter(pk__in=people_ids)
 					}
-					return TemplateResponse(
-						request,
-						'admin/agents/relationship/bulk_delete_confirmation.html',
-						context,
-					)
+					supporting_rel_descriptions = [
+						f"{people_names.get(s_id, f'Person #{s_id}')} "
+						f"sibling "
+						f"{people_names.get(o_id, f'Person #{o_id}')}"
+						for s_id, o_id, rel_key in sorted(extra_rows)
+						if rel_key == 'sibling'
+					]
+
+				context = {
+					**self.admin_site.each_context(request),
+					'title': 'Confirm bulk deletion',
+					'original_relationship': obj,
+					'is_sibling_only': is_sibling_only,
+					'sibling_group': sibling_group,
+					'supporting_rel_descriptions': supporting_rel_descriptions,
+					'staged_rows_count': len(expanded),
+					'staged_rows_json': json.dumps([list(row) for row in expanded]),
+					'subject_pk': obj.subject_id,
+					'opts': self.model._meta,
+				}
+				return TemplateResponse(
+					request,
+					'admin/agents/relationship/bulk_delete_confirmation.html',
+					context,
+				)
 
 			# Refused — render refusal page directly
 			supporting_paths = obj._get_supporting_paths(remaining)
@@ -332,32 +383,51 @@ class RelationshipAdmin(admin.ModelAdmin):
 			)
 
 		# POST — clean deletion path (post=yes from stock confirmation).
-		# Handle race-condition exceptions gracefully.
+		# Capture subject_id before delegation so we can redirect to the person
+		# page after deletion (the object is gone by the time Django redirects).
+		obj = self.get_object(request, relationship_id)
+		subject_id = obj.subject_id if obj else None
+
 		try:
-			return super().delete_view(request, object_id, extra_context=extra_context)
+			result = super().delete_view(request, relationship_id, extra_context=extra_context)
+			# On successful deletion Django issues a redirect — send the user
+			# to the subject's Person page rather than the Relationship changelist.
+			if isinstance(result, HttpResponseRedirect) and subject_id:
+				return redirect(reverse('admin:agents_person_change', args=[subject_id]))
+			return result
 		except RelationshipRefusedError:
 			messages.error(
 				request,
 				"This relationship can no longer be deleted because the relationship "
 				"graph has changed since this page was loaded. Please try again.",
 			)
-			return redirect(reverse('admin:agents_relationship_changelist'))
 		except SiblingGroupExpansionRequired:
 			messages.error(
 				request,
 				"This relationship can no longer be deleted because the relationship "
 				"graph has changed since this page was loaded. Please try again.",
 			)
-			return redirect(reverse('admin:agents_relationship_changelist'))
+
+		if subject_id:
+			return redirect(reverse('admin:agents_person_change', args=[subject_id]))
+		return redirect(reverse('admin:agents_relationship_changelist'))
 
 	def bulk_delete_confirmation_view(self, request):
 		"""
-		Custom view for sibling-group bulk-delete confirmation.
+		Custom view for sibling-aware bulk-delete confirmation.
 
 		GET:  Not used — the confirmation page is rendered directly from delete_view.
-		POST: Re-validates the staged set, performs the deletion, emits Loganne events.
+		POST: Re-validates the staged set, performs the deletion, emits Loganne events,
+		      then redirects to the subject's Person page.
 		"""
 		if request.method == 'POST':
+			subject_pk = request.POST.get('subject_pk')
+
+			def _person_redirect():
+				if subject_pk:
+					return redirect(reverse('admin:agents_person_change', args=[subject_pk]))
+				return redirect(reverse('admin:agents_relationship_changelist'))
+
 			if request.POST.get('confirm') == 'yes':
 				staged_rows_json = request.POST.get('staged_rows', '[]')
 				try:
@@ -365,7 +435,7 @@ class RelationshipAdmin(admin.ModelAdmin):
 					staged_rows = frozenset(tuple(row) for row in staged_list)
 				except (ValueError, TypeError):
 					messages.error(request, "Invalid deletion request.")
-					return redirect(reverse('admin:agents_relationship_changelist'))
+					return _person_redirect()
 
 				# Re-run closure check before committing (guards against race conditions)
 				db_rows = frozenset(
@@ -381,7 +451,7 @@ class RelationshipAdmin(admin.ModelAdmin):
 						"The deletion can no longer proceed — the relationship graph "
 						"has changed since this page was loaded. Please try again.",
 					)
-					return redirect(reverse('admin:agents_relationship_changelist'))
+					return _person_redirect()
 
 				deleted_count = Relationship._perform_staged_deletion(staged_rows)
 
@@ -389,10 +459,10 @@ class RelationshipAdmin(admin.ModelAdmin):
 					request,
 					f"Deleted {deleted_count} relationship{'s' if deleted_count != 1 else ''}.",
 				)
-				return redirect(reverse('admin:agents_relationship_changelist'))
+				return _person_redirect()
 
 			# User cancelled
-			return redirect(reverse('admin:agents_relationship_changelist'))
+			return _person_redirect()
 
 		# Direct GET to this URL — redirect to list
 		return redirect(reverse('admin:agents_relationship_changelist'))

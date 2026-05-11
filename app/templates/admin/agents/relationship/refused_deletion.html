@@ -14,9 +14,8 @@
         <a href="/">{% trans 'Contact List' %}</a>
         &rsaquo; <a href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>
         &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
-        &rsaquo; <a href="{% url 'admin:agents_relationship_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
         {% if original_relationship %}
-        &rsaquo; <a href="{% url 'admin:agents_relationship_change' original_relationship.pk %}">{{ original_relationship }}</a>
+        &rsaquo; <a href="{% url 'admin:agents_person_change' original_relationship.subject.pk %}">{{ original_relationship.subject }}</a>
         {% endif %}
         &rsaquo; {% trans 'Cannot delete' %}
     </div>
@@ -42,7 +41,10 @@
 </ul>
 <p>{% trans 'To remove it, first remove one of those relationships.' %}</p>
 {% else %}
-<p>{% trans 'This relationship is implied by other facts in the graph. To remove it, first remove one of the supporting relationships.' %}</p>
+{# supporting_paths can be empty when the inference chain is not yet fully traced. #}
+{# Most common causes are now handled by the sibling-aware expansion above, but #}
+{# complex multi-hop or inverse-only chains may still reach here without a path list. #}
+<p>{% trans 'This relationship is implied by other facts in the graph. To remove it, first remove one of the other relationships involving the same people.' %}</p>
 {% endif %}
 
 <p>
