@@ -2,17 +2,18 @@
 """
 Journey-level test scaffolding for Relationship admin functionality.
 
-These tests drive admin URLs end-to-end using django.test.Client, asserting on
-visible outcomes (rendered HTML, HTTP status codes, database state) rather than
-calling model methods or admin class methods directly.
+Relationships are managed exclusively through the inline on the Person admin
+change form — there are no standalone Relationship index or edit pages.
 
-Sanity tests in this file exercise the stock Django admin for ``Relationship``
-(registered in admin.py via ``admin.site.register(Relationship)`` with the
-default ``ModelAdmin``).  This registration is the pre-authorised exception to
-the "no production code changes" criterion in #699 — the architect's issue body
-explicitly names registering ``Relationship`` in admin as the example of a
-legitimate prerequisite change; the coordinator confirmed scope before it was
-applied.
+These tests drive Person admin URLs end-to-end using django.test.Client,
+asserting on visible outcomes (rendered HTML, HTTP status codes, database
+state) rather than calling model methods or admin class methods directly.
+
+The three tests in ``RelationshipInlineJourneyTest`` verify:
+
+1. The Person changelist renders and the harness is correctly authenticated.
+2. The Person change form renders the RelationshipInline with seeded data.
+3. A Relationship can be deleted via the inline POST flow.
 
 Admin tests that exercise ADR-0001 deletion-semantics behaviour — the custom
 ``RelationshipAdmin`` with its closure-check ``delete_view``, refusal page,
@@ -52,6 +53,8 @@ class AdminJourneyTestCase(TestCase):
 	  satisfy the ``django_admin_log`` foreign key (this mirrors the HACK
 	  comment in ``LucosAuthBackend.authenticate``).
 	- The ``make_person`` helper for creating test agents with optional names.
+	- The ``_post_data_from_response`` helper for building POST data from a
+	  Person change-form GET response.
 	"""
 
 	def setUp(self):
@@ -65,105 +68,159 @@ class AdminJourneyTestCase(TestCase):
 			backend='lucosauth.models.LucosAuthBackend',
 		)
 
-
-class RelationshipAdminSanityTest(AdminJourneyTestCase):
-	"""
-	Sanity journey tests proving the harness drives Relationship admin URLs
-	correctly.
-
-	All three tests operate against the stock Django admin for ``Relationship``
-	(bare registration, default ``ModelAdmin``).  The custom ``RelationshipAdmin``
-	with ADR-0001 deletion semantics is not present on ``main`` and its tests
-	belong in #700/#701.
-	"""
-
-	# ── Test 1: changelist GET ─────────────────────────────────────────────────
-
-	def test_relationship_changelist_renders_seeded_row(self):
+	def _post_data_from_response(self, response):
 		"""
-		GET the Relationship changelist → 200; rendered HTML contains the seeded
-		relationship's string representation.
+		Build a POST data dict from a Person change-form GET response.
 
-		``Relationship.__str__`` returns ``"subject – type – object"``, so the
-		changelist row includes the names of both agents.
+		Extracts management form data and existing instance field values from
+		each inline formset in the response context.  The returned dict can be
+		used directly as a base for a POST to the same change URL.
 
-		Proves the harness authenticates and reaches the Relationship admin
+		Callers layer their intended mutations (e.g. ``DELETE`` flags) on top
+		of the returned dict before posting.
+
+		Implementation note: ``RelationshipInline.fk_name = 'subject'`` and
+		``Relationship.subject`` carries ``related_name='subject'``, so Django
+		sets the inline formset prefix to ``'subject'`` (from
+		``ForeignKey.related_query_name()``).  This is invisible from outside
+		but explains why the management-form keys look like ``subject-0-DELETE``
+		rather than the perhaps-expected ``relationship_set-0-DELETE``.
+		"""
+		data = {'merge_into': ''}
+		for inline_admin_formset in response.context['inline_admin_formsets']:
+			fs = inline_admin_formset.formset
+			prefix = fs.prefix
+			data[f'{prefix}-TOTAL_FORMS'] = str(len(fs.forms))
+			data[f'{prefix}-INITIAL_FORMS'] = str(fs.initial_form_count())
+			data[f'{prefix}-MIN_NUM_FORMS'] = str(fs.min_num)
+			data[f'{prefix}-MAX_NUM_FORMS'] = str(fs.max_num)
+			# Iterate ALL forms (initial AND extra): extra forms that have
+			# BooleanField defaults (e.g. ``active=True``) need those defaults
+			# present in the POST dict, otherwise ``has_changed()`` returns True
+			# (initial=True vs submitted=absent/False) → Django validates the
+			# incomplete extra form → required-field errors on blank rows.
+			for i, form in enumerate(fs.forms):
+				for field_name in form.fields:
+					value = form[field_name].value()
+					# Exclude None and False: None means no value; False means
+					# an unchecked checkbox which must be absent from POST.
+					if value is not None and value is not False:
+						data[f'{prefix}-{i}-{field_name}'] = value
+		return data
+
+
+class RelationshipInlineJourneyTest(AdminJourneyTestCase):
+	"""
+	Journey tests for Relationship editing through the Person admin inline.
+
+	Relationships have no standalone index or edit pages in Django admin; they
+	are managed exclusively via the ``RelationshipInline`` on the Person change
+	form.
+
+	These tests prove the harness can authenticate, reach the Person admin
+	change form, read inline Relationship data, and drive a multi-step admin
+	POST that deletes a Relationship via the inline.
+	"""
+
+	# ── Test 1: Person changelist ──────────────────────────────────────────────
+
+	def test_person_changelist_renders_seeded_person(self):
+		"""
+		GET the Person changelist → 200; rendered HTML contains the seeded
+		person's name.
+
+		Proves the harness authenticates and reaches the Person admin
 		changelist view.
 		"""
-		alice = make_person('Alice')
-		bob = make_person('Bob')
-		Relationship.objects.create(subject=alice, object=bob, relationshipType='sibling')
+		make_person('Alice')
 
-		response = self.client.get(reverse('admin:agents_relationship_changelist'))
+		response = self.client.get(reverse('admin:agents_person_changelist'))
 		self.assertEqual(response.status_code, 200)
-		# The changelist uses Relationship.__str__ which includes both names
 		self.assertContains(response, 'Alice')
-		self.assertContains(response, 'Bob')
 
-	# ── Test 2: change-form GET ────────────────────────────────────────────────
+	# ── Test 2: Person change form with RelationshipInline ────────────────────
 
-	def test_relationship_change_form_names_involved_agents(self):
+	def test_person_change_form_shows_relationship_inline(self):
 		"""
-		GET an individual Relationship change-form → 200; the rendered HTML
-		names both agents involved in the relationship.
+		GET the Person change form → 200; rendered HTML contains the names of
+		both agents involved in the seeded Relationship via the
+		``RelationshipInline``.
 
-		The default ``ModelAdmin`` renders ``subject`` and ``object`` as select
-		widgets, with the currently selected ``Person`` visible in the option
-		list.
+		The inline renders an ``object`` autocomplete field whose option list
+		includes all People — so both agents' names appear in the rendered HTML.
 
-		Proves the harness can reach the change-form and that agent identities
-		are present in the rendered output.
+		Proves the harness reaches the change form and that the inline renders
+		relationship data correctly.
 		"""
 		alice = make_person('Alice')
 		bob = make_person('Bob')
-		rel = Relationship.objects.create(
-			subject=alice, object=bob, relationshipType='sibling'
-		)
+		Relationship.objects.create(subject=alice, object=bob, relationshipType='half-sibling')
 
 		response = self.client.get(
-			reverse('admin:agents_relationship_change', args=[rel.pk])
+			reverse('admin:agents_person_change', args=[alice.pk])
 		)
 		self.assertEqual(response.status_code, 200)
 		self.assertContains(response, 'Alice')
 		self.assertContains(response, 'Bob')
 
-	# ── Test 3: multi-step admin delete confirmation flow ─────────────────────
+	# ── Test 3: inline delete flow ────────────────────────────────────────────
 
-	def test_stock_django_admin_delete_journey(self):
+	def test_inline_relationship_delete_removes_row(self):
 		"""
-		Drive the stock Django admin delete confirmation flow for a Relationship:
+		Drive the inline Relationship delete flow via the Person change form:
 
-		1. GET the delete confirmation page → 200 with the standard
-		   "Are you sure?" prompt.
-		2. POST with ``post=yes`` to confirm → success; the targeted row is
-		   absent from the database.
+		1. GET the Person change form to extract inline management-form data.
+		2. POST back with the ``DELETE`` checkbox set for the target Relationship
+		   row.
+		3. The targeted Relationship is absent from the database.
 
-		This is the pre-#698 / pre-ADR-0001 delete behaviour: no closure check,
-		no refusal, no sibling-group expansion.  The default ``ModelAdmin``
-		calls ``obj.delete()`` directly.
+		This is the stock Django inline-formset delete behaviour: no closure
+		check, no refusal, no sibling-group expansion.  The default inline
+		formset calls ``obj.delete()`` directly on each row marked for deletion.
 
-		Proves the harness can drive a multi-step admin POST (GET confirmation
-		→ POST confirm) through to a successful DB mutation.
+		``half-sibling`` is symmetric (creates an inverse row with Bob as
+		subject) but not transitive, so the assertion on ``rel.pk`` is
+		unambiguous — only the Alice→Bob row is targeted.
+
+		The custom ADR-0001 deletion semantics (closure check, refusal page,
+		sibling-group expansion, Loganne emission) belong in #700/#701.
+
+		Proves the harness can drive a multi-step admin POST through to a
+		successful DB mutation.
 		"""
 		alice = make_person('Alice')
 		bob = make_person('Bob')
+		# half-sibling is symmetric — creates an inverse row (Bob→Alice) but is
+		# not transitive.  We only assert on rel.pk so the inverse is irrelevant.
 		rel = Relationship.objects.create(
 			subject=alice, object=bob, relationshipType='half-sibling'
 		)
-		# half-sibling is symmetric (creates an inverse) but not transitive,
-		# so the target row itself is unambiguous for assertion.
 
-		delete_url = reverse('admin:agents_relationship_delete', args=[rel.pk])
+		change_url = reverse('admin:agents_person_change', args=[alice.pk])
 
-		# ── Step 1: GET delete confirmation page ─────────────────────────────
-		response = self.client.get(delete_url)
-		self.assertEqual(response.status_code, 200)
+		# ── Step 1: GET to extract management-form data ───────────────────────
+		get_response = self.client.get(change_url)
+		self.assertEqual(get_response.status_code, 200)
 
-		# ── Step 2: confirm deletion ──────────────────────────────────────────
-		response = self.client.post(delete_url, {'post': 'yes'}, follow=True)
-		self.assertEqual(response.status_code, 200)
+		# ── Step 2: build POST data and mark the Relationship for deletion ────
+		post_data = self._post_data_from_response(get_response)
+
+		# Find the RelationshipInline formset by model and mark rel for deletion.
+		for inline_admin_formset in get_response.context['inline_admin_formsets']:
+			fs = inline_admin_formset.formset
+			if fs.model is Relationship:
+				prefix = fs.prefix
+				for i, form in enumerate(fs.initial_forms):
+					if form.instance.pk == rel.pk:
+						post_data[f'{prefix}-{i}-DELETE'] = 'on'
+						break
+				break
+
+		# ── Step 3: POST and verify ───────────────────────────────────────────
+		post_response = self.client.post(change_url, post_data, follow=True)
+		self.assertEqual(post_response.status_code, 200)
 
 		self.assertFalse(
 			Relationship.objects.filter(pk=rel.pk).exists(),
-			"The targeted Relationship row must be absent after admin delete",
+			"The targeted Relationship row must be absent after inline delete",
 		)
