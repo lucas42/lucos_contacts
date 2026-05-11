@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Journey-level test scaffolding for Relationship admin functionality.
+Journey-level tests for Relationship admin functionality.
 
 Relationships are managed exclusively through the inline on the Person admin
 change form — there are no standalone Relationship index or edit pages.
-
-These tests drive Person admin URLs end-to-end using django.test.Client,
-asserting on visible outcomes (rendered HTML, HTTP status codes, database
-state) rather than calling model methods or admin class methods directly.
 
 The three tests in ``RelationshipInlineJourneyTest`` verify:
 
@@ -15,13 +11,16 @@ The three tests in ``RelationshipInlineJourneyTest`` verify:
 2. The Person change form renders the RelationshipInline with seeded data.
 3. A Relationship can be deleted via the inline POST flow.
 
-Admin tests that exercise ADR-0001 deletion-semantics behaviour — the custom
-``RelationshipAdmin`` with its closure-check ``delete_view``, refusal page,
-sibling-group bulk-confirm expansion, Loganne emission on admin delete, or the
-inline delete-link routing introduced by ``can_delete = False`` — belong in
-#700 and #701, alongside the production code that introduces those behaviours.
-They are explicitly out of scope here.
+The tests in ``RelationshipAdminDeletionJourneyTest`` exercise ADR-0001
+deletion-semantics behaviour — the custom ``RelationshipAdmin`` with its
+GET-time closure-check ``delete_view``, refusal page, sibling-group
+bulk-confirm expansion, Loganne emission on admin delete, and the inline
+delete-link routing introduced by ``can_delete = False``.
 """
+
+import json
+import re
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
@@ -165,28 +164,23 @@ class RelationshipInlineJourneyTest(AdminJourneyTestCase):
 
 	# ── Test 3: inline delete flow ────────────────────────────────────────────
 
-	def test_inline_relationship_delete_removes_row(self):
+	def test_inline_relationship_delete_ignores_checkbox(self):
 		"""
-		Drive the inline Relationship delete flow via the Person change form:
+		Drive the inline Relationship POST flow via the Person change form with
+		a DELETE flag set and verify the relationship is NOT deleted.
 
-		1. GET the Person change form to extract inline management-form data.
-		2. POST back with the ``DELETE`` checkbox set for the target Relationship
-		   row.
-		3. The targeted Relationship is absent from the database.
+		Since ADR-0001, ``RelationshipInline.can_delete = False`` — deletions
+		must go through ``RelationshipAdmin.delete_view``, not through the
+		stock inline-formset DELETE checkbox path.  Django's ``BaseFormSet``
+		ignores DELETE flags when ``can_delete=False``.
 
-		This is the stock Django inline-formset delete behaviour: no closure
-		check, no refusal, no sibling-group expansion.  The default inline
-		formset calls ``obj.delete()`` directly on each row marked for deletion.
+		This test proves the harness can still drive a multi-step admin POST
+		and documents the new invariant: the stock inline DELETE path is
+		intentionally disabled.
 
 		``half-sibling`` is symmetric (creates an inverse row with Bob as
 		subject) but not transitive, so the assertion on ``rel.pk`` is
 		unambiguous — only the Alice→Bob row is targeted.
-
-		The custom ADR-0001 deletion semantics (closure check, refusal page,
-		sibling-group expansion, Loganne emission) belong in #700/#701.
-
-		Proves the harness can drive a multi-step admin POST through to a
-		successful DB mutation.
 		"""
 		alice = make_person('Alice')
 		bob = make_person('Bob')
@@ -202,10 +196,12 @@ class RelationshipInlineJourneyTest(AdminJourneyTestCase):
 		get_response = self.client.get(change_url)
 		self.assertEqual(get_response.status_code, 200)
 
-		# ── Step 2: build POST data and mark the Relationship for deletion ────
+		# ── Step 2: build POST data (no DELETE flag possible — can_delete=False) ─
 		post_data = self._post_data_from_response(get_response)
 
-		# Find the RelationshipInline formset by model and mark rel for deletion.
+		# Attempt to set a DELETE flag even though the inline has can_delete=False.
+		# Django's BaseFormSet ignores this; it's included here only to document
+		# that the flag is not honoured.
 		for inline_admin_formset in get_response.context['inline_admin_formsets']:
 			fs = inline_admin_formset.formset
 			if fs.model is Relationship:
@@ -216,11 +212,295 @@ class RelationshipInlineJourneyTest(AdminJourneyTestCase):
 						break
 				break
 
-		# ── Step 3: POST and verify ───────────────────────────────────────────
+		# ── Step 3: POST and verify relationship is NOT deleted ───────────────
 		post_response = self.client.post(change_url, post_data, follow=True)
 		self.assertEqual(post_response.status_code, 200)
 
+		self.assertTrue(
+			Relationship.objects.filter(pk=rel.pk).exists(),
+			"With can_delete=False, the inline DELETE flag must have no effect — "
+			"the relationship row must still exist after the POST.",
+		)
+
+
+class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
+	"""
+	Journey tests for the ADR-0001 relationship deletion journey.
+
+	These tests drive the RelationshipAdmin delete_view end-to-end, asserting
+	on the GET-time routing decision (which page is rendered), the POST
+	outcomes (DB state, Loganne events), and structural invariants (single h1,
+	correct form action).
+
+	Three deletion scenarios are exercised:
+
+	- **Clean**: Alice parent Bob (no re-inference after deletion) → stock
+	  Django confirmation → POST → success, row gone, Loganne emitted.
+	- **Expansion**: Alice sibling Bob + Bob sibling Carol (deletion would be
+	  re-inferred; sibling-group expansion resolves it) → bulk-delete
+	  confirmation rendered directly → POST → success, all sibling rows gone.
+	- **Refusal**: Alice parent Bob inferred from (Alice sibling Carol) +
+	  (Carol parent Bob) → refusal page rendered directly, supporting path
+	  listed.
+	"""
+
+	# ── Helpers ───────────────────────────────────────────────────────────────
+
+	def _delete_url(self, rel):
+		"""Return the RelationshipAdmin delete URL for a given Relationship."""
+		return reverse('admin:agents_relationship_delete', args=[rel.pk])
+
+	# ── Test 1: Inline delete-link routing ────────────────────────────────────
+
+	def test_inline_delete_link_routes_to_relationship_admin(self):
+		"""
+		The RelationshipInline renders a "Delete" link for each existing row
+		that points to RelationshipAdmin's delete view, not a stock DELETE
+		checkbox path.
+
+		Proves ``can_delete = False`` is in effect (no inline checkbox) and
+		the ``delete_link`` readonly field renders the correct URL.
+		"""
+		alice = make_person('Alice')
+		bob = make_person('Bob')
+		rel = Relationship.objects.create(subject=alice, object=bob, relationshipType='half-sibling')
+
+		change_url = reverse('admin:agents_person_change', args=[alice.pk])
+		response = self.client.get(change_url)
+		self.assertEqual(response.status_code, 200)
+
+		content = response.content.decode()
+		delete_url = self._delete_url(rel)
+
+		# The inline must render a link pointing to RelationshipAdmin's delete view.
+		self.assertIn(
+			delete_url, content,
+			"RelationshipInline must contain a link to RelationshipAdmin.delete_view",
+		)
+		self.assertIn(
+			'>Delete<', content,
+			"RelationshipInline must render 'Delete' link text",
+		)
+
+		# There must be no DELETE checkbox for the Relationship inline
+		# (can_delete=False suppresses the checkbox entirely).
+		self.assertNotIn(
+			'subject-0-DELETE',
+			content,
+			"RelationshipInline must not render a DELETE checkbox (can_delete=False)",
+		)
+
+	# ── Test 2: GET-path decision — clean ─────────────────────────────────────
+
+	def test_clean_deletion_renders_stock_confirmation_and_deletes_on_post(self):
+		"""
+		When deleting a parent/child relationship with no re-inference path:
+
+		- GET → stock Django delete confirmation page (contains ``post=yes`` form input).
+		- POST with ``post=yes`` → relationship deleted from DB.
+		- Loganne ``relationshipDeleted`` event emitted after commit.
+		"""
+		alice = make_person('Alice')
+		bob = make_person('Bob')
+		# parent creates its inverse (child) automatically
+		rel = Relationship.objects.create(subject=alice, object=bob, relationshipType='parent')
+		inverse_rel = Relationship.objects.get(subject=bob, object=alice, relationshipType='child')
+
+		delete_url = self._delete_url(rel)
+
+		# ── GET: should render stock Django confirmation ───────────────────────
+		get_response = self.client.get(delete_url)
+		self.assertEqual(get_response.status_code, 200)
+
+		# Stock confirmation contains a hidden input with name="post" and value="yes"
+		self.assertContains(
+			get_response, 'name="post"',
+			msg_prefix="GET should render stock Django confirmation (contains post=yes form input)",
+		)
+		# Must not render the bulk-delete confirmation heading
+		self.assertNotContains(
+			get_response, 'Confirm bulk deletion',
+			msg_prefix="Stock confirmation must not contain bulk-delete heading",
+		)
+
+		# Single h1 on the stock confirmation page
+		h1_count = get_response.content.decode().count('<h1')
+		self.assertEqual(h1_count, 1, "Stock confirmation page must have exactly one <h1>")
+
+		# ── POST: perform the deletion ────────────────────────────────────────
+		with patch('agents.loganne.loganneRequest') as mock_loganne:
+			with self.captureOnCommitCallbacks(execute=True):
+				post_response = self.client.post(delete_url, {'post': 'yes'})
+
+		self.assertEqual(post_response.status_code, 302, "POST should redirect after deletion")
+
+		# Both the asserted row and its inverse must be gone
 		self.assertFalse(
 			Relationship.objects.filter(pk=rel.pk).exists(),
-			"The targeted Relationship row must be absent after inline delete",
+			"Alice-parent-Bob must be deleted",
+		)
+		self.assertFalse(
+			Relationship.objects.filter(pk=inverse_rel.pk).exists(),
+			"Bob-child-Alice (inverse) must also be deleted",
+		)
+
+		# Loganne must have fired at least one relationshipDeleted event
+		loganne_calls = [
+			call for call in mock_loganne.call_args_list
+			if call.args and call.args[0].get('type') == 'relationshipDeleted'
+		]
+		self.assertGreater(
+			len(loganne_calls), 0,
+			"At least one relationshipDeleted Loganne event must be emitted",
+		)
+
+	# ── Test 3: GET-path decision — refusal ───────────────────────────────────
+
+	def test_refusal_renders_dedicated_page_with_supporting_paths(self):
+		"""
+		When deleting a relationship that would be re-inferred from other facts
+		in the graph (here: Alice parent Bob, implied by Alice sibling Carol +
+		Carol parent Bob):
+
+		- GET → dedicated refusal page rendered directly (not a messages.error toast).
+		- Rendered HTML contains at least one non-empty supporting-path entry.
+		- Rendered HTML does NOT contain a ``post=yes`` form input (no delete path).
+		"""
+		carol = make_person('Carol')
+		bob = make_person('Bob')
+		alice = make_person('Alice')
+
+		# Carol parent Bob (asserted)
+		Relationship.objects.create(subject=carol, object=bob, relationshipType='parent')
+		# Alice sibling Carol (asserted; also infers Alice parent Bob via sibling+parent rule)
+		Relationship.objects.create(subject=alice, object=carol, relationshipType='sibling')
+
+		# The inferred Alice-parent-Bob row
+		inferred_rel = Relationship.objects.get(subject=alice, object=bob, relationshipType='parent')
+
+		delete_url = self._delete_url(inferred_rel)
+
+		response = self.client.get(delete_url)
+		self.assertEqual(response.status_code, 200)
+
+		# Must not show the stock confirmation form
+		self.assertNotContains(
+			response, 'name="post"',
+			msg_prefix="Refusal page must not contain a post=yes form input",
+		)
+		# Must not show the bulk-delete confirmation
+		self.assertNotContains(
+			response, 'name="confirm"',
+			msg_prefix="Refusal page must not contain a bulk-confirm form input",
+		)
+		# Must render the dedicated refusal page title
+		self.assertContains(
+			response, 'Cannot delete relationship',
+			msg_prefix="Refusal page must include the page title",
+		)
+		# Must contain at least one supporting-path entry naming the relevant people
+		content = response.content.decode()
+		self.assertIn(
+			'Alice', content,
+			"Refusal page must name Alice in a supporting path",
+		)
+		self.assertIn(
+			'Carol', content,
+			"Refusal page must name Carol in a supporting path",
+		)
+
+		# Single h1 on the refusal page
+		h1_count = content.count('<h1')
+		self.assertEqual(h1_count, 1, "Refusal page must have exactly one <h1>")
+
+	# ── Test 4: GET-path decision — expansion ─────────────────────────────────
+
+	def test_expansion_renders_bulk_confirmation_directly_and_deletes_on_post(self):
+		"""
+		When deleting a sibling relationship whose deletion would be re-inferred
+		due to transitive propagation (Alice sibling Bob, Bob sibling Carol):
+
+		- GET → bulk-delete confirmation page rendered directly (no stock
+		  confirmation in between).
+		- Rendered output names the affected sibling-group member (Carol).
+		- POST with ``confirm=yes`` and the staged rows → all affected rows deleted.
+		"""
+		alice = make_person('Alice')
+		bob = make_person('Bob')
+		carol = make_person('Carol')
+
+		# Alice sibling Bob creates Bob sibling Alice (symmetric)
+		alice_bob_rel = Relationship.objects.create(
+			subject=alice, object=bob, relationshipType='sibling'
+		)
+		# Bob sibling Carol creates Carol sibling Bob; transitivity creates
+		# Alice sibling Carol and Carol sibling Alice
+		Relationship.objects.create(subject=bob, object=carol, relationshipType='sibling')
+
+		delete_url = self._delete_url(alice_bob_rel)
+
+		# ── GET: must render bulk-delete confirmation, not stock confirmation ──
+		get_response = self.client.get(delete_url)
+		self.assertEqual(get_response.status_code, 200)
+
+		# Must NOT show stock Django confirmation
+		self.assertNotContains(
+			get_response, 'name="post"',
+			msg_prefix="Expansion path must skip stock confirmation (no post=yes input)",
+		)
+		# Must show bulk-delete confirmation heading
+		self.assertContains(
+			get_response, 'Confirm bulk deletion',
+			msg_prefix="Expansion path must render bulk-delete confirmation page",
+		)
+		# Carol must be named as an affected sibling-group member
+		self.assertContains(
+			get_response, 'Carol',
+			msg_prefix="Bulk confirmation must name the affected sibling-group member Carol",
+		)
+
+		# Single h1 on the bulk-delete confirmation page
+		h1_count = get_response.content.decode().count('<h1')
+		self.assertEqual(h1_count, 1, "Bulk confirmation page must have exactly one <h1>")
+
+		# ── Test 5: Form action targets the bulk handler URL ──────────────────
+		bulk_confirm_url = reverse('admin:agents_relationship_bulk_delete_confirm')
+		self.assertContains(
+			get_response,
+			f'action="{bulk_confirm_url}"',
+			msg_prefix="Form action must target the bulk handler URL",
+		)
+
+		# ── POST: extract staged_rows from the response and perform deletion ──
+		content = get_response.content.decode()
+		# Extract the staged_rows JSON from the hidden input
+		staged_rows_match = re.search(
+			r'name="staged_rows" value="([^"]*)"', content
+		)
+		self.assertIsNotNone(staged_rows_match, "Response must contain staged_rows hidden input")
+		staged_rows_json = staged_rows_match.group(1).replace('&quot;', '"')
+
+		post_response = self.client.post(
+			bulk_confirm_url,
+			{'confirm': 'yes', 'staged_rows': staged_rows_json},
+		)
+		self.assertEqual(post_response.status_code, 302, "POST should redirect after bulk deletion")
+
+		# All Alice-sibling-* and *-sibling-Alice rows must be gone
+		self.assertFalse(
+			Relationship.objects.filter(subject=alice).exists(),
+			"All Alice-subject sibling rows must be deleted",
+		)
+		self.assertFalse(
+			Relationship.objects.filter(object=alice).exists(),
+			"All Alice-object sibling rows must be deleted",
+		)
+		# Bob sibling Carol and Carol sibling Bob remain (not in Alice's sibling group)
+		self.assertTrue(
+			Relationship.objects.filter(subject=bob, object=carol, relationshipType='sibling').exists(),
+			"Bob-sibling-Carol must survive the bulk deletion",
+		)
+		self.assertTrue(
+			Relationship.objects.filter(subject=carol, object=bob, relationshipType='sibling').exists(),
+			"Carol-sibling-Bob must survive the bulk deletion",
 		)
