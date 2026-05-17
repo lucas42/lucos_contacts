@@ -263,10 +263,10 @@ def _format_supporting_paths(paths):
 			continue
 
 		segments = [
-			_("%(object)s is a %(rel)s of %(subject)s") % {
-				'object': name_of(obj_id),
-				'rel': rel_display(rel_key),
+			_("%(subject)s is a %(rel)s of %(object)s") % {
 				'subject': name_of(subj_id),
+				'rel': rel_display(rel_key),
+				'object': name_of(obj_id),
 			}
 			for subj_id, obj_id, rel_key in path
 		]
