@@ -242,7 +242,7 @@ def _format_supporting_paths(paths):
 	# Single bulk lookup for all person names
 	all_ids = set()
 	for path in paths:
-		for subj_id, obj_id, _ in path:
+		for subj_id, obj_id, _rel_key in path:
 			all_ids.add(subj_id)
 			all_ids.add(obj_id)
 
@@ -263,10 +263,14 @@ def _format_supporting_paths(paths):
 			continue
 
 		segments = [
-			f"{name_of(subj_id)} is a {rel_display(rel_key)} of {name_of(obj_id)}"
+			_("%(object)s is a %(rel)s of %(subject)s") % {
+				'object': name_of(obj_id),
+				'rel': rel_display(rel_key),
+				'subject': name_of(subj_id),
+			}
 			for subj_id, obj_id, rel_key in path
 		]
-		text = ", and ".join(segments)
+		text = _(" and ").join(segments)
 
 		# rel_pk is the PK of the first relationship in the path (for linking)
 		first_subj, first_obj, first_key = path[0]
