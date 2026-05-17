@@ -5,6 +5,16 @@
 **Discussion:** https://github.com/lucas42/lucos_contacts/issues/53
 **Amended by:** ADR-0002 (2026-05-17) — formalises Strategy 2 expansion and the third UX flow described below.
 
+## Direction convention
+
+A `Relationship` row `(subj, obj, rel)` means **"subj has rel obj"**, equivalently, **"obj is a rel of subj"**.
+
+The `relationshipType` label names a property *subj* has, not a role *subj* plays toward *obj*. So `parent` is short for "has parent", **not** "is parent of". `(Alice, Bob, parent)` means "Alice has parent Bob" — Bob is Alice's parent, not the other way around.
+
+**Worked example.** The rule `setInference(Parent, Sibling, AuntOrUncle)` fires `(A, parent, B) + (B, sibling, C) → (A, AuntOrUncle, C)`. Reading the labels as "A is parent of B; B is sibling of C" would imply A is C's parent (since siblings share parents), not C's aunt/uncle. Reading them as "A has parent B; B has sibling C" correctly yields "A has aunt/uncle C". The latter is the only reading consistent with the rule set.
+
+**Rendering.** When formatting a row as natural-language English (refused-deletion paths, audit output, etc.), use **"$obj is a $rel of $subj"**. This avoids the awkward "A has parent B" construction while preserving direction.
+
 ## Context
 
 `lucos_contacts` models family relationships through a `Relationship` table whose rows are typed (parent, sibling, aunt/uncle, nibling, cousin, half-sibling, grandparent, grandchild, great aunt/uncle, great nibling). Saving any relationship triggers an inference engine in `Relationship.inferRelationships()` which materialises further rows: inverses (parent ↔ child), transitive closure (sibling chains), and multi-relation chains (e.g. "parent of B + sibling of C → aunt/uncle of C").
