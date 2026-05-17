@@ -2,7 +2,6 @@ import json
 
 from agents.models import *
 from agents.models.relationshipTypes import getRelationshipTypeByKey
-from agents.models import engine as _engine
 from agents.models.engine import closure as _engine_closure
 from django import forms
 from django.contrib import admin, messages
@@ -294,13 +293,13 @@ class RelationshipAdmin(admin.ModelAdmin):
 	that the inline's delete-link routes through.
 
 	Overrides delete_view to enforce the closure-check rule (ADR-0001/ADR-0002).
-	The GET path calls engine.plan_deletion() up front and renders the
+	The GET path calls obj.delete() to obtain the DeletionPlan and renders the
 	appropriate page directly — stock confirmation for clean deletions,
 	bulk-delete confirmation when a sibling-aware expansion resolves the
 	re-inference, or a dedicated refusal page when deletion is structurally
 	impossible without first retracting a supporting fact.
 
-	The POST path re-runs plan_deletion() to guard against race conditions.
+	The POST path re-calls obj.delete() to guard against race conditions.
 	"""
 	list_display = ('subject', 'relationshipType', 'object')
 	list_filter = ('relationshipType',)
@@ -326,13 +325,14 @@ class RelationshipAdmin(admin.ModelAdmin):
 
 	def delete_view(self, request, object_id, extra_context=None):
 		"""
-		GET-time decision: compute the deletion plan and render the appropriate page.
+		GET-time decision: call obj.delete() to obtain the DeletionPlan and render
+		the appropriate page.
 
 		- Safe:      delegate to super().delete_view() — stock Django confirmation.
 		- Expansion: render bulk-delete confirmation directly.
 		- Refused:   render dedicated refusal page directly.
 
-		POST (clean path via stock confirmation): re-run plan_deletion() as a
+		POST (clean path via stock confirmation): re-call obj.delete() as a
 		race-condition guard, then perform the deletion directly.
 
 		On all paths (success or error), redirects to the relationship subject's
@@ -349,12 +349,7 @@ class RelationshipAdmin(admin.ModelAdmin):
 			if obj is None:
 				return self._get_obj_does_not_exist_redirect(request, self.model._meta, relationship_id)
 
-			db_rows = frozenset(
-				(rel.subject_id, rel.object_id, rel.relationshipType)
-				for rel in Relationship.objects.all()
-			)
-			target_row = (obj.subject_id, obj.object_id, obj.relationshipType)
-			plan = _engine.plan_deletion(target_row, db_rows)
+			plan = obj.delete()
 
 			if plan.kind == 'safe':
 				# Clean deletion — show stock Django confirmation
@@ -445,12 +440,7 @@ class RelationshipAdmin(admin.ModelAdmin):
 			return redirect(reverse('admin:agents_relationship_changelist'))
 		subject_id = obj.subject_id
 
-		db_rows = frozenset(
-			(rel.subject_id, rel.object_id, rel.relationshipType)
-			for rel in Relationship.objects.all()
-		)
-		target_row = (obj.subject_id, obj.object_id, obj.relationshipType)
-		plan = _engine.plan_deletion(target_row, db_rows)
+		plan = obj.delete()
 
 		if plan.kind == 'safe':
 			Relationship._perform_staged_deletion(plan.staged)
