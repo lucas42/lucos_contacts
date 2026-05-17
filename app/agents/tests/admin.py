@@ -23,7 +23,7 @@ import re
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from agents.models import Person, PersonName, Relationship
@@ -223,6 +223,7 @@ class RelationshipInlineJourneyTest(AdminJourneyTestCase):
 		)
 
 
+@override_settings(LANGUAGE_CODE='en-us')
 class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
 	"""
 	Journey tests for the ADR-0001 relationship deletion journey.
