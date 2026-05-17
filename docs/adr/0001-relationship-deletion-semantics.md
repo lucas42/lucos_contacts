@@ -58,6 +58,8 @@ Three distinct user-facing flows fall out of the rule, and they need different c
 
 The supporting-path enumeration is bounded: walk the inference rules whose inferred output type is T, and for each rule `(rel1, rel2, T)`, list the matching `(A rel1 X, X rel2 B)` chains in the database. For inverse and transitive paths, include the corresponding chain (e.g. "B is a sibling of C, and C is a sibling of A"). All paths are shown; the user picks one to fix.
 
+(The forward-walk enumeration described here is structurally incomplete for chains that require more than one rule application — see ADR-0002, which replaces it with a reverse-walk over the closure computation's trace.)
+
 **Sibling-group bulk-delete confirmation flow** (Strategy 1). Deletion is possible but requires removing a set of related rows atomically because the relationship was sibling-propagated. Example: deleting `A cousin B` when A is also cousin of B's siblings B1..B4 by propagation. The system expands the staged set to all five and asks for confirmation, naming the affected people:
 
 > Removing the cousin relationship with B also removes it from B's siblings: B1, B2, B3, B4. Remove all 5?
