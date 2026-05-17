@@ -26,6 +26,10 @@
 
 {% block content %}
 
+{% if original_relationship %}
+<p>{% trans "Relationship being deleted:" %} <strong>{{ original_relationship }}</strong></p>
+{% endif %}
+
 {% if supporting_paths %}
 <p>{% trans 'This relationship is implied by:' %}</p>
 <ul>
