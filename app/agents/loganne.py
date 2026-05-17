@@ -44,3 +44,9 @@ def contactDeleted(agent_name, agent_id, url):
 		},
 		"url": BASE_URL + url,
 	})
+
+def relationshipDeleted(subject_name, object_name, rel_type_display):
+	loganneRequest({
+		"type": "relationshipDeleted",
+		"humanReadable": f'Relationship "{rel_type_display}" between "{subject_name}" and "{object_name}" deleted',
+	})

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-22 13:08+0000\n"
+"POT-Creation-Date: 2026-05-17 10:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,37 +19,88 @@ msgstr ""
 "Plural-Forms: nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
 "4);\n"
 
-#: agents/calendar.py:22
+#: agents/admin.py:350
+#, python-format
+msgid "%(subject)s %(rel_type)s %(object)s"
+msgstr "%(subject)s %(rel_type)s %(object)s"
+
+#: agents/admin.py:351 agents/admin.py:353
+#, python-format
+msgid "Person #%(pk)s"
+msgstr "Duine #%(pk)s"
+
+#: agents/admin.py:361
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:20
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:25
+msgid "Confirm bulk deletion"
+msgstr "Deimhnigh scriosadh ollmhór"
+
+#: agents/admin.py:381
+#: templates/admin/agents/relationship/refused_deletion.html:25
+msgid "This relationship can't be deleted yet"
+msgstr "Ní féidir an gaol seo a scriosadh fós"
+
+#: agents/admin.py:408 agents/admin.py:414
+msgid ""
+"This relationship can no longer be deleted because the relationship graph "
+"has changed since this page was loaded. Please try again."
+msgstr ""
+"Ní féidir an gaol seo a scriosadh a thuilleadh toisc gur athraigh an graf "
+"caidrimh ó luchtaíodh an leathanach seo. Déan iarracht arís."
+
+#: agents/admin.py:444
+msgid "Invalid deletion request."
+msgstr "Iarratas scriosadh neamhbhailí."
+
+#: agents/admin.py:458
+msgid ""
+"The deletion can no longer proceed — the relationship graph has changed "
+"since this page was loaded. Please try again."
+msgstr ""
+"Ní féidir leanúint den scriosadh a thuilleadh — athraigh an graf caidrimh "
+"ó luchtaíodh an leathanach seo. Déan iarracht arís."
+
+#: agents/admin.py:468
+#, python-format
+msgid "Deleted %(count)d relationship."
+msgid_plural "Deleted %(count)d relationships."
+msgstr[0] "Scriosadh %(count)d gaol."
+msgstr[1] "Scriosadh %(count)d ghaol."
+msgstr[2] "Scriosadh %(count)d ghaol."
+msgstr[3] "Scriosadh %(count)d ngaol."
+msgstr[4] "Scriosadh %(count)d gaol."
+
+#: agents/calendar.py:65 agents/calendar.py:162
 #, python-format
 msgid "%(name)s's %(count)s Birthday"
 msgstr "Breithlá %(count)s %(name)s"
 
-#: agents/calendar.py:27
+#: agents/calendar.py:70 agents/calendar.py:167
 #, python-format
 msgid "%(name)s's Birthday"
 msgstr "Breithlá %(name)s"
 
-#: agents/calendar.py:43
+#: agents/calendar.py:89 agents/calendar.py:183
 #, python-format
 msgid "%(name)s's Deathday"
 msgstr "Lá táisc %(name)s"
 
-#: agents/calendar.py:60
+#: agents/calendar.py:109 agents/calendar.py:201
 #, python-format
 msgid "%(names)s's %(count)s Anniversary"
 msgstr "Comóradh Pósta %(count)s %(names)s"
 
-#: agents/calendar.py:65
+#: agents/calendar.py:114 agents/calendar.py:206
 #, python-format
 msgid "%(names)s's Anniversary"
 msgstr "Comóradh Pósta %(names)s"
 
-#: agents/calendar.py:72
+#: agents/calendar.py:121 agents/calendar.py:210
 #, python-format
 msgid "%(names)s's Wedding"
 msgstr "Bainis %(names)s"
 
-#: agents/calendar.py:115
+#: agents/calendar.py:247
 msgid "Contacts Calendar"
 msgstr "Féilire Teagmhálaithe"
 
@@ -206,7 +257,7 @@ msgstr "Páirtí"
 msgid "Me"
 msgstr "Mise"
 
-#: agents/views.py:158
+#: agents/views.py:181
 msgid "Contacts"
 msgstr "Teagmhálacha"
 
@@ -351,7 +402,10 @@ msgstr ""
 msgid "We're sorry, but the requested page could not be found."
 msgstr ""
 
-#: templates/admin/500.html:7 templates/admin/app_index.html:10
+#: templates/admin/500.html:7
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:14
+#: templates/admin/agents/relationship/refused_deletion.html:14
+#: templates/admin/app_index.html:10
 #: templates/admin/auth/user/change_password.html:13
 #: templates/admin/base.html:32 templates/admin/change_form.html:30
 #: templates/admin/change_list.html:44
@@ -362,7 +416,10 @@ msgstr ""
 msgid "Contact List"
 msgstr "Liosta Teagmhálacha"
 
-#: templates/admin/500.html:8 templates/admin/app_index.html:11
+#: templates/admin/500.html:8
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:15
+#: templates/admin/agents/relationship/refused_deletion.html:15
+#: templates/admin/app_index.html:11
 #: templates/admin/auth/user/change_password.html:14
 #: templates/admin/base.html:33 templates/admin/change_form.html:31
 #: templates/admin/change_list.html:45
@@ -411,6 +468,108 @@ msgstr ""
 #: templates/admin/actions.html:12
 msgid "Clear selection"
 msgstr ""
+
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:30
+#: templates/admin/agents/relationship/refused_deletion.html:30
+msgid "Relationship being deleted:"
+msgstr "Gaol á scriosadh:"
+
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:40
+#, python-format
+msgid "and %(n)s others"
+msgstr "agus %(n)s eile"
+
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:45
+msgid ""
+"are all recorded as siblings of each other. Sibling relationships apply to "
+"the whole group — they can only be removed together."
+msgstr ""
+"tá siad go léir cláraithe mar shiblíní dá chéile. Baineann gaolta siblín "
+"leis an ngrúpa iomlán — ní féidir iad a bhaint ach le chéile."
+
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:50
+#, python-format
+msgid "Confirm to delete all %(count)s sibling relationship records."
+msgstr "Deimhnigh chun na %(count)s taifead gaol siblín go léir a scriosadh."
+
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:51
+msgid ""
+"(Each sibling connection is stored as two records, one in each direction.)"
+msgstr "(Stóráiltear gach nasc siblín mar dhá thaifead, ceann i ngach treo.)"
+
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:57
+msgid ""
+"This relationship is implied by a sibling connection. To remove it, the "
+"related same-type relationship will also be removed. The following will be "
+"deleted together:"
+msgstr ""
+"Tugtar le fios an gaol seo ó nasc siblín. Chun é a bhaint, bainfear an gaol "
+"den chineál céanna freisin. Scriosfar an méid seo a leanas le chéile:"
+
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:68
+#, python-format
+msgid "Confirm to delete all %(count)s relationship records."
+msgstr "Deimhnigh chun na %(count)s taifead gaol go léir a scriosadh."
+
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:69
+msgid "(Each relationship is stored as two records, one in each direction.)"
+msgstr "(Stóráiltear gach gaol mar dhá thaifead, ceann i ngach treo.)"
+
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:82
+#, python-format
+msgid ""
+"\n"
+"        <input type=\"submit\" value=\"Delete %(count)s sibling relationship "
+"records\" class=\"default\" />\n"
+"        "
+msgstr ""
+"\n"
+"        <input type=\"submit\" value=\"Scrios %(count)s taifead gaol "
+"siblín\" class=\"default\" />\n"
+"        "
+
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:86
+#, python-format
+msgid ""
+"\n"
+"        <input type=\"submit\" value=\"Delete %(count)s relationship "
+"records\" class=\"default\" />\n"
+"        "
+msgstr ""
+"\n"
+"        <input type=\"submit\" value=\"Scrios %(count)s taifead gaol\" "
+"class=\"default\" />\n"
+"        "
+
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:92
+#: templates/admin/delete_confirmation.html:51
+#: templates/admin/delete_selected_confirmation.html:54
+msgid "No, take me back"
+msgstr "Ná déan, tabhair ar ais mé"
+
+#: templates/admin/agents/relationship/refused_deletion.html:20
+msgid "Cannot delete"
+msgstr "Ní féidir a scriosadh"
+
+#: templates/admin/agents/relationship/refused_deletion.html:34
+msgid "This relationship is implied by:"
+msgstr "Tugtar le fios an gaol seo ó:"
+
+#: templates/admin/agents/relationship/refused_deletion.html:46
+msgid "To remove it, first remove one of those relationships."
+msgstr "Chun é a bhaint, bain ceann de na gaolta sin ar dtús."
+
+#: templates/admin/agents/relationship/refused_deletion.html:51
+msgid ""
+"This relationship is implied by other facts in the graph. To remove it, "
+"first remove one of the other relationships involving the same people."
+msgstr ""
+"Tugtar le fios an gaol seo ó fhíricí eile sa ghraf. Chun é a bhaint, bain "
+"ceann de na gaolta eile a bhaineann leis na daoine céanna ar dtús."
+
+#: templates/admin/agents/relationship/refused_deletion.html:56
+msgid "Back to relationships"
+msgstr "Ar ais go gaolta"
 
 #: templates/admin/auth/user/add_form.html:6
 msgid ""
@@ -521,11 +680,6 @@ msgstr ""
 #: templates/admin/delete_confirmation.html:50
 #: templates/admin/delete_selected_confirmation.html:53
 msgid "Yes, I'm sure"
-msgstr ""
-
-#: templates/admin/delete_confirmation.html:51
-#: templates/admin/delete_selected_confirmation.html:54
-msgid "No, take me back"
 msgstr ""
 
 #: templates/admin/delete_selected_confirmation.html:19
@@ -746,11 +900,11 @@ msgstr "Gaoil"
 msgid "Edit"
 msgstr "Cuir in Eagar"
 
-#: templates/agents/agentlist.html:2
+#: templates/agents/agentlist.html:3
 msgid "Filter..."
 msgstr "Scag..."
 
-#: templates/agents/agentlist.html:3
+#: templates/agents/agentlist.html:4
 msgid "Filter contacts"
 msgstr "Scag teagmhálacha"
 
