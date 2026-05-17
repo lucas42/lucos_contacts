@@ -1,8 +1,9 @@
 # ADR-0001: Relationship deletion semantics
 
 **Date:** 2026-05-07
-**Status:** Proposed
+**Status:** Accepted (shipped via PR #705 on 2026-05-17)
 **Discussion:** https://github.com/lucas42/lucos_contacts/issues/53
+**Amended by:** ADR-0002 (2026-05-17) — formalises Strategy 2 expansion and the third UX flow described below.
 
 ## Context
 
@@ -32,13 +33,21 @@ Before the closure check runs, the system expands the user's deletion target int
 
 1. **Inverse pairing.** For any row `(A, T, B)` in the staged set where T has an inverse T', add `(B, T', A)` if it exists. For symmetrical types (Sibling, HalfSibling, RomanticRelationship), add the mirror row `(B, T, A)`. This rule is unconditional — inverses and symmetrical mirrors are not separate facts in the user's model and are always deleted together.
 
-2. **Sibling-group expansion** (offered, not automatic). When a closure check on the staged set fails *only* because of sibling-propagation rules — i.e. rows of the form `(A, T, Bi)` where Bi is in the sibling group of the row's object — the system computes the minimal extension that breaks the propagation: all `(A, T, Bj)` and their inverse/symmetrical mirrors for every Bj in the sibling group of the original target. The user is presented with a confirmation prompt naming the affected people (see *Refusal and confirmation UX* below). On confirmation, the extension is added to the staged set and the closure check runs again on the extended set.
+2. **Sibling-aware expansion** (offered, not automatic). When a closure check on the staged set fails because the engine would re-infer the staged rows from sibling-propagation rules, the system computes a minimal extension that breaks the propagation. Two strategies apply, depending on what the target was:
+
+   **Strategy 1 — target is itself a sibling row.** Extension is all `(A, T, Bj)` and their inverse/symmetrical mirrors for every `Bj` in the sibling group of the original target's object. This is the classic "delete a cousin relationship → delete it across the whole sibling group" case.
+
+   **Strategy 2 — target is implied by a same-type sibling-propagation rule.** When the target `(A, T, C)` was inferred via `(A, sibling, B) + (B, T, C) → (A, T, C)` and `T` matches in both rule positions (the four same-type rules `setInference(Sibling, Parent, Parent)`, `setInference(Sibling, HalfSibling, HalfSibling)`, `setInference(Sibling, AuntOrUncle, AuntOrUncle)`, `setInference(Sibling, GreatAuntOrGreatUncle, GreatAuntOrGreatUncle)`), the extension also stages `(B, T, C)` — the driving fact — and its inverse if it exists.
+
+   Strategy 2 is restricted to same-type rules deliberately. For mixed-type rules (`Parent + Sibling → AuntOrUncle`, `Grandparent + Sibling → GreatAuntOrGreatUncle`), staging the driving fact would mean offering to delete a row of a different type from a different person's relationship set, which crosses a line the user did not consent to when clicking on the original row. Those cases continue to refuse.
+
+   The user is presented with a confirmation prompt naming the affected people (see *Refusal and confirmation UX* below). On confirmation, the extension is added to the staged set and the closure check runs again on the extended set.
 
 3. **No further automatic expansion.** If the closure check still fails after sibling-group expansion (or fails for a reason other than sibling propagation), the deletion is refused. The user must manually retract one of the supporting facts and try again.
 
 ### Refusal and confirmation UX
 
-Two distinct user-facing flows fall out of the rule, and they need different copy. Conflating them in a single message confuses the user.
+Three distinct user-facing flows fall out of the rule, and they need different copy. Conflating them in a single message confuses the user.
 
 **Refusal flow.** Deletion is structurally impossible without the user retracting a different row first. Example: deleting `A nibling B` while `B sibling C` and `C parent A` both remain. The system enumerates the supporting paths and shows them to the user with explicit re-routing instructions:
 
@@ -49,13 +58,19 @@ Two distinct user-facing flows fall out of the rule, and they need different cop
 
 The supporting-path enumeration is bounded: walk the inference rules whose inferred output type is T, and for each rule `(rel1, rel2, T)`, list the matching `(A rel1 X, X rel2 B)` chains in the database. For inverse and transitive paths, include the corresponding chain (e.g. "B is a sibling of C, and C is a sibling of A"). All paths are shown; the user picks one to fix.
 
-**Bulk-delete confirmation flow.** Deletion is possible but requires removing a set of related rows atomically because the relationship was sibling-propagated. Example: deleting `A cousin B` when A is also cousin of B's siblings B1..B4 by propagation. The system expands the staged set to all five and asks for confirmation, naming the affected people:
+(The forward-walk enumeration described here is structurally incomplete for chains that require more than one rule application — see ADR-0002, which replaces it with a reverse-walk over the closure computation's trace.)
+
+**Sibling-group bulk-delete confirmation flow** (Strategy 1). Deletion is possible but requires removing a set of related rows atomically because the relationship was sibling-propagated. Example: deleting `A cousin B` when A is also cousin of B's siblings B1..B4 by propagation. The system expands the staged set to all five and asks for confirmation, naming the affected people:
 
 > Removing the cousin relationship with B also removes it from B's siblings: B1, B2, B3, B4. Remove all 5?
 
 If the sibling group is large (8 or more), list the first 3–4 names followed by "and N others", with the full list available on demand.
 
-The confirmation flow is *only* used for sibling-group expansion. Any other reason a deletion would be refused — multi-relation chains, transitive sibling chains where the user has not staged the whole transitive group — uses the refusal flow.
+**Same-type sibling-propagation confirmation flow** (Strategy 2). The target row was itself inferred from a same-type sibling-propagation rule, and the expansion stages the driving fact as well. Example: deleting `A parent C` when this row is inferred from `A sibling B` + `B parent C`. The system stages `(B, parent, C)` for deletion alongside the target. The bulk-delete confirmation template is reused; the copy makes clear that the related same-type relationship will also be removed:
+
+> This relationship is implied by a sibling connection. To remove it, the related same-type relationship will also be removed. The following will be deleted together: …
+
+Any other reason a deletion would be refused — mixed-type sibling-propagation chains (`Parent + Sibling → AuntOrUncle`), multi-relation chains, transitive sibling chains where the user has not staged the whole transitive group — uses the refusal flow.
 
 **No undo affordance.** A reversible undo (e.g. "Removed 5 cousin relationships. Undo?") was considered and rejected. The Django admin has no established undo pattern, the affordance would need to remain visible across navigation, and the deleted rows would need to be held in some recoverable state. A prompt-then-confirm gives the user the same protection with substantially less infrastructure.
 
