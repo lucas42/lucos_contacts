@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-17 10:45+0000\n"
+"POT-Creation-Date: 2026-05-17 15:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,28 +19,37 @@ msgstr ""
 "Plural-Forms: nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
 "4);\n"
 
-#: agents/admin.py:350
+#: agents/admin.py:266
+#, python-format
+msgid "%(object)s is a %(rel)s of %(subject)s"
+msgstr "Is %(rel)s de %(subject)s é %(object)s"
+
+#: agents/admin.py:273
+msgid " and "
+msgstr " agus "
+
+#: agents/admin.py:395
 #, python-format
 msgid "%(subject)s %(rel_type)s %(object)s"
 msgstr "%(subject)s %(rel_type)s %(object)s"
 
-#: agents/admin.py:351 agents/admin.py:353
+#: agents/admin.py:396 agents/admin.py:398
 #, python-format
 msgid "Person #%(pk)s"
 msgstr "Duine #%(pk)s"
 
-#: agents/admin.py:361
+#: agents/admin.py:406
 #: templates/admin/agents/relationship/bulk_delete_confirmation.html:20
 #: templates/admin/agents/relationship/bulk_delete_confirmation.html:25
 msgid "Confirm bulk deletion"
 msgstr "Deimhnigh scriosadh ollmhór"
 
-#: agents/admin.py:381
+#: agents/admin.py:426
 #: templates/admin/agents/relationship/refused_deletion.html:25
 msgid "This relationship can't be deleted yet"
 msgstr "Ní féidir an gaol seo a scriosadh fós"
 
-#: agents/admin.py:408 agents/admin.py:414
+#: agents/admin.py:456
 msgid ""
 "This relationship can no longer be deleted because the relationship graph "
 "has changed since this page was loaded. Please try again."
@@ -48,19 +57,19 @@ msgstr ""
 "Ní féidir an gaol seo a scriosadh a thuilleadh toisc gur athraigh an graf "
 "caidrimh ó luchtaíodh an leathanach seo. Déan iarracht arís."
 
-#: agents/admin.py:444
+#: agents/admin.py:483
 msgid "Invalid deletion request."
 msgstr "Iarratas scriosadh neamhbhailí."
 
-#: agents/admin.py:458
+#: agents/admin.py:497
 msgid ""
 "The deletion can no longer proceed — the relationship graph has changed "
 "since this page was loaded. Please try again."
 msgstr ""
-"Ní féidir leanúint den scriosadh a thuilleadh — athraigh an graf caidrimh "
-"ó luchtaíodh an leathanach seo. Déan iarracht arís."
+"Ní féidir leanúint den scriosadh a thuilleadh — athraigh an graf caidrimh ó "
+"luchtaíodh an leathanach seo. Déan iarracht arís."
 
-#: agents/admin.py:468
+#: agents/admin.py:507
 #, python-format
 msgid "Deleted %(count)d relationship."
 msgid_plural "Deleted %(count)d relationships."
