@@ -11,6 +11,7 @@ from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.html import format_html
+from django.utils.translation import gettext as _, ngettext
 from agents.loganne import contactCreated, contactUpdated, contactDeleted
 
 class NameInline(admin.TabularInline):
@@ -346,16 +347,18 @@ class RelationshipAdmin(admin.ModelAdmin):
 						for p in Person.objects.filter(pk__in=people_ids)
 					}
 					supporting_rel_descriptions = [
-						f"{people_names.get(s_id, f'Person #{s_id}')} "
-						f"{target_rel_type.label} "
-						f"{people_names.get(o_id, f'Person #{o_id}')}"
+						_("%(subject)s %(rel_type)s %(object)s") % {
+							'subject': people_names.get(s_id) or (_("Person #%(pk)s") % {'pk': s_id}),
+							'rel_type': str(target_rel_type.label),
+							'object': people_names.get(o_id) or (_("Person #%(pk)s") % {'pk': o_id}),
+						}
 						for s_id, o_id, rel_key in sorted(extra_rows)
 						if rel_key == obj.relationshipType
 					]
 
 				context = {
 					**self.admin_site.each_context(request),
-					'title': 'Confirm bulk deletion',
+					'title': _('Confirm bulk deletion'),
 					'original_relationship': obj,
 					'is_sibling_only': is_sibling_only,
 					'sibling_group': sibling_group,
@@ -375,7 +378,7 @@ class RelationshipAdmin(admin.ModelAdmin):
 			supporting_paths = obj._get_supporting_paths(remaining)
 			context = {
 				**self.admin_site.each_context(request),
-				'title': "This relationship can't be deleted yet",
+				'title': _("This relationship can't be deleted yet"),
 				'original_relationship': obj,
 				'supporting_paths': supporting_paths,
 				'opts': self.model._meta,
@@ -402,14 +405,14 @@ class RelationshipAdmin(admin.ModelAdmin):
 		except RelationshipRefusedError:
 			messages.error(
 				request,
-				"This relationship can no longer be deleted because the relationship "
-				"graph has changed since this page was loaded. Please try again.",
+				_("This relationship can no longer be deleted because the relationship "
+				  "graph has changed since this page was loaded. Please try again."),
 			)
 		except SiblingGroupExpansionRequired:
 			messages.error(
 				request,
-				"This relationship can no longer be deleted because the relationship "
-				"graph has changed since this page was loaded. Please try again.",
+				_("This relationship can no longer be deleted because the relationship "
+				  "graph has changed since this page was loaded. Please try again."),
 			)
 
 		if subject_id:
@@ -438,7 +441,7 @@ class RelationshipAdmin(admin.ModelAdmin):
 					staged_list = json.loads(staged_rows_json)
 					staged_rows = frozenset(tuple(row) for row in staged_list)
 				except (ValueError, TypeError):
-					messages.error(request, "Invalid deletion request.")
+					messages.error(request, _("Invalid deletion request."))
 					return _person_redirect()
 
 				# Re-run closure check before committing (guards against race conditions)
@@ -452,8 +455,8 @@ class RelationshipAdmin(admin.ModelAdmin):
 				if re_inferred:
 					messages.error(
 						request,
-						"The deletion can no longer proceed — the relationship graph "
-						"has changed since this page was loaded. Please try again.",
+						_("The deletion can no longer proceed — the relationship graph "
+						  "has changed since this page was loaded. Please try again."),
 					)
 					return _person_redirect()
 
@@ -461,7 +464,11 @@ class RelationshipAdmin(admin.ModelAdmin):
 
 				messages.success(
 					request,
-					f"Deleted {deleted_count} relationship{'s' if deleted_count != 1 else ''}.",
+					ngettext(
+						"Deleted %(count)d relationship.",
+						"Deleted %(count)d relationships.",
+						deleted_count,
+					) % {'count': deleted_count},
 				)
 				return _person_redirect()
 

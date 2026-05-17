@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-17 10:28+0000\n"
+"POT-Creation-Date: 2026-05-17 10:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,6 +18,57 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : "
 "4);\n"
+
+#: agents/admin.py:350
+#, python-format
+msgid "%(subject)s %(rel_type)s %(object)s"
+msgstr "%(subject)s %(rel_type)s %(object)s"
+
+#: agents/admin.py:351 agents/admin.py:353
+#, python-format
+msgid "Person #%(pk)s"
+msgstr "Duine #%(pk)s"
+
+#: agents/admin.py:361
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:20
+#: templates/admin/agents/relationship/bulk_delete_confirmation.html:25
+msgid "Confirm bulk deletion"
+msgstr "Deimhnigh scriosadh ollmhór"
+
+#: agents/admin.py:381
+#: templates/admin/agents/relationship/refused_deletion.html:25
+msgid "This relationship can't be deleted yet"
+msgstr "Ní féidir an gaol seo a scriosadh fós"
+
+#: agents/admin.py:408 agents/admin.py:414
+msgid ""
+"This relationship can no longer be deleted because the relationship graph "
+"has changed since this page was loaded. Please try again."
+msgstr ""
+"Ní féidir an gaol seo a scriosadh a thuilleadh toisc gur athraigh an graf "
+"caidrimh ó luchtaíodh an leathanach seo. Déan iarracht arís."
+
+#: agents/admin.py:444
+msgid "Invalid deletion request."
+msgstr "Iarratas scriosadh neamhbhailí."
+
+#: agents/admin.py:458
+msgid ""
+"The deletion can no longer proceed — the relationship graph has changed "
+"since this page was loaded. Please try again."
+msgstr ""
+"Ní féidir leanúint den scriosadh a thuilleadh — athraigh an graf caidrimh "
+"ó luchtaíodh an leathanach seo. Déan iarracht arís."
+
+#: agents/admin.py:468
+#, python-format
+msgid "Deleted %(count)d relationship."
+msgid_plural "Deleted %(count)d relationships."
+msgstr[0] "Scriosadh %(count)d gaol."
+msgstr[1] "Scriosadh %(count)d ghaol."
+msgstr[2] "Scriosadh %(count)d ghaol."
+msgstr[3] "Scriosadh %(count)d ngaol."
+msgstr[4] "Scriosadh %(count)d gaol."
 
 #: agents/calendar.py:65 agents/calendar.py:162
 #, python-format
@@ -418,11 +469,6 @@ msgstr ""
 msgid "Clear selection"
 msgstr ""
 
-#: templates/admin/agents/relationship/bulk_delete_confirmation.html:20
-#: templates/admin/agents/relationship/bulk_delete_confirmation.html:25
-msgid "Confirm bulk deletion"
-msgstr "Deimhnigh scriosadh ollmhór"
-
 #: templates/admin/agents/relationship/bulk_delete_confirmation.html:30
 #: templates/admin/agents/relationship/refused_deletion.html:30
 msgid "Relationship being deleted:"
@@ -457,8 +503,8 @@ msgid ""
 "related same-type relationship will also be removed. The following will be "
 "deleted together:"
 msgstr ""
-"Tugtar le fios an gaol seo ó nasc siblín. Chun é a bhaint, bainfear an "
-"gaol den chineál céanna freisin. Scriosfar an méid seo a leanas le chéile:"
+"Tugtar le fios an gaol seo ó nasc siblín. Chun é a bhaint, bainfear an gaol "
+"den chineál céanna freisin. Scriosfar an méid seo a leanas le chéile:"
 
 #: templates/admin/agents/relationship/bulk_delete_confirmation.html:68
 #, python-format
@@ -478,8 +524,8 @@ msgid ""
 "        "
 msgstr ""
 "\n"
-"        <input type=\"submit\" value=\"Scrios %(count)s taifead gaol siblín"
-"\" class=\"default\" />\n"
+"        <input type=\"submit\" value=\"Scrios %(count)s taifead gaol "
+"siblín\" class=\"default\" />\n"
 "        "
 
 #: templates/admin/agents/relationship/bulk_delete_confirmation.html:86
@@ -491,8 +537,8 @@ msgid ""
 "        "
 msgstr ""
 "\n"
-"        <input type=\"submit\" value=\"Scrios %(count)s taifead gaol"
-"\" class=\"default\" />\n"
+"        <input type=\"submit\" value=\"Scrios %(count)s taifead gaol\" "
+"class=\"default\" />\n"
 "        "
 
 #: templates/admin/agents/relationship/bulk_delete_confirmation.html:92
@@ -504,10 +550,6 @@ msgstr "Ná déan, tabhair ar ais mé"
 #: templates/admin/agents/relationship/refused_deletion.html:20
 msgid "Cannot delete"
 msgstr "Ní féidir a scriosadh"
-
-#: templates/admin/agents/relationship/refused_deletion.html:25
-msgid "This relationship can't be deleted yet"
-msgstr "Ní féidir an gaol seo a scriosadh fós"
 
 #: templates/admin/agents/relationship/refused_deletion.html:34
 msgid "This relationship is implied by:"
