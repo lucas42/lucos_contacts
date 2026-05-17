@@ -2,6 +2,7 @@ import json
 
 from agents.models import *
 from agents.models.relationship import RelationshipRefusedError, SiblingGroupExpansionRequired
+from agents.models.relationshipTypes import getRelationshipTypeByKey
 from agents.models.closure import compute_closure
 from django import forms
 from django.contrib import admin, messages
