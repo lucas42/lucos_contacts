@@ -21,7 +21,6 @@ class RelationshipInfoTest(TestCase):
 	def test_parent_relationship(self):
 		from agents.models.relationshipTypes import lazy_title
 		# Leia is Luke's parent (the row means "Luke has parent Leia", NOT "Luke is parent of Leia")
-		# Previously this comment said "Luke is parent of Leia" — that was reading A, which is wrong.
 		# See ADR-0001 § "Direction convention": (subject, object, rel) means "subject has rel object".
 		Relationship.objects.create(subject=self.luke, object=self.leia, relationshipType='parent')
 		# get_relationship_info(person, currentagent)
@@ -44,7 +43,8 @@ class RelationshipInfoTest(TestCase):
 		From Luke's perspective (currentagent=Luke): Leia is his Child.
 		From Leia's perspective (currentagent=Leia): Luke is her Parent.
 
-		Under reading A ("subject is rel of object") — the wrong reading — this row
+		If the direction convention were applied backwards (treating the label as
+		"subject is rel of object" rather than "subject has rel object"), this row
 		would mean "Luke is a child of Leia", reversing both assertions.
 		"""
 		from agents.models.relationshipTypes import lazy_title

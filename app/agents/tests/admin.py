@@ -531,12 +531,12 @@ class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
 		# Direction-convention regression check (ADR-0001 § "Direction convention"):
 		# Supporting paths render as "%(obj)s is a %(rel)s of %(subj)s".
 		# For (Alice, Bob, parent): "Bob is a parent of Alice" — Bob is Alice's parent.
-		# The wrong reading (reading A) would give "Alice is a parent of Bob".
+		# Object-first rendering would give "Alice is a parent of Bob", which is wrong.
 		self.assertIn(
 			'Bob is a parent of Alice',
 			content,
 			"Supporting path must read 'Bob is a parent of Alice' (obj is rel of subj), "
-			"not 'Alice is a parent of Bob' (reading A — wrong direction)",
+			"not 'Alice is a parent of Bob' (subject-first would be wrong direction)",
 		)
 
 		# Single h1 on the refusal page

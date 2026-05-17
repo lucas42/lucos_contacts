@@ -12,7 +12,7 @@ Covers the four acceptance cases from lucos_contacts#692:
 from io import StringIO
 from django.test import TestCase
 from django.core.management import call_command
-from agents.models import Person, Relationship
+from agents.models import Person, PersonName, Relationship
 from agents.management.commands.audit_relationship_closure import compute_closure
 
 
@@ -217,3 +217,57 @@ class AuditCommandApplyMissingTest(TestCase):
         call_command('audit_relationship_closure', '--apply-missing', stdout=out)
         output = out.getvalue()
         self.assertIn('No missing rows to apply', output)
+
+
+class AuditCommandDirectionTest(TestCase):
+    """
+    Regression test: row_label() renders subject-first ("Alice aunt/uncle Carol"),
+    consistent with the direction convention in ADR-0001.
+
+    row_label(subj, obj, rel) = f'{name_of(subj)} {rel} {name_of(obj)}'
+
+    Under the convention (subj, obj, rel) means "subj has rel obj", so
+    "Alice aunt/uncle Carol" means "Alice has aunt/uncle Carol" — Alice is
+    Carol's nibling, Carol is Alice's aunt/uncle.  Object-first rendering
+    ("Carol aunt/uncle Alice") would still be internally consistent but
+    would break this test, making direction regressions detectable.
+    """
+
+    def setUp(self):
+        self.alice = Person.objects.create()
+        PersonName.objects.create(agent=self.alice, name='Alice')
+        self.carol = Person.objects.create()
+        PersonName.objects.create(agent=self.carol, name='Carol')
+        self.bob = Person.objects.create()
+        PersonName.objects.create(agent=self.bob, name='Bob')
+
+    def test_missing_row_output_is_subject_first(self):
+        """
+        The missing-row output for (Alice, Carol, aunt/uncle) must read
+        'Alice aunt/uncle Carol', not 'Carol aunt/uncle Alice'.
+
+        This pins down the subject-first rendering direction of row_label().
+        """
+        # Alice parent Bob (asserted; creates inverse Bob-child-Alice)
+        Relationship.save(Relationship(subject=self.alice, object=self.bob, relationshipType='parent'))
+
+        # Insert Bob-sibling-Carol directly, bypassing inference so that
+        # Alice-aunt/uncle-Carol is absent from the DB (it would be missing).
+        Relationship.objects.bulk_create([
+            Relationship(subject=self.bob, object=self.carol, relationshipType='sibling'),
+        ])
+
+        out = StringIO()
+        call_command('audit_relationship_closure', stdout=out)
+        output = out.getvalue()
+
+        # Direction-convention regression (ADR-0001 § "Direction convention"):
+        # row_label renders subject-first: "Alice aunt/uncle Carol".
+        # (Alice, Carol, aunt/uncle) means "Alice has aunt/uncle Carol".
+        # Object-first rendering would give "Carol aunt/uncle Alice" — wrong direction.
+        self.assertIn(
+            'Alice aunt/uncle Carol',
+            output,
+            "Audit output must render subject-first: 'Alice aunt/uncle Carol', "
+            "not 'Carol aunt/uncle Alice'",
+        )
