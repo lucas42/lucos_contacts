@@ -20,7 +20,9 @@ class RelationshipInfoTest(TestCase):
 
 	def test_parent_relationship(self):
 		from agents.models.relationshipTypes import lazy_title
-		# Luke is parent of Leia
+		# Leia is Luke's parent (the row means "Luke has parent Leia", NOT "Luke is parent of Leia")
+		# Previously this comment said "Luke is parent of Leia" — that was reading A, which is wrong.
+		# See ADR-0001 § "Direction convention": (subject, object, rel) means "subject has rel object".
 		Relationship.objects.create(subject=self.luke, object=self.leia, relationshipType='parent')
 		# get_relationship_info(person, currentagent)
 		# Leia's relationship to Luke (currentagent)
@@ -28,6 +30,34 @@ class RelationshipInfoTest(TestCase):
 		self.assertEqual(rel_str, lazy_title(_('parent')))
 		# Priority for 'parent' is 1 in RELATIONSHIP_TYPE_CHOICES (0 is child, 1 is parent)
 		self.assertEqual(priority, 1)
+
+	def test_child_relationship_direction(self):
+		"""
+		Direction-convention regression test (see ADR-0001 § "Direction convention").
+
+		Row (subject=luke, object=leia, 'child') means "Luke has child Leia":
+		Leia is Luke's child, not the other way around.
+
+		The inference engine creates the inverse (subject=leia, object=luke, 'parent'),
+		meaning "Leia has parent Luke".
+
+		From Luke's perspective (currentagent=Luke): Leia is his Child.
+		From Leia's perspective (currentagent=Leia): Luke is her Parent.
+
+		Under reading A ("subject is rel of object") — the wrong reading — this row
+		would mean "Luke is a child of Leia", reversing both assertions.
+		"""
+		from agents.models.relationshipTypes import lazy_title
+		# Luke has child Leia — Leia is Luke's child, NOT Luke is Leia's child
+		Relationship.objects.create(subject=self.luke, object=self.leia, relationshipType='child')
+
+		# From Luke's perspective: Leia is Luke's Child
+		rel_str, priority = get_relationship_info(self.leia, self.luke)
+		self.assertEqual(rel_str, lazy_title(_('child')))
+
+		# From Leia's perspective: Luke is Leia's Parent (inferred inverse)
+		rel_str, priority = get_relationship_info(self.luke, self.leia)
+		self.assertEqual(rel_str, lazy_title(_('parent')))
 
 	def test_romantic_personA_active(self):
 		# Luke (personA) is in a relationship with Leia (personB)

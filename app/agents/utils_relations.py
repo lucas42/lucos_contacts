@@ -10,7 +10,7 @@ def get_relationship_info(agent, currentagent):
 	combinedrels = ''
 	priority = -1
 	
-	# Relationships where currentagent is the subject (e.g. currentagent is parent of agent)
+	# Relationships where currentagent is the subject (e.g. agent is parent of currentagent)
 	for rel in [r for r in currentagent.subject.all() if r.object_id == agent.id]:
 		combinedrels += rel.get_relationshipType_display() + "/"
 		priority = rel.getPriority()
