@@ -243,8 +243,8 @@ class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
 	- **Expansion (sibling implies parent)**: Inferred Alice parent Bob, where
 	  Alice sibling Carol + Carol parent Bob implies Alice parent Bob →
 	  bulk-delete confirmation rendered directly (sibling-aware expansion stages
-	  the supporting sibling connection) → POST → all staged rows gone, Carol
-	  parent Bob survives.
+	  Carol-parent-Bob as the co-inferred direct fact) → POST → all staged rows
+	  gone, Alice-sibling-Carol survives.
 	- **Refusal**: Inferred Alice grandparent Charlie (via Alice parent Bob +
 	  Bob parent Charlie); no sibling rows involved → refusal page rendered
 	  directly with supporting path listed.
@@ -369,12 +369,12 @@ class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
 		Carol parent Bob):
 
 		- GET → bulk-delete confirmation page rendered directly (not the refusal
-		  page), because the expansion stages Alice-sibling-Carol alongside
+		  page), because the expansion stages Carol-parent-Bob alongside
 		  Alice-parent-Bob and that passes the closure check.
-		- Rendered HTML names Carol (the extra sibling being staged).
+		- Rendered HTML names Carol (the co-inferred parent row being staged).
 		- POST with ``confirm=yes`` and the staged rows → all four rows deleted:
-		  Alice-parent-Bob, Bob-child-Alice, Alice-sibling-Carol, Carol-sibling-Alice.
-		- Carol-parent-Bob (asserted, not staged) must survive.
+		  Alice-parent-Bob, Bob-child-Alice, Carol-parent-Bob, Bob-child-Carol.
+		- Alice-sibling-Carol (the sibling connection, not staged) must survive.
 		"""
 		carol = make_person('Carol')
 		bob = make_person('Bob')
@@ -409,11 +409,11 @@ class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
 			get_response, 'Confirm bulk deletion',
 			msg_prefix="Expansion path must render bulk-delete confirmation page",
 		)
-		# Carol must be named (Alice-sibling-Carol is being staged as the
-		# supporting sibling connection)
+		# Carol must be named (Carol-parent-Bob is being staged as the
+		# co-inferred parent row)
 		self.assertContains(
 			get_response, 'Carol',
-			msg_prefix="Bulk confirmation must name Carol (the supporting sibling)",
+			msg_prefix="Bulk confirmation must name Carol (the co-inferred parent row being staged)",
 		)
 
 		# Single h1
@@ -455,18 +455,22 @@ class RelationshipAdminDeletionJourneyTest(AdminJourneyTestCase):
 			"Bob-child-Alice (inverse) must be deleted",
 		)
 		self.assertFalse(
-			Relationship.objects.filter(subject=alice, object=carol, relationshipType='sibling').exists(),
-			"Alice-sibling-Carol (the supporting sibling) must be deleted",
+			Relationship.objects.filter(subject=carol, object=bob, relationshipType='parent').exists(),
+			"Carol-parent-Bob (the co-inferred parent, staged by expansion) must be deleted",
 		)
 		self.assertFalse(
-			Relationship.objects.filter(subject=carol, object=alice, relationshipType='sibling').exists(),
-			"Carol-sibling-Alice (inverse) must be deleted",
+			Relationship.objects.filter(subject=bob, object=carol, relationshipType='child').exists(),
+			"Bob-child-Carol (inverse of Carol-parent-Bob) must be deleted",
 		)
 
-		# Carol-parent-Bob (asserted, not in the staged set) must survive
+		# Alice-sibling-Carol (the sibling connection, not staged) must survive
 		self.assertTrue(
-			Relationship.objects.filter(subject=carol, object=bob, relationshipType='parent').exists(),
-			"Carol-parent-Bob must survive the bulk deletion",
+			Relationship.objects.filter(subject=alice, object=carol, relationshipType='sibling').exists(),
+			"Alice-sibling-Carol must survive — only same-type rows are staged, not the sibling",
+		)
+		self.assertTrue(
+			Relationship.objects.filter(subject=carol, object=alice, relationshipType='sibling').exists(),
+			"Carol-sibling-Alice (inverse) must also survive",
 		)
 
 	# ── Test 4 (was Test 4): GET-path decision — refusal ─────────────────────

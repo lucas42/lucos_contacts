@@ -41,9 +41,9 @@
 </ul>
 <p>{% trans 'To remove it, first remove one of those relationships.' %}</p>
 {% else %}
-{# supporting_paths can be empty when the inference chain is not yet fully traced. #}
-{# Most common causes are now handled by the sibling-aware expansion above, but #}
-{# complex multi-hop or inverse-only chains may still reach here without a path list. #}
+{# supporting_paths is empty if _get_supporting_paths did not find a path in remaining_rows. #}
+{# This should not happen in practice — if you reach this branch, please report it as a bug #}
+{# with details of which relationship you were trying to delete and what data was in the graph. #}
 <p>{% trans 'This relationship is implied by other facts in the graph. To remove it, first remove one of the other relationships involving the same people.' %}</p>
 {% endif %}
 

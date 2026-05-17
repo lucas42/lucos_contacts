@@ -330,9 +330,12 @@ class RelationshipAdmin(admin.ModelAdmin):
 					sibling_group = [obj.subject, obj.object] + extra_people
 					supporting_rel_descriptions = []
 				else:
-					# Mixed expansion: show the extra sibling rows being deleted.
+					# Mixed expansion: show the co-inferred direct-type rows being deleted.
+					# Strategy 2 stages (B, T, C) alongside (A, T, C) — display only the
+					# direct direction (not its inverse) to avoid showing both directions.
 					sibling_group = []
 					extra_rows = expanded - staged
+					target_rel_type = getRelationshipTypeByKey(obj.relationshipType)
 					people_ids = set()
 					for s_id, o_id, _ in extra_rows:
 						people_ids.add(s_id)
@@ -343,10 +346,10 @@ class RelationshipAdmin(admin.ModelAdmin):
 					}
 					supporting_rel_descriptions = [
 						f"{people_names.get(s_id, f'Person #{s_id}')} "
-						f"sibling "
+						f"{target_rel_type.label} "
 						f"{people_names.get(o_id, f'Person #{o_id}')}"
 						for s_id, o_id, rel_key in sorted(extra_rows)
-						if rel_key == 'sibling'
+						if rel_key == obj.relationshipType
 					]
 
 				context = {

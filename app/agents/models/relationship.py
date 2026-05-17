@@ -116,8 +116,7 @@ class Relationship(models.Model):
 
 	def _compute_sibling_group_expansion(self, staged, db_rows):
 		"""
-		Expand staged to include sibling rows whose removal eliminates the
-		re-inference of the staged set.
+		Expand staged to eliminate re-inference of the staged set.
 
 		Two strategies are combined:
 
@@ -127,21 +126,20 @@ class Relationship(models.Model):
 		    db_rows.  This covers the common case where deleting one sibling
 		    pair would be re-inferred via other members of the group.
 
-		Strategy 2 — staged rows are inferred FROM sibling relationships:
-		    Find supporting sibling rows in the inference chains and stage them.
-		    Two sub-cases:
+		Strategy 2 — staged row is inferred from a sibling+T→T rule:
+		    (A, sibling, B) + (B, T, C) → (A, T, C)
 
-		    Case 2a — sibling is the first leg:
-		        (A, sibling, B) + (B, rel2, C) → (A, T, C)
-		        e.g. Sibling+Parent→Parent: deleting inferred (Alice, parent, Bob)
-		        also stages Alice-sibling-Carol when Alice-sibling-Carol +
-		        Carol-parent-Bob implies Alice-parent-Bob.
+		    When (A, T, C) is staged, also stage (B, T, C) — the direct fact
+		    that drives the inference — rather than staging the sibling row.
+		    Only applies to same-type rules (where existingRel == inferredRel),
+		    which covers all of Sibling's outgoingRels:
+		      sibling + parent        → parent
+		      sibling + half-sibling  → half-sibling
+		      sibling + aunt/uncle    → aunt/uncle
+		      sibling + great-aunt/uncle → great-aunt/uncle
 
-		    Case 2b — sibling is the second leg:
-		        (A, rel1, B) + (B, sibling, C) → (A, T, C)
-		        e.g. Parent+Sibling→AuntOrUncle: deleting inferred
-		        (Alice, aunt/uncle, Carol) also stages Bob-sibling-Carol when
-		        Alice-parent-Bob + Bob-sibling-Carol implies Alice-aunt/uncle-Carol.
+		    Rules where the types differ (e.g. parent + sibling → aunt/uncle)
+		    cannot be resolved by expansion and fall through to the refusal page.
 		"""
 		expanded = set(staged)
 		rows_set = frozenset(db_rows)
@@ -161,29 +159,28 @@ class Relationship(models.Model):
 				if (member_id, subj_id, 'sibling') in rows_set:
 					expanded.add((member_id, subj_id, 'sibling'))
 
-		# ── Strategy 2: staged rows inferred from sibling relationships ──────────
+		# ── Strategy 2: staged rows inferred via sibling + T → T ─────────────────
+		# For each rule (A, sibling, B) + (B, T, C) → (A, T, C):
+		# when (A, T, C) is staged, also stage (B, T, C).
+		# Do NOT stage the sibling row — only the same-type direct fact is staged.
 		sibling_type = getRelationshipTypeByKey('sibling')
 		for target_subj, target_obj, target_rel_key in list(staged):
-			# Case 2a: (A, sibling, B) + (B, rel2, C) → (A, target_rel, C)
 			for conn in sibling_type.outgoingRels:
+				# All of Sibling's outgoingRels are same-type (existingRel == inferredRel),
+				# so conn.existingRel.dbKey == conn.inferredRel.dbKey == target_rel_key.
 				if conn.inferredRel.dbKey == target_rel_key:
+					other_key = conn.existingRel.dbKey
 					for s, o, k in rows_set:
 						if k == 'sibling' and s == target_subj:
-							if (o, target_obj, conn.existingRel.dbKey) in rows_set:
-								expanded.add((s, o, 'sibling'))
-								if (o, s, 'sibling') in rows_set:
-									expanded.add((o, s, 'sibling'))
-
-			# Case 2b: (A, rel1, B) + (B, sibling, C) → (A, target_rel, C)
-			for rel1_class in RELATIONSHIP_TYPES:
-				for conn in rel1_class.outgoingRels:
-					if conn.inferredRel.dbKey == target_rel_key and conn.existingRel.dbKey == 'sibling':
-						for s, o, k in rows_set:
-							if k == rel1_class.dbKey and s == target_subj:
-								if (o, target_obj, 'sibling') in rows_set:
-									expanded.add((o, target_obj, 'sibling'))
-									if (target_obj, o, 'sibling') in rows_set:
-										expanded.add((target_obj, o, 'sibling'))
+							if (o, target_obj, other_key) in rows_set:
+								# Stage (B, T, C) — the co-inferred direct fact
+								expanded.add((o, target_obj, other_key))
+								# Stage the inverse of (B, T, C) if it exists
+								other_type = getRelationshipTypeByKey(other_key)
+								if other_type.inverse:
+									inv_key = other_type.inverse.dbKey
+									if (target_obj, o, inv_key) in rows_set:
+										expanded.add((target_obj, o, inv_key))
 
 		return frozenset(expanded)
 
