@@ -316,13 +316,13 @@ class RelationshipAdmin(admin.ModelAdmin):
 
 			if not re_inferred_after:
 				# Expansion resolves the re-inference — render bulk-delete confirmation.
-				is_sibling_only = all(rel_key == 'sibling' for _, _, rel_key in expanded)
+				is_sibling_only = all(rel_key == 'sibling' for _s, _o, rel_key in expanded)
 
 				if is_sibling_only:
 					# Build the full sibling group list for the "all recorded as
 					# siblings" copy.
 					extra_ids = set()
-					for s, o, _ in expanded - staged:
+					for s, o, _rel_key in expanded - staged:
 						extra_ids.add(s)
 						extra_ids.add(o)
 					extra_ids -= {obj.subject_id, obj.object_id}
@@ -339,7 +339,7 @@ class RelationshipAdmin(admin.ModelAdmin):
 					extra_rows = expanded - staged
 					target_rel_type = getRelationshipTypeByKey(obj.relationshipType)
 					people_ids = set()
-					for s_id, o_id, _ in extra_rows:
+					for s_id, o_id, _rel_key in extra_rows:
 						people_ids.add(s_id)
 						people_ids.add(o_id)
 					people_names = {
