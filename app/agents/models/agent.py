@@ -31,6 +31,7 @@ class Person(models.Model):
 	bio = models.TextField(blank=True)
 	notes = models.TextField(blank=True)
 	gift_ideas = models.TextField(blank=True)
+	eolas_uri = models.URLField(blank=True, null=True)
 
 	class Meta:
 		app_label = 'agents'

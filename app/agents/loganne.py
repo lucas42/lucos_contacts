@@ -45,6 +45,25 @@ def contactDeleted(agent_name, agent_id, url):
 		"url": BASE_URL + url,
 	})
 
+def contactLinked(agent, previous_eolas_uri):
+	loganneRequest({
+		"type": "contactLinked",
+		"humanReadable": "Linked contact \""+agent.getName()+"\" to eolas entity "+str(agent.eolas_uri),
+		"url": BASE_URL + agent.get_absolute_url(),
+		"contactUri": BASE_URL + agent.get_absolute_url(),
+		"eolasUri": agent.eolas_uri,
+		"previousEolasUri": previous_eolas_uri,
+	})
+
+def contactUnlinked(agent, previous_eolas_uri):
+	loganneRequest({
+		"type": "contactUnlinked",
+		"humanReadable": "Unlinked contact \""+agent.getName()+"\" from eolas entity "+str(previous_eolas_uri),
+		"url": BASE_URL + agent.get_absolute_url(),
+		"contactUri": BASE_URL + agent.get_absolute_url(),
+		"previousEolasUri": previous_eolas_uri,
+	})
+
 def relationshipDeleted(subject_name, object_name, rel_type_display):
 	loganneRequest({
 		"type": "relationshipDeleted",

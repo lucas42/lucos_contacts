@@ -11,7 +11,7 @@ from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext as _, ngettext
-from agents.loganne import contactCreated, contactUpdated, contactDeleted
+from agents.loganne import contactCreated, contactUpdated, contactDeleted, contactLinked, contactUnlinked
 
 class NameInline(admin.TabularInline):
 	model = PersonName
@@ -192,6 +192,15 @@ class PersonAdmin(admin.ModelAdmin):
 			Relationship.objects.filter(object=agent).delete()
 
 	def save_model(self, request, obj, form, change):
+		# Capture the old eolas_uri before saving so response_change can emit
+		# the correct contactLinked / contactUnlinked event.
+		old_eolas_uri = None
+		if obj.pk:
+			try:
+				old_eolas_uri = Person.objects.get(pk=obj.pk).eolas_uri
+			except Person.DoesNotExist:
+				pass
+		request._saved_eolas_uri = old_eolas_uri
 		super().save_model(request, obj, form, change)
 		merge_into = form.cleaned_data.get('merge_into')
 		if merge_into:
@@ -203,6 +212,13 @@ class PersonAdmin(admin.ModelAdmin):
 		return redirect(agent.get_absolute_url())
 	def response_change(self, request, agent):
 		res = super().response_change(request, agent)
+		old_eolas_uri = getattr(request, '_saved_eolas_uri', None)
+		new_eolas_uri = agent.eolas_uri
+		if old_eolas_uri != new_eolas_uri:
+			if new_eolas_uri:
+				contactLinked(agent, old_eolas_uri)
+			else:
+				contactUnlinked(agent, old_eolas_uri)
 		contactUpdated(agent)
 		return redirect(agent.get_absolute_url())
 	def delete_model(self, request, agent):

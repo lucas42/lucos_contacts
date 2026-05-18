@@ -41,6 +41,10 @@ def agent_to_rdf(agent, include_type_label=False):
 		g.add((agent_uri, rdflib.FOAF.account, account_bnode))
 		g.add((account_bnode, rdflib.FOAF.accountName, rdflib.Literal(googleaccount.userid)))
 		g.add((account_bnode, rdflib.FOAF.accountServiceHomepage, rdflib.URIRef("https://myaccount.google.com/")))
+	if agent.eolas_uri:
+		eolas_uri_ref = rdflib.URIRef(agent.eolas_uri)
+		g.add((agent_uri, rdflib.OWL.sameAs, eolas_uri_ref))
+		g.add((agent_uri, EOLAS_NS.preferredIdentifier, eolas_uri_ref))
 	for relation in Relationship.objects.filter(subject=agent):
 		rel_type = getRelationshipTypeByKey(relation.relationshipType)
 		g.add((agent_uri, CONTACTS_NS[rel_type.get_absolute_url()], CONTACTS_NS[relation.object.get_absolute_url()]))
