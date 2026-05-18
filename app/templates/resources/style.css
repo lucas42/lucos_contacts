@@ -5,6 +5,7 @@
 #relations,
 .agentlist,
 .account,
+#eolas,
 #altnames {
 	max-width: 428px;
 	margin: 10px auto;
@@ -319,6 +320,28 @@ a.account.googlephotoprofile {
 a.account.googlephotoprofile:hover {
 	background-color: #333;
 	color: #fff;
+}
+
+#eolas {
+	display: block;
+	font-weight: bold;
+	text-align: center;
+	text-decoration: none;
+	height: 50px;
+	color: #44265d;
+	background: #dac6ff;
+	border: solid #44265d;
+	border-radius: 4px;
+	font-size: 22px;
+	line-height: 50px;
+}
+#eolas:hover {
+	color: #dac6ff;
+	background: #44265d;
+}
+#eolas img {
+	float: left;
+	max-height: 100%;
 }
 
 

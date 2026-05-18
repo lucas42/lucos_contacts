@@ -46,6 +46,12 @@
 		{%for search_path in googlephotoprofiles %}
 			<a href="https://photos.google.com{{search_path}}" target="_blank" class='account googlephotoprofile' rel="noopener"><img src="https://ssl.gstatic.com/social/photosui/images/logo/1x/photos_512dp.png" />{% trans 'Photos' %}</a>
 		{%endfor%}
+		{%if eolasuri %}
+			<a href="{{eolasuri}}" target="_blank" id='eolas' rel="noopener">
+				<img src="https://eolas.l42.eu/resources/icon.png" />
+				Eolas
+			</a>
+		{%endif%}
 		{%if formattedBirthday %}
 			<div id="birthday">
 				<span class="label">{% trans 'Birthday' %}:</span> {{formattedBirthday}}

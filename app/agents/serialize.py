@@ -84,6 +84,7 @@ def serializePerson(agent, currentagent=None, extended=False):
 		'formattedDeathDate': formattedDeathDate,
 		'isDead': agent.is_dead,
 		'starred': agent.starred,
+		'eolasuri': agent.eolas_uri,
 	}
 
 	if extended:
