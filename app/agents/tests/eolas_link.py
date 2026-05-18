@@ -64,13 +64,6 @@ class RdfEolasUriTest(TestCase):
         subject = list(g.subjects(rdflib.RDF.type, rdflib.FOAF.Person))[0]
         pred_values = list(g.objects(subject, EOLAS_NS.preferredIdentifier))
         self.assertEqual(len(pred_values), 1)
-        self.assertEqual(
-            str(pred_values[0]),
-            "https://eolas.l42.eu/ontology/preferredIdentifier".replace(
-                "https://eolas.l42.eu/ontology/preferredIdentifier",
-                str(EOLAS_NS.preferredIdentifier),
-            ),
-        )
         # The value should be the eolas URI, not the predicate URI
         self.assertEqual(str(pred_values[0]), EOLAS_URI_A)
 
