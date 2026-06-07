@@ -9,21 +9,8 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Populate known_hosts
-          command: |
-            ssh-keyscan -p 2202 -H creds.l42.eu >> ~/.ssh/known_hosts
-      - run:
-          name: Fetch test envfile
-          command: |
-            scp -s -P 2202 -o BatchMode=yes tests@creds.l42.eu:$CIRCLE_PROJECT_REPONAME/test/.env .
-          working_directory: app
-      - run:
           name: Run tests for django app
           command: docker compose --profile test up test --build --exit-code-from test
-      - run:
-          name: Delete envfile
-          command: |
-            rm -f .env
 workflows:
   version: 2
   build-deploy:
