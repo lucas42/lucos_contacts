@@ -42,7 +42,7 @@ RUN python manage.py collectstatic --noinput --settings=settings_collectstatic
 
 CMD ["./startup.sh"]
 
-FROM nginx:1.29.4-alpine3.23 AS web
+FROM nginx:1.31.1-alpine3.23 AS web
 ARG VERSION
 ENV VERSION=$VERSION
 
