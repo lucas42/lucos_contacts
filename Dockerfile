@@ -5,7 +5,7 @@ COPY app/package* ./
 
 RUN npm ci
 
-FROM python:3.15.0a8-alpine AS app
+FROM python:3.15.0b2-alpine AS app
 ARG VERSION
 ENV VERSION=$VERSION
 
