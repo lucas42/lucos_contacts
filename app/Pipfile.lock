@@ -197,12 +197,12 @@
         },
         "icalendar": {
             "hashes": [
-                "sha256:690f30aa50a76cbf854db5ad52654705db9c5cd0e1b152222f5d4b7854b60667",
-                "sha256:eb03a0e215f30db689a72c49f18f998aabf17522eb0858a293c393510850727c"
+                "sha256:32dacc396101825b82f9f1bbdf691c02be613130d5ab7a457e553fcd20959fdd",
+                "sha256:77922b6be57dfcc2e94f93063d2fd7e948ada9b5bdf7b08bebbc684b1b66c7c4"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==7.1.3"
+            "version": "==7.2.0"
         },
         "idna": {
             "hashes": [
@@ -223,12 +223,12 @@
         },
         "phonenumbers": {
             "hashes": [
-                "sha256:108ad0237202d2f6cf4b342fac411f22808d85187c3a366152a2af7ed3202a8e",
-                "sha256:fbcd40d3b11920ee77b1d34a54c3b64c6648a90b8e37222eb62e7fafb87db3e7"
+                "sha256:9ab8a02b940b90c64f3866c0b25a30e567ddf7bb9836a3e11efdb0478f65fc1c",
+                "sha256:ba1d0da52711d5fdda6b2b673b2621fe80774fc5d1b2e5a6ef783396b0343186"
             ],
             "index": "pypi",
             "markers": "python_version >= '2.5'",
-            "version": "==9.0.32"
+            "version": "==9.0.33"
         },
         "psycopg": {
             "hashes": [
