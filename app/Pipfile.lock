@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2dc1cc37201a0db668f67e4c46ba66d06bf8c661681e9b240d288587f75357c5"
+            "sha256": "0d09315f96123c4387844669ae01ea899ec36cc86f3bd713828f5313d469b0ac"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -29,7 +29,6 @@
                 "sha256:024c88eeec92ca068db80f02b8b07c9cef7b9fe261d1d535abfd5abd6f6af432",
                 "sha256:2227dcbaafe0d2f59279d1762ddddc37783ed4354594f194ffc31d20f41fc3db"
             ],
-            "index": "pypi",
             "markers": "python_version >= '3.7'",
             "version": "==2026.6.17"
         },
@@ -178,11 +177,13 @@
             "version": "==6.0.6"
         },
         "django-phonenumber-field": {
+            "extras": [
+                "phonenumbers"
+            ],
             "hashes": [
                 "sha256:2b83e843dac35eec6a69880a166487235b737a71a1e38c9a52e5ad67d6996083",
                 "sha256:7a1cb3a6456edb54d879f11ffa0acb227ded08c93b587035d0f28093f0e46511"
             ],
-            "index": "pypi",
             "markers": "python_version >= '3.10'",
             "version": "==8.4.0"
         },
@@ -209,7 +210,6 @@
                 "sha256:7f952cbe720b688055e3f87de14f5c3e5fdaa8bc3928985c4077ca689de849a2",
                 "sha256:ffb385a7e039654cef1ab9ef32c6fafe283c0c0467bba1d9029738ce4a14a848"
             ],
-            "index": "pypi",
             "markers": "python_version >= '3.9'",
             "version": "==3.18"
         },
@@ -226,16 +226,24 @@
                 "sha256:9ab8a02b940b90c64f3866c0b25a30e567ddf7bb9836a3e11efdb0478f65fc1c",
                 "sha256:ba1d0da52711d5fdda6b2b673b2621fe80774fc5d1b2e5a6ef783396b0343186"
             ],
-            "index": "pypi",
             "markers": "python_version >= '2.5'",
             "version": "==9.0.33"
         },
         "psycopg": {
+            "extras": [
+                "c"
+            ],
             "hashes": [
                 "sha256:b6bbc25ccf05c8fad3b061d9db2ef0909a555171b84b07f29458a447253d679a",
                 "sha256:e21207764952cff81b6b8bdacad9a3939f2793367fdac2987b3aac36a651b5bc"
             ],
-            "index": "pypi",
+            "markers": "python_version >= '3.10'",
+            "version": "==3.3.4"
+        },
+        "psycopg-c": {
+            "hashes": [
+                "sha256:ed8106128b2d04359c185fc9641b4409abfce4d0b6fb1d1ff6800646e27f1a22"
+            ],
             "markers": "python_version >= '3.10'",
             "version": "==3.3.4"
         },
