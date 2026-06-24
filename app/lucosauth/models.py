@@ -14,7 +14,7 @@ class LucosAuthBackend(object):
 		except urllib.error.HTTPError:
 			return None
 		except urllib.error.URLError as e:
-			print("Error fetching data from auth service: "+e.message+" "+url)
+			print("Error fetching data from auth service: "+str(e.reason)+" "+url)
 			return None
 		if (data['id'] == None):
 			print("No id returned by auth service; "+url)
