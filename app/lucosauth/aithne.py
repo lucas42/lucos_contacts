@@ -143,6 +143,12 @@ def verify_aithne_token(token_str):
         return None
 
     principal_class = payload.get("principal_class")
+    if principal_class not in ("human", "agent"):
+        logger.warning(
+            "JWT rejected: unknown principal_class %r (expected 'human' or 'agent')",
+            principal_class,
+        )
+        return None
     scopes = payload.get("scopes") or []
     sub = payload["sub"]
     logger.debug(
@@ -218,6 +224,10 @@ def map_principal(request, principal_class, sub, scopes):
     # Allow Django's auth decorators (e.g. @login_required) to accept this user
     # without a full authentication backend round-trip.
     user.backend = "django.contrib.auth.backends.ModelBackend"
+    # Set .agent to the resolved Person so views that call request.user.agent
+    # (e.g. agent(), agentindex()) work correctly — matching the .agent = None
+    # convention on EnvVarUser and LucosUser.  In-memory only, no DB write.
+    user.agent = person
     request.user = user
     logger.debug(
         "Mapped %s '%s' → User pk=%s (Person pk=%s, name=%r) staff=%s superuser=%s",

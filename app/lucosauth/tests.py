@@ -292,6 +292,110 @@ class RequireScopeDecoratorTest(SimpleTestCase):
 
 
 # ---------------------------------------------------------------------------
+# verify_aithne_token — principal_class allowlist
+# ---------------------------------------------------------------------------
+
+class VerifyAithneTokenPrincipalClassTest(SimpleTestCase):
+	"""verify_aithne_token must reject tokens with an unknown principal_class."""
+
+	def _make_mock_jwks_client(self):
+		mock = MagicMock()
+		mock.get_signing_key_from_jwt.return_value = MagicMock()
+		return mock
+
+	@patch('lucosauth.aithne._jwks_client')
+	@patch('jwt.decode')
+	def test_unknown_principal_class_returns_none(self, mock_decode, mock_jwks_client):
+		"""A token whose principal_class is not 'human' or 'agent' is rejected."""
+		mock_decode.return_value = {
+			'principal_class': 'alien',
+			'sub': '42',
+			'scopes': ['contacts:read'],
+		}
+		from lucosauth.aithne import verify_aithne_token
+		result = verify_aithne_token('some.jwt.token')
+		self.assertIsNone(result)
+
+	@patch('lucosauth.aithne._jwks_client')
+	@patch('jwt.decode')
+	def test_none_principal_class_returns_none(self, mock_decode, mock_jwks_client):
+		"""A token with no principal_class claim is rejected."""
+		mock_decode.return_value = {
+			'sub': '42',
+			'scopes': ['contacts:read'],
+		}
+		from lucosauth.aithne import verify_aithne_token
+		result = verify_aithne_token('some.jwt.token')
+		self.assertIsNone(result)
+
+	@patch('lucosauth.aithne._jwks_client')
+	@patch('jwt.decode')
+	def test_human_principal_class_is_accepted(self, mock_decode, mock_jwks_client):
+		"""A token with principal_class='human' is accepted and returned."""
+		mock_decode.return_value = {
+			'principal_class': 'human',
+			'sub': '42',
+			'scopes': ['contacts:read'],
+		}
+		from lucosauth.aithne import verify_aithne_token
+		result = verify_aithne_token('some.jwt.token')
+		self.assertIsNotNone(result)
+		self.assertEqual(result[0], 'human')
+
+	@patch('lucosauth.aithne._jwks_client')
+	@patch('jwt.decode')
+	def test_agent_principal_class_is_accepted(self, mock_decode, mock_jwks_client):
+		"""A token with principal_class='agent' is accepted and returned."""
+		mock_decode.return_value = {
+			'principal_class': 'agent',
+			'sub': 'lucos-ux',
+			'scopes': ['render-ui'],
+		}
+		from lucosauth.aithne import verify_aithne_token
+		result = verify_aithne_token('some.jwt.token')
+		self.assertIsNotNone(result)
+		self.assertEqual(result[0], 'agent')
+
+
+# ---------------------------------------------------------------------------
+# map_principal — .agent attribute
+# ---------------------------------------------------------------------------
+
+class MapPrincipalAgentTest(TestCase):
+	"""map_principal must set request.user.agent to the resolved Person."""
+
+	def setUp(self):
+		self.factory = RequestFactory()
+
+	@patch.dict('os.environ', {'ENVIRONMENT': 'test'})
+	def test_user_agent_set_to_person(self):
+		"""After map_principal, request.user.agent == the resolved Person."""
+		person = Person.objects.create()
+		request = self.factory.get('/people/all')
+		request.user = AnonymousUser()
+
+		from lucosauth.aithne import map_principal
+		map_principal(request, 'human', str(person.pk), ['contacts:read'])
+
+		self.assertIsNotNone(request.user)
+		self.assertTrue(request.user.is_authenticated)
+		self.assertEqual(request.user.agent, person)
+
+	@patch.dict('os.environ', {'ENVIRONMENT': 'test'})
+	def test_user_agent_is_none_for_unknown_sub(self):
+		"""map_principal with a non-integer sub leaves request.user unchanged."""
+		request = self.factory.get('/people/all')
+		original_user = AnonymousUser()
+		request.user = original_user
+
+		from lucosauth.aithne import map_principal
+		map_principal(request, 'human', 'not-an-int', ['contacts:read'])
+
+		# Should not have replaced the user
+		self.assertIs(request.user, original_user)
+
+
+# ---------------------------------------------------------------------------
 # LucosAuthBackend — regression coverage (old session-auth backend)
 # ---------------------------------------------------------------------------
 
