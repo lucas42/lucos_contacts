@@ -1,10 +1,9 @@
 from agents.models import *
-from lucosauth.decorators import api_auth
+from lucosauth.decorators import api_auth, require_scope
 from django.http import HttpResponse, Http404, HttpResponseBadRequest, JsonResponse
 from django import utils
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 from django.core.exceptions import MultipleObjectsReturned
@@ -22,7 +21,7 @@ from django.conf import settings
 
 @csrf_exempt
 @api_auth
-@login_required
+@require_scope('contacts:read')
 def agent(request, extid, method=None):
 	if (extid == 'me'):
 		# API requests have no concept of 'me'
@@ -93,7 +92,7 @@ def agent(request, extid, method=None):
 
 @csrf_exempt
 @api_auth
-@login_required
+@require_scope('contacts:admin')
 @require_http_methods(["POST"])
 def importer(request):
 	data = json.loads(request.body)
@@ -104,7 +103,7 @@ PAGE_SIZE = 50
 PAGINATED_LISTS = {'all', 'phone'}
 
 @api_auth
-@login_required
+@require_scope('contacts:read')
 def agentindex(request, list):
 	agents = []
 	template = 'agents/agentlist.html'
@@ -186,7 +185,7 @@ def agentindex(request, list):
 	})
 
 @api_auth
-@login_required
+@require_scope('contacts:read')
 def events_today(request):
 	events = getContactEventsToday()
 	return JsonResponse(events, safe=False)

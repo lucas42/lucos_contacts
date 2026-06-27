@@ -1,10 +1,16 @@
 import io
 import json
 import urllib.error
-from unittest.mock import patch
-from django.test import TestCase, Client
-from django.contrib.auth.models import User
+from unittest.mock import MagicMock, patch
+
+from django.contrib.auth.models import AnonymousUser, User
+from django.http import HttpResponse
+from django.test import RequestFactory, SimpleTestCase, TestCase, Client, override_settings
+
+from lucosauth.decorators import api_auth, require_scope
+from lucosauth.middleware import AithneAuthMiddleware
 from lucosauth.models import LucosAuthBackend, LucosUser
+from lucosauth.views import loginview
 from agents.models import Person
 
 
@@ -16,10 +22,14 @@ def json_urlopen_response(data):
 	return io.BytesIO(json.dumps(data).encode())
 
 
+# ---------------------------------------------------------------------------
+# @api_auth — regression coverage
+# ---------------------------------------------------------------------------
+
 class ApiAuthDecoratorTest(TestCase):
 	"""Tests for the api_auth decorator behaviour.
 
-	Uses /people/all (which is decorated with @api_auth + @login_required)
+	Uses /people/all (which is now decorated with @api_auth + @require_scope)
 	as a representative endpoint.
 	"""
 
@@ -35,11 +45,12 @@ class ApiAuthDecoratorTest(TestCase):
 		)
 		self.assertEqual(response.status_code, 403)
 
-	def test_no_auth_header_redirects_to_login(self):
-		"""No auth header falls through to @login_required, which redirects."""
+	def test_no_auth_header_redirects_to_aithne_login(self):
+		"""No auth header falls through to @require_scope which redirects to aithne."""
 		response = self.client.get('/people/all', HTTP_ACCEPT='application/json')
 		self.assertEqual(response.status_code, 302)
-		self.assertIn('/accounts/login', response['Location'])
+		# Must redirect to aithne login, not the old /accounts/login
+		self.assertIn('/auth/login', response['Location'])
 
 	def test_valid_key_allows_access(self):
 		"""A valid API key grants access to a protected endpoint."""
@@ -51,11 +62,246 @@ class ApiAuthDecoratorTest(TestCase):
 		self.assertEqual(response.status_code, 200)
 
 
+# ---------------------------------------------------------------------------
+# LoginView — new aithne-redirect behaviour
+# ---------------------------------------------------------------------------
+
+class LoginViewAithneRedirectTest(SimpleTestCase):
+	"""The login view is now a plain redirect to aithne (no token handling)."""
+
+	def setUp(self):
+		self.factory = RequestFactory()
+
+	def _call(self, url, aithne_origin='http://aithne.test'):
+		request = self.factory.get(url)
+		with patch.dict('os.environ', {'AITHNE_ORIGIN': aithne_origin}):
+			return loginview(request)
+
+	def test_no_next_redirects_to_aithne_login(self):
+		response = self._call('/accounts/login')
+		self.assertEqual(response.status_code, 302)
+		self.assertIn('/auth/login', response['Location'])
+
+	def test_same_origin_next_is_preserved(self):
+		response = self._call('/accounts/login?next=/some/page/')
+		self.assertEqual(response.status_code, 302)
+		location = response['Location']
+		self.assertIn('next=', location)
+
+	def test_external_next_is_replaced_with_root(self):
+		response = self._call('/accounts/login?next=https://evil.example.com/')
+		self.assertEqual(response.status_code, 302)
+		location = response['Location']
+		self.assertNotIn('evil.example.com', location)
+
+	def test_redirect_uses_aithne_origin(self):
+		response = self._call('/accounts/login', aithne_origin='http://aithne.test')
+		self.assertTrue(response['Location'].startswith('http://aithne.test/auth/login'))
+
+	def test_no_longer_handles_token_param(self):
+		"""The old ?token= flow is gone — redirect must not echo the raw token."""
+		request = self.factory.get('/accounts/login?token=sometoken')
+		with patch.dict('os.environ', {'AITHNE_ORIGIN': 'http://aithne.test'}):
+			response = loginview(request)
+		self.assertNotIn('token=sometoken', response['Location'])
+
+
+# ---------------------------------------------------------------------------
+# AithneAuthMiddleware
+# ---------------------------------------------------------------------------
+
+class AithneMiddlewareTest(SimpleTestCase):
+	"""AithneAuthMiddleware is populate-only — never blocks."""
+
+	def setUp(self):
+		self.factory = RequestFactory()
+		self.get_response = MagicMock(return_value=HttpResponse(status=200))
+
+	def _get_middleware(self):
+		return AithneAuthMiddleware(self.get_response)
+
+	def _make_request(self, cookie=None, auth_header=None, path='/'):
+		request = self.factory.get(path)
+		request.user = AnonymousUser()
+		request.aithne_scopes = []
+		if cookie:
+			request.COOKIES['aithne_session'] = cookie
+		if auth_header:
+			request.META['HTTP_AUTHORIZATION'] = auth_header
+		return request
+
+	def test_no_token_leaves_anonymous_user(self):
+		mw = self._get_middleware()
+		request = self._make_request()
+		with patch('lucosauth.middleware.verify_aithne_token', return_value=None):
+			mw(request)
+		self.assertIsInstance(request.user, AnonymousUser)
+
+	def test_no_token_still_calls_view(self):
+		"""Middleware never blocks — it always calls get_response."""
+		mw = self._get_middleware()
+		request = self._make_request()
+		with patch('lucosauth.middleware.verify_aithne_token', return_value=None):
+			mw(request)
+		self.get_response.assert_called_once()
+
+	def test_valid_cookie_token_calls_verify_and_map(self):
+		mw = self._get_middleware()
+		request = self._make_request(cookie='valid.jwt.token')
+		with patch('lucosauth.middleware.verify_aithne_token',
+				   return_value=('human', '42', ['contacts:read'])) as mock_verify, \
+			 patch('lucosauth.middleware.map_principal') as mock_map:
+			mw(request)
+		mock_verify.assert_called_once_with('valid.jwt.token')
+		mock_map.assert_called_once_with(request, 'human', '42', ['contacts:read'])
+
+	def test_valid_bearer_token_calls_verify_and_map(self):
+		mw = self._get_middleware()
+		request = self._make_request(auth_header='Bearer valid.jwt.token')
+		with patch('lucosauth.middleware.verify_aithne_token',
+				   return_value=('agent', 'lucos-ux', ['render-ui'])) as mock_verify, \
+			 patch('lucosauth.middleware.map_principal') as mock_map:
+			mw(request)
+		mock_verify.assert_called_once_with('valid.jwt.token')
+
+	def test_cookie_takes_priority_over_bearer(self):
+		mw = self._get_middleware()
+		request = self._make_request(
+			cookie='cookie.jwt.token',
+			auth_header='Bearer bearer.jwt.token',
+		)
+		with patch('lucosauth.middleware.verify_aithne_token',
+				   return_value=None) as mock_verify, \
+			 patch('lucosauth.middleware.map_principal'):
+			mw(request)
+		mock_verify.assert_called_once_with('cookie.jwt.token')
+
+	def test_invalid_token_leaves_anonymous(self):
+		mw = self._get_middleware()
+		request = self._make_request(cookie='bad.jwt')
+		with patch('lucosauth.middleware.verify_aithne_token', return_value=None):
+			mw(request)
+		self.assertIsInstance(request.user, AnonymousUser)
+
+	def test_scopes_populated_on_request_on_success(self):
+		mw = self._get_middleware()
+		request = self._make_request(cookie='valid.jwt.token')
+
+		mock_user = MagicMock()
+		mock_user.is_authenticated = True
+
+		def fake_map(req, pc, sub, scopes):
+			req.user = mock_user
+
+		with patch('lucosauth.middleware.verify_aithne_token',
+				   return_value=('human', '42', ['contacts:read'])), \
+			 patch('lucosauth.middleware.map_principal', side_effect=fake_map):
+			mw(request)
+		self.assertEqual(request.aithne_scopes, ['contacts:read'])
+
+
+# ---------------------------------------------------------------------------
+# @require_scope — three-branch enforcement
+# ---------------------------------------------------------------------------
+
+class RequireScopeDecoratorTest(SimpleTestCase):
+	"""@require_scope enforces the three-branch pattern (ADR-0002 §4)."""
+
+	def setUp(self):
+		self.factory = RequestFactory()
+
+	def _make_protected_view(self, scope='contacts:read'):
+		@require_scope(scope)
+		def view(request):
+			return HttpResponse(status=200)
+		return view
+
+	def _make_auth_request(self, scopes=None, authenticated=True, path='/people/all'):
+		request = self.factory.get(path)
+		if authenticated:
+			user = MagicMock(spec=User)
+			user.is_authenticated = True
+			user.username = 'testuser'
+			user._is_api_user = False  # prevent MagicMock(spec=) auto-attr from being truthy
+			request.user = user
+		else:
+			request.user = AnonymousUser()
+		request.aithne_scopes = scopes or []
+		return request
+
+	def test_valid_token_with_required_scope_proceeds(self):
+		"""Branch 1: valid token + scope → 200."""
+		view = self._make_protected_view('contacts:read')
+		request = self._make_auth_request(scopes=['contacts:read'])
+		response = view(request)
+		self.assertEqual(response.status_code, 200)
+
+	def test_valid_token_missing_scope_returns_403(self):
+		"""Branch 2: valid token, scope absent → styled 403."""
+		view = self._make_protected_view('contacts:read')
+		request = self._make_auth_request(scopes=['some:other'])
+		response = view(request)
+		self.assertEqual(response.status_code, 403)
+
+	def test_403_body_names_missing_scope_only(self):
+		"""The 403 body must name the required scope and NOT enumerate granted scopes."""
+		view = self._make_protected_view('contacts:admin')
+		request = self._make_auth_request(scopes=['contacts:read'])
+		response = view(request)
+		self.assertEqual(response.status_code, 403)
+		self.assertIn(b'contacts:admin', response.content)
+		# Must NOT enumerate the granted scopes
+		self.assertNotIn(b'contacts:read', response.content)
+
+	def test_no_token_redirects_to_aithne_login(self):
+		"""Branch 3: no valid token → redirect to aithne login."""
+		view = self._make_protected_view('contacts:read')
+		request = self._make_auth_request(authenticated=False)
+		with patch.dict('os.environ', {'AITHNE_ORIGIN': 'http://aithne.test'}):
+			response = view(request)
+		self.assertEqual(response.status_code, 302)
+		self.assertIn('http://aithne.test/auth/login', response['Location'])
+
+	def test_redirect_includes_absolute_next_param(self):
+		"""Login redirect includes the current URL as full absolute ?next= (not bare path)."""
+		view = self._make_protected_view('contacts:read')
+		request = self._make_auth_request(authenticated=False, path='/people/starred')
+		with patch.dict('os.environ', {'AITHNE_ORIGIN': 'http://aithne.test'}):
+			response = view(request)
+		location = response['Location']
+		self.assertIn('next=', location)
+		# next= must be a full URL (testserver is the RequestFactory host)
+		self.assertIn('testserver', location)
+
+	def test_machine_auth_bypasses_scope_check(self):
+		"""EnvVarUser (_is_api_user=True) passes @require_scope without aithne scopes."""
+		from lucosauth.envvars import EnvVarUser
+		view = self._make_protected_view('contacts:read')
+		request = self.factory.get('/people/all')
+		request.user = EnvVarUser(system='test:test', apikey='testkey1234')
+		request.aithne_scopes = []
+		response = view(request)
+		self.assertEqual(response.status_code, 200)
+
+	def test_authenticated_wrong_scope_not_redirected(self):
+		"""Branch 2 (403) — not branch 3 (redirect) — when authenticated but missing scope."""
+		view = self._make_protected_view('contacts:admin')
+		request = self._make_auth_request(authenticated=True, scopes=['contacts:read'])
+		response = view(request)
+		self.assertEqual(response.status_code, 403)
+
+
+# ---------------------------------------------------------------------------
+# LucosAuthBackend — regression coverage (old session-auth backend)
+# ---------------------------------------------------------------------------
+
 class LucosAuthBackendTest(TestCase):
-	"""Tests for LucosAuthBackend — the session-cookie auth flow.
+	"""Tests for LucosAuthBackend — the legacy session-cookie auth flow.
 
 	authenticate() calls the auth service with the token from the session
 	cookie, then finds or creates the matching Person and LucosUser.
+	Retained as regression coverage; the backend is no longer called by
+	the loginview but remains in AUTHENTICATION_BACKENDS for compatibility.
 	"""
 
 	def setUp(self):

@@ -213,8 +213,14 @@ class RelationshipInlineJourneyTest(AdminJourneyTestCase):
 				break
 
 		# ── Step 3: POST and verify relationship is NOT deleted ───────────────
-		post_response = self.client.post(change_url, post_data, follow=True)
-		self.assertEqual(post_response.status_code, 200)
+		# follow=False: PersonAdmin.response_change redirects to the person's
+		# public page (agent.get_absolute_url()), which is now gated by
+		# @require_scope.  The admin test authenticates via LucosUser (old
+		# session auth, no aithne scopes), so following the redirect would yield
+		# 403.  A 302 here is the correct success signal — the admin POST
+		# completed and the redirect proves it.
+		post_response = self.client.post(change_url, post_data, follow=False)
+		self.assertEqual(post_response.status_code, 302)
 
 		self.assertTrue(
 			Relationship.objects.filter(pk=rel.pk).exists(),

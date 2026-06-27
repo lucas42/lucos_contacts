@@ -59,6 +59,9 @@ MIDDLEWARE = (
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # AithneAuthMiddleware must follow AuthenticationMiddleware so it can
+    # override request.user when a valid aithne_session JWT is present.
+    'lucosauth.middleware.AithneAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
@@ -77,6 +80,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # Injects AITHNE_ORIGIN for the aithne-origin navbar attribute (ADR-0003)
+                'lucosauth.context_processors.aithne_origin',
             ],
         },
     },

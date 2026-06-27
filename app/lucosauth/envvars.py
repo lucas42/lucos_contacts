@@ -6,6 +6,9 @@ class EnvVarUser(AnonymousUser):
 	agent = None
 	USERNAME_FIELD = 'system'
 	REQUIRED_FIELDS = []
+	# Marker so @require_scope can identify machine-authed requests and skip
+	# the aithne scope check (machine auth is handled entirely by @api_auth).
+	_is_api_user = True
 	def __init__(self, system, apikey):
 		super().__init__()
 		self.system = system
