@@ -63,6 +63,76 @@ class ApiAuthDecoratorTest(TestCase):
 
 
 # ---------------------------------------------------------------------------
+# /people/add — CSRF protection via JSON-only body
+# ---------------------------------------------------------------------------
+
+class AgentAddCsrfProtectionTest(TestCase):
+	"""POST /people/add must require application/json to block simple-form CSRF.
+
+	aithne_session is SameSite=None — cross-site form POSTs include it.
+	Requiring JSON (a non-simple Content-Type) forces a CORS preflight, which
+	the browser blocks for cross-origin requests without CORS headers.
+	"""
+
+	def setUp(self):
+		self.client = Client()
+
+	def test_form_encoded_post_returns_415(self):
+		"""A form-encoded POST (the classic CSRF vector) is rejected with 415."""
+		response = self.client.post(
+			'/people/add',
+			data={'name': 'Eve'},
+			content_type='application/x-www-form-urlencoded',
+			**AUTH_HEADER,
+		)
+		self.assertEqual(response.status_code, 415)
+
+	def test_non_json_content_type_returns_415(self):
+		"""A POST with text/plain Content-Type (not application/json) is rejected with 415."""
+		response = self.client.post(
+			'/people/add',
+			data='name=Eve',
+			content_type='text/plain',
+			**AUTH_HEADER,
+		)
+		self.assertEqual(response.status_code, 415)
+
+	def test_invalid_json_returns_400(self):
+		"""A POST with Content-Type: application/json but invalid body returns 400."""
+		response = self.client.post(
+			'/people/add',
+			data='not-json',
+			content_type='application/json',
+			**AUTH_HEADER,
+		)
+		self.assertEqual(response.status_code, 400)
+
+	def test_json_post_missing_name_returns_400(self):
+		"""A valid JSON body without a 'name' key returns 400."""
+		response = self.client.post(
+			'/people/add',
+			data=json.dumps({}),
+			content_type='application/json',
+			**AUTH_HEADER,
+		)
+		self.assertEqual(response.status_code, 400)
+
+	@patch('agents.views.contactCreated')
+	def test_valid_json_post_creates_person(self, mock_loganne):
+		"""A valid JSON POST with a name creates the person and redirects."""
+		response = self.client.post(
+			'/people/add',
+			data=json.dumps({'name': 'Alice'}),
+			content_type='application/json',
+			**AUTH_HEADER,
+		)
+		# Redirects to the new person's page
+		self.assertEqual(response.status_code, 302)
+		from agents.models import PersonName
+		self.assertTrue(PersonName.objects.filter(name='Alice').exists())
+
+
+# ---------------------------------------------------------------------------
 # LoginView — new aithne-redirect behaviour
 # ---------------------------------------------------------------------------
 
@@ -198,6 +268,29 @@ class AithneMiddlewareTest(SimpleTestCase):
 			 patch('lucosauth.middleware.map_principal', side_effect=fake_map):
 			mw(request)
 		self.assertEqual(request.aithne_scopes, ['contacts:read'])
+
+	def test_plain_api_key_in_bearer_not_verified(self):
+		"""Bearer tokens that lack JWT structure (three segments) are ignored.
+
+		Plain lucos_creds API keys look like 'somekey=1234' — not JWTs.  The
+		middleware must not pass them to verify_aithne_token (which would log
+		a noisy WARNING on every machine-authed request).
+		"""
+		mw = self._get_middleware()
+		request = self._make_request(auth_header='Bearer somekey=1234')
+		with patch('lucosauth.middleware.verify_aithne_token') as mock_verify:
+			mw(request)
+		mock_verify.assert_not_called()
+
+	def test_jwt_shaped_bearer_is_verified(self):
+		"""Bearer tokens with JWT structure (three base64url segments) ARE verified."""
+		mw = self._get_middleware()
+		request = self._make_request(auth_header='Bearer aaa.bbb.ccc')
+		with patch('lucosauth.middleware.verify_aithne_token',
+				   return_value=None) as mock_verify, \
+			 patch('lucosauth.middleware.map_principal'):
+			mw(request)
+		mock_verify.assert_called_once_with('aaa.bbb.ccc')
 
 
 # ---------------------------------------------------------------------------

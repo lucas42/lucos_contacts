@@ -30,9 +30,19 @@ def agent(request, extid, method=None):
 		return redirect(request.user.agent)
 	if (extid == 'add'):
 		if (request.method == 'POST'):
-			name = request.POST.get('name')
+			# Require JSON body so this endpoint is a non-simple request in the
+			# CORS sense — JSON POST requires a preflight, blocking cross-site
+			# form attacks even when aithne_session is SameSite=None.
+			content_type = request.content_type or ''
+			if not content_type.startswith('application/json'):
+				return HttpResponse(status=415, content="JSON body required (Content-Type: application/json)\n")
+			try:
+				data = json.loads(request.body)
+			except (json.JSONDecodeError, ValueError):
+				return HttpResponseBadRequest("Invalid JSON body\n")
+			name = data.get('name')
 			if not name:
-				return HttpResponseBadRequest("No name provided")
+				return HttpResponseBadRequest("No name provided\n")
 			newagent = Person()
 			newagent.save()
 			nameObject = PersonName(name=name, agent=newagent)

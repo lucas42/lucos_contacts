@@ -26,12 +26,18 @@ naturally (login() is no longer called, so no new sessions are minted).
 """
 
 import logging
+import re
 
 from django.contrib.auth.models import AnonymousUser
 
 from .aithne import verify_aithne_token, map_principal
 
 logger = logging.getLogger(__name__)
+
+# A valid JWT has exactly three base64url-encoded segments separated by dots.
+# Plain lucos_creds API keys (used by @api_auth Bearer path) don't match this
+# pattern — skip JWT verification for them to avoid noisy WARNING logs.
+_JWT_PATTERN = re.compile(r'^[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+$')
 
 
 class AithneAuthMiddleware:
@@ -95,9 +101,14 @@ class AithneAuthMiddleware:
         if cookie:
             return cookie, "aithne_session cookie"
 
-        # Bearer header path — agents in development
+        # Bearer header path — agents in development (carries an aithne JWT,
+        # not a lucos_creds API key; @api_auth handles those separately).
+        # Only extract if the value has JWT structure (three base64url segments);
+        # plain API keys don't match and would generate noisy verify failures.
         auth_header = request.META.get("HTTP_AUTHORIZATION", "")
         if auth_header.lower().startswith("bearer "):
-            return auth_header[7:].strip(), "Bearer header"
+            candidate = auth_header[7:].strip()
+            if _JWT_PATTERN.match(candidate):
+                return candidate, "Bearer header"
 
         return None, None
