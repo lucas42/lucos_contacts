@@ -63,130 +63,39 @@ class ApiAuthDecoratorTest(TestCase):
 
 
 # ---------------------------------------------------------------------------
-# /people/add — write scope and CSRF protection
+# CryptographyAvailableTest — smoke tests to catch missing-cryptography failure
 # ---------------------------------------------------------------------------
 
-class AgentAddCsrfProtectionTest(TestCase):
-	"""POST /people/add enforces contacts:write scope for cookie-authenticated users.
+class CryptographyAvailableTest(SimpleTestCase):
+	"""Verify the cryptography package and PyJWT ES256 support are available.
 
-	Machine API key users (_is_api_user) bypass scope and content-type checks —
-	they use Authorization headers (not cookies) so are not at CSRF risk and
-	may send form-encoded or JSON bodies.
-
-	Cookie-authenticated users (aithne_session) must send JSON (a non-simple
-	CORS request requiring a preflight) to prevent cross-site form attacks
-	when aithne_session is SameSite=None.
+	These smoke tests catch a class of lockfile error where cffi or cryptography
+	is missing from the installed packages, causing MissingCryptographyError at
+	runtime under PyJWT 2.x.  They run before any token is verified in CI so
+	the failure message is clear rather than buried in middleware exceptions.
 	"""
 
-	def setUp(self):
-		self.client = Client()
+	def test_cryptography_module_importable(self):
+		"""The cryptography package is present and importable."""
+		import cryptography
+		self.assertIsNotNone(cryptography)
 
-	# ── Machine API key user behaviour ─────────────────────────────────────────
+	def test_es256_key_generation(self):
+		"""ES256 (ECDSA P-256) key generation works — requires cryptography package."""
+		from cryptography.hazmat.primitives.asymmetric import ec
+		key = ec.generate_private_key(ec.SECP256R1())
+		self.assertIsNotNone(key)
 
-	def test_api_key_form_encoded_post_creates_person(self):
-		"""Machine API key clients may use form-encoded POST — not at CSRF risk."""
-		from urllib.parse import urlencode
-		with patch('agents.views.contactCreated'):
-			response = self.client.post(
-				'/people/add',
-				data=urlencode({'name': 'Eve'}),
-				content_type='application/x-www-form-urlencoded',
-				**AUTH_HEADER,
-			)
-		self.assertEqual(response.status_code, 302)
-		from agents.models import PersonName
-		self.assertTrue(PersonName.objects.filter(name='Eve').exists())
+	def test_pyjwt_es256_encode_decode(self):
+		"""PyJWT can encode and decode a JWT with ES256 algorithm."""
+		from cryptography.hazmat.primitives.asymmetric import ec
+		import jwt
 
-	def test_invalid_json_returns_400(self):
-		"""A POST with Content-Type: application/json but invalid body returns 400."""
-		response = self.client.post(
-			'/people/add',
-			data='not-json',
-			content_type='application/json',
-			**AUTH_HEADER,
-		)
-		self.assertEqual(response.status_code, 400)
-
-	def test_json_post_missing_name_returns_400(self):
-		"""A valid JSON body without a 'name' key returns 400."""
-		response = self.client.post(
-			'/people/add',
-			data=json.dumps({}),
-			content_type='application/json',
-			**AUTH_HEADER,
-		)
-		self.assertEqual(response.status_code, 400)
-
-	@patch('agents.views.contactCreated')
-	def test_valid_json_post_creates_person(self, mock_loganne):
-		"""A valid JSON POST with a name creates the person and redirects."""
-		response = self.client.post(
-			'/people/add',
-			data=json.dumps({'name': 'Alice'}),
-			content_type='application/json',
-			**AUTH_HEADER,
-		)
-		# Redirects to the new person's page
-		self.assertEqual(response.status_code, 302)
-		from agents.models import PersonName
-		self.assertTrue(PersonName.objects.filter(name='Alice').exists())
-
-	# ── Cookie-authenticated (aithne) user behaviour ───────────────────────────
-
-	@patch('lucosauth.middleware.verify_aithne_token')
-	def test_cookie_user_form_encoded_returns_415(self, mock_verify):
-		"""Cookie-authenticated user: form-encoded POST is rejected (CSRF vector)."""
-		person = Person.objects.create()
-		mock_verify.return_value = ('human', str(person.pk), ['contacts:read', 'contacts:write'])
-		self.client.cookies['aithne_session'] = 'fake.jwt.token'
-		response = self.client.post(
-			'/people/add',
-			data={'name': 'Eve'},
-			content_type='application/x-www-form-urlencoded',
-		)
-		self.assertEqual(response.status_code, 415)
-
-	@patch('lucosauth.middleware.verify_aithne_token')
-	def test_cookie_user_text_plain_returns_415(self, mock_verify):
-		"""Cookie-authenticated user: text/plain POST is rejected (simple CORS request)."""
-		person = Person.objects.create()
-		mock_verify.return_value = ('human', str(person.pk), ['contacts:read', 'contacts:write'])
-		self.client.cookies['aithne_session'] = 'fake.jwt.token'
-		response = self.client.post(
-			'/people/add',
-			data='name=Eve',
-			content_type='text/plain',
-		)
-		self.assertEqual(response.status_code, 415)
-
-	@patch('lucosauth.middleware.verify_aithne_token')
-	def test_cookie_user_missing_write_scope_returns_403(self, mock_verify):
-		"""Cookie user with contacts:read but not contacts:write: 403."""
-		person = Person.objects.create()
-		mock_verify.return_value = ('human', str(person.pk), ['contacts:read'])
-		self.client.cookies['aithne_session'] = 'fake.jwt.token'
-		response = self.client.post(
-			'/people/add',
-			data=json.dumps({'name': 'Eve'}),
-			content_type='application/json',
-		)
-		self.assertEqual(response.status_code, 403)
-
-	@patch('agents.views.contactCreated')
-	@patch('lucosauth.middleware.verify_aithne_token')
-	def test_cookie_user_with_write_scope_creates_person(self, mock_verify, mock_loganne):
-		"""Cookie user with contacts:write can create via JSON POST."""
-		person = Person.objects.create()
-		mock_verify.return_value = ('human', str(person.pk), ['contacts:read', 'contacts:write'])
-		self.client.cookies['aithne_session'] = 'fake.jwt.token'
-		response = self.client.post(
-			'/people/add',
-			data=json.dumps({'name': 'Bob'}),
-			content_type='application/json',
-		)
-		self.assertEqual(response.status_code, 302)
-		from agents.models import PersonName
-		self.assertTrue(PersonName.objects.filter(name='Bob').exists())
+		private_key = ec.generate_private_key(ec.SECP256R1())
+		public_key = private_key.public_key()
+		token = jwt.encode({'sub': 'smoke-test', 'iss': 'test'}, private_key, algorithm='ES256')
+		payload = jwt.decode(token, public_key, algorithms=['ES256'], options={'verify_aud': False})
+		self.assertEqual(payload['sub'], 'smoke-test')
 
 
 # ---------------------------------------------------------------------------
@@ -276,17 +185,17 @@ class AithneMiddlewareTest(SimpleTestCase):
 		mw = self._get_middleware()
 		request = self._make_request(cookie='valid.jwt.token')
 		with patch('lucosauth.middleware.verify_aithne_token',
-				   return_value=('human', '42', ['contacts:read'])) as mock_verify, \
+				   return_value=('42', ['contacts:read'])) as mock_verify, \
 			 patch('lucosauth.middleware.map_principal') as mock_map:
 			mw(request)
 		mock_verify.assert_called_once_with('valid.jwt.token')
-		mock_map.assert_called_once_with(request, 'human', '42', ['contacts:read'])
+		mock_map.assert_called_once_with(request, '42', ['contacts:read'])
 
 	def test_valid_bearer_token_calls_verify_and_map(self):
 		mw = self._get_middleware()
 		request = self._make_request(auth_header='Bearer valid.jwt.token')
 		with patch('lucosauth.middleware.verify_aithne_token',
-				   return_value=('agent', 'lucos-ux', ['render-ui'])) as mock_verify, \
+				   return_value=('lucos-ux', ['render-ui'])) as mock_verify, \
 			 patch('lucosauth.middleware.map_principal') as mock_map:
 			mw(request)
 		mock_verify.assert_called_once_with('valid.jwt.token')
@@ -317,11 +226,11 @@ class AithneMiddlewareTest(SimpleTestCase):
 		mock_user = MagicMock()
 		mock_user.is_authenticated = True
 
-		def fake_map(req, pc, sub, scopes):
+		def fake_map(req, sub, scopes):
 			req.user = mock_user
 
 		with patch('lucosauth.middleware.verify_aithne_token',
-				   return_value=('human', '42', ['contacts:read'])), \
+				   return_value=('42', ['contacts:read'])), \
 			 patch('lucosauth.middleware.map_principal', side_effect=fake_map):
 			mw(request)
 		self.assertEqual(request.aithne_scopes, ['contacts:read'])
@@ -372,7 +281,6 @@ class RequireScopeDecoratorTest(SimpleTestCase):
 			user = MagicMock(spec=User)
 			user.is_authenticated = True
 			user.username = 'testuser'
-			user._is_api_user = False  # prevent MagicMock(spec=) auto-attr from being truthy
 			request.user = user
 		else:
 			request.user = AnonymousUser()
@@ -423,15 +331,25 @@ class RequireScopeDecoratorTest(SimpleTestCase):
 		# next= must be a full URL (testserver is the RequestFactory host)
 		self.assertIn('testserver', location)
 
-	def test_machine_auth_bypasses_scope_check(self):
-		"""EnvVarUser (_is_api_user=True) passes @require_scope without aithne scopes."""
+	def test_machine_user_with_scope_passes(self):
+		"""EnvVarUser with the required scope in .scopes passes @require_scope."""
 		from lucosauth.envvars import EnvVarUser
 		view = self._make_protected_view('contacts:read')
 		request = self.factory.get('/people/all')
-		request.user = EnvVarUser(system='test:test', apikey='testkey1234')
+		request.user = EnvVarUser(system='importer', apikey='testkey1234', scopes=['contacts:read'])
 		request.aithne_scopes = []
 		response = view(request)
 		self.assertEqual(response.status_code, 200)
+
+	def test_machine_user_without_scope_returns_403(self):
+		"""EnvVarUser with no matching scope in .scopes is rejected with 403."""
+		from lucosauth.envvars import EnvVarUser
+		view = self._make_protected_view('contacts:write')
+		request = self.factory.get('/people/all')
+		request.user = EnvVarUser(system='readonly_caller', apikey='testkey5678')
+		request.aithne_scopes = []
+		response = view(request)
+		self.assertEqual(response.status_code, 403)
 
 	def test_authenticated_wrong_scope_not_redirected(self):
 		"""Branch 2 (403) — not branch 3 (redirect) — when authenticated but missing scope."""
@@ -442,52 +360,20 @@ class RequireScopeDecoratorTest(SimpleTestCase):
 
 
 # ---------------------------------------------------------------------------
-# verify_aithne_token — principal_class allowlist
+# verify_aithne_token — returns (sub, scopes)
 # ---------------------------------------------------------------------------
 
-class VerifyAithneTokenPrincipalClassTest(SimpleTestCase):
-	"""verify_aithne_token passes through principal_class without filtering.
+class VerifyAithneTokenTest(SimpleTestCase):
+	"""verify_aithne_token returns (sub, scopes) on success, None on failure.
 
-	Scope is the gate (ADR-0002 §4/§6) — principal_class is surfaced to callers
-	for logging/display but never used to reject tokens.
+	Scope is the gate (ADR-0002 §4/§6) — principal_class is logged but not
+	returned.  Authorization never branches on who the principal is.
 	"""
 
-	def _make_mock_jwks_client(self):
-		mock = MagicMock()
-		mock.get_signing_key_from_jwt.return_value = MagicMock()
-		return mock
-
 	@patch('lucosauth.aithne._jwks_client')
 	@patch('jwt.decode')
-	def test_unknown_principal_class_is_accepted(self, mock_decode, mock_jwks_client):
-		"""A token with an unrecognised principal_class is accepted — scope is the gate."""
-		mock_decode.return_value = {
-			'principal_class': 'alien',
-			'sub': '42',
-			'scopes': ['contacts:read'],
-		}
-		from lucosauth.aithne import verify_aithne_token
-		result = verify_aithne_token('some.jwt.token')
-		self.assertIsNotNone(result)
-		self.assertEqual(result[0], 'alien')
-
-	@patch('lucosauth.aithne._jwks_client')
-	@patch('jwt.decode')
-	def test_none_principal_class_is_accepted(self, mock_decode, mock_jwks_client):
-		"""A token with no principal_class claim is accepted — scope is the gate."""
-		mock_decode.return_value = {
-			'sub': '42',
-			'scopes': ['contacts:read'],
-		}
-		from lucosauth.aithne import verify_aithne_token
-		result = verify_aithne_token('some.jwt.token')
-		self.assertIsNotNone(result)
-		self.assertIsNone(result[0])  # principal_class passthrough is None
-
-	@patch('lucosauth.aithne._jwks_client')
-	@patch('jwt.decode')
-	def test_human_principal_class_is_accepted(self, mock_decode, mock_jwks_client):
-		"""A token with principal_class='human' is accepted and returned."""
+	def test_valid_token_returns_sub_and_scopes(self, mock_decode, mock_jwks_client):
+		"""A valid token returns a (sub, scopes) 2-tuple."""
 		mock_decode.return_value = {
 			'principal_class': 'human',
 			'sub': '42',
@@ -496,12 +382,14 @@ class VerifyAithneTokenPrincipalClassTest(SimpleTestCase):
 		from lucosauth.aithne import verify_aithne_token
 		result = verify_aithne_token('some.jwt.token')
 		self.assertIsNotNone(result)
-		self.assertEqual(result[0], 'human')
+		sub, scopes = result
+		self.assertEqual(sub, '42')
+		self.assertEqual(scopes, ['contacts:read'])
 
 	@patch('lucosauth.aithne._jwks_client')
 	@patch('jwt.decode')
-	def test_agent_principal_class_is_accepted(self, mock_decode, mock_jwks_client):
-		"""A token with principal_class='agent' is accepted and returned."""
+	def test_agent_token_returns_sub_and_scopes(self, mock_decode, mock_jwks_client):
+		"""An agent token returns its sub and scopes — principal_class not in result."""
 		mock_decode.return_value = {
 			'principal_class': 'agent',
 			'sub': 'lucos-ux',
@@ -510,7 +398,23 @@ class VerifyAithneTokenPrincipalClassTest(SimpleTestCase):
 		from lucosauth.aithne import verify_aithne_token
 		result = verify_aithne_token('some.jwt.token')
 		self.assertIsNotNone(result)
-		self.assertEqual(result[0], 'agent')
+		sub, scopes = result
+		self.assertEqual(sub, 'lucos-ux')
+		self.assertEqual(scopes, ['render-ui'])
+
+	@patch('lucosauth.aithne._jwks_client')
+	@patch('jwt.decode')
+	def test_token_without_principal_class_is_accepted(self, mock_decode, mock_jwks_client):
+		"""A token without a principal_class claim is accepted — scope is the gate."""
+		mock_decode.return_value = {
+			'sub': '42',
+			'scopes': ['contacts:read'],
+		}
+		from lucosauth.aithne import verify_aithne_token
+		result = verify_aithne_token('some.jwt.token')
+		self.assertIsNotNone(result)
+		sub, scopes = result
+		self.assertEqual(sub, '42')
 
 
 # ---------------------------------------------------------------------------
@@ -531,7 +435,7 @@ class MapPrincipalAgentTest(TestCase):
 		request.user = AnonymousUser()
 
 		from lucosauth.aithne import map_principal
-		map_principal(request, 'human', str(person.pk), ['contacts:read'])
+		map_principal(request, str(person.pk), ['contacts:read'])
 
 		self.assertIsNotNone(request.user)
 		self.assertTrue(request.user.is_authenticated)
@@ -545,7 +449,7 @@ class MapPrincipalAgentTest(TestCase):
 		request.user = original_user
 
 		from lucosauth.aithne import map_principal
-		map_principal(request, 'human', 'not-an-int', ['contacts:read'])
+		map_principal(request, 'not-an-int', ['contacts:read'])
 
 		# Should not have replaced the user
 		self.assertIs(request.user, original_user)

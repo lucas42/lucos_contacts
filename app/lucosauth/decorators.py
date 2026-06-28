@@ -25,32 +25,30 @@ def api_auth(func):
 
 
 def require_scope(scope):
-	"""Decorator that enforces aithne JWT authentication and scope on a view.
+	"""Decorator that enforces scope-based authorization on a view.
 
 	Three-branch pattern (ADR-0002 §4):
 	  1. Required scope present → proceed.
-	     (Scopes are only populated when the JWT verifies, so this implies
-	     a valid token — no need to check is_authenticated separately.)
 	  2. Scope absent + authenticated (valid JWT or machine @api_auth) → styled
 	     403 naming only the missing scope (no scope enumeration).
 	     Not a redirect — re-login yields the same token, which would loop.
 	  3. Scope absent + not authenticated (no valid JWT) → redirect to
 	     aithne login with the current page as ?next= (full absolute URL).
 
-	When stacked with @api_auth, machine-authed requests (EnvVarUser with
-	_is_api_user=True) are let through without scope checks — machine auth is
-	handled entirely by @api_auth and does not use aithne scopes.
+	Scope resolution (unified for machine and human principals):
+	  - Machine principals (EnvVarUser from @api_auth): scopes from .scopes
+	    attribute, populated by CLIENT_KEYS |scope suffix parsing.
+	  - Human principals (aithne JWT): scopes from request.aithne_scopes,
+	    populated by AithneAuthMiddleware.
 
 	request.aithne_scopes is populated by AithneAuthMiddleware.
 	"""
 	def decorator(f):
 		@wraps(f)
 		def _decorator(request, *args, **kwargs):
-			# Machine auth (@api_auth) already handled — bypass aithne scope check.
-			if getattr(request.user, '_is_api_user', False):
-				return f(request, *args, **kwargs)
-
-			scopes = getattr(request, 'aithne_scopes', [])
+			# Unified scope resolution: prefer user.scopes (machine principal)
+			# over request.aithne_scopes (JWT principal).
+			scopes = getattr(request.user, 'scopes', None) or getattr(request, 'aithne_scopes', [])
 
 			# Branch 1: scope present → proceed
 			if scope in scopes:

@@ -3,7 +3,9 @@ from lucosauth.decorators import api_auth, require_scope
 from django.http import HttpResponse, Http404, HttpResponseBadRequest, JsonResponse
 from django import utils
 from django.shortcuts import redirect, render
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views import View
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 from django.core.exceptions import MultipleObjectsReturned
@@ -19,101 +21,102 @@ from .utils_conneg import negotiate_response_format
 from .utils_rdf import agent_to_rdf, agent_list_to_rdf
 from django.conf import settings
 
-@csrf_exempt
-@api_auth
-@require_scope('contacts:read')
-def agent(request, extid, method=None):
-	if (extid == 'me'):
-		# API requests have no concept of 'me'
-		if (request.user.agent == None):
-			raise Http404
-		return redirect(request.user.agent)
-	if (extid == 'add'):
-		if (request.method == 'POST'):
-			is_api_user = getattr(request.user, '_is_api_user', False)
-			# Require contacts:write scope for cookie-authenticated users creating
-			# new contacts — contacts:read is a browse-only grant.  Machine API
-			# key users (_is_api_user) bypass scope checks entirely.
-			if not is_api_user and 'contacts:write' not in getattr(request, 'aithne_scopes', []):
-				return HttpResponse(
-					"contacts:write scope required to create contacts\n",
-					status=403,
-					content_type="text/plain",
-				)
-			# CSRF protection for cookie-authenticated users: require a JSON body
-			# (a non-simple CORS request) so cross-site form POSTs are blocked by
-			# the browser's preflight check even when aithne_session is SameSite=None.
-			# Machine API key clients use Authorization headers (not cookies), so
-			# they are not at CSRF risk and may send form-encoded or JSON bodies.
-			content_type = request.content_type or ''
-			if not is_api_user and not content_type.startswith('application/json'):
-				return HttpResponse(status=415, content="JSON body required (Content-Type: application/json)\n")
-			if content_type.startswith('application/json'):
-				try:
-					data = json.loads(request.body)
-				except (json.JSONDecodeError, ValueError):
-					return HttpResponseBadRequest("Invalid JSON body\n")
-				name = data.get('name')
-			else:
-				# Machine API key client: legacy form-encoded POST
-				name = request.POST.get('name')
-			if not name:
-				return HttpResponseBadRequest("No name provided\n")
-			newagent = Person()
-			newagent.save()
-			nameObject = PersonName(name=name, agent=newagent)
-			nameObject.save()
-			contactCreated(newagent)
-			return redirect(newagent)
+
+def _resolve_person(extid):
+	"""Look up Person by external ID. Returns (ext, agent) or raises Http404.
+
+	Raises Http404 if no ExternalPerson with that pk exists.
+	Returns (ext, agent) where agent may differ from ext (canonical redirect case).
+	"""
 	try:
 		ext = ExternalPerson.objects.get(pk=extid)
-		agent = ext.agent
 	except ExternalPerson.DoesNotExist:
 		raise Http404
-	if (agent.id != ext.id):
-		return redirect(agent)
-	
-	fmt, rdf_info = negotiate_response_format(request)
-	if fmt == "json":
-		return JsonResponse({'id': agent.id, 'name': agent.getName(), 'url': agent.get_absolute_url()})
-	if fmt == "rdf":
-		graph = agent_to_rdf(agent, include_type_label=True)
-		rdflib_format, content_type = rdf_info
-		return HttpResponse(graph.serialize(format=rdflib_format), content_type=f'{content_type}; charset={settings.DEFAULT_CHARSET}')
-	output = serializePerson(agent=agent, currentagent=request.user.agent, extended=True)
-	if (method == 'accounts'):
-		if (request.method == 'POST'):
-			accountlist = json.loads(request.body)
-			agentModified = False
-			for accountData in accountlist:
-				try:
-					(_, created) = BaseAccount.get_or_create(agent=agent, **accountData)
-					if created:
-						agentModified = True
-				except ObjectDoesNotExist as e:
-					return HttpResponse(status=400, content=e.args[0]+"\n")
-				# Treat Multiple Account Objects like one already existed
-				except MultipleObjectsReturned as e:
-					continue
-			if agentModified:
-				contactUpdated(agent)
-		return HttpResponse(status=204)
-	elif (method == 'starred'):
-		if (request.method == 'PUT'):
-			agent.starred = (request.body.decode('utf-8').lower() == "true")
-			agent.save()
-			contactStarChanged(agent)
-		return HttpResponse(content=str(agent.starred))
-	else:
-		template = 'agent.html'
+	return ext, ext.agent
 
+
+@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(api_auth, name='dispatch')
+@method_decorator(require_scope('contacts:read'), name='dispatch')
+class PersonDetailView(View):
+	"""GET /people/{extid} — person detail (read-only, contacts:read)."""
+
+	def get(self, request, extid):
+		if extid == 'me':
+			# API and machine callers have no concept of 'me'
+			if request.user.agent is None:
+				raise Http404
+			return redirect(request.user.agent)
+
+		ext, agent = _resolve_person(extid)
+		if agent.id != ext.id:
+			return redirect(agent)
+
+		fmt, rdf_info = negotiate_response_format(request)
+		if fmt == "json":
+			return JsonResponse({'id': agent.id, 'name': agent.getName(), 'url': agent.get_absolute_url()})
+		if fmt == "rdf":
+			graph = agent_to_rdf(agent, include_type_label=True)
+			rdflib_format, content_type = rdf_info
+			return HttpResponse(graph.serialize(format=rdflib_format), content_type=f'{content_type}; charset={settings.DEFAULT_CHARSET}')
+
+		output = serializePerson(agent=agent, currentagent=request.user.agent, extended=True)
 		# Puts a zero width space before the at sign in emails
-		# So that long email addresses get split across lines in a more sensible place
-		output['email'] = [{"view": email.replace("@","​@"), "raw": email} for email in output['email']]
-
-		# Set the page title to the agent's name
+		# so that long email addresses get split across lines in a more sensible place.
+		output['email'] = [{"view": email.replace("@", "​@"), "raw": email} for email in output['email']]
 		output['title'] = output['name']
-	return render(None, 'agents/'+template, output)
+		return render(None, 'agents/agent.html', output)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(api_auth, name='dispatch')
+@method_decorator(require_scope('contacts:write'), name='dispatch')
+class PersonAccountsView(View):
+	"""POST /people/{extid}/accounts — update account links (contacts:write)."""
+
+	def post(self, request, extid):
+		ext, agent = _resolve_person(extid)
+		if agent.id != ext.id:
+			return redirect(agent)
+
+		accountlist = json.loads(request.body)
+		agentModified = False
+		for accountData in accountlist:
+			try:
+				(_, created) = BaseAccount.get_or_create(agent=agent, **accountData)
+				if created:
+					agentModified = True
+			except ObjectDoesNotExist as e:
+				return HttpResponse(status=400, content=e.args[0]+"\n")
+			# Treat Multiple Account Objects like one already existed
+			except MultipleObjectsReturned:
+				continue
+		if agentModified:
+			contactUpdated(agent)
+		return HttpResponse(status=204)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(api_auth, name='dispatch')
+class PersonStarredView(View):
+	"""GET/PUT /people/{extid}/starred — read (contacts:read) or update (contacts:write)."""
+
+	@method_decorator(require_scope('contacts:read'))
+	def get(self, request, extid):
+		ext, agent = _resolve_person(extid)
+		if agent.id != ext.id:
+			return redirect(agent)
+		return HttpResponse(content=str(agent.starred))
+
+	@method_decorator(require_scope('contacts:write'))
+	def put(self, request, extid):
+		ext, agent = _resolve_person(extid)
+		if agent.id != ext.id:
+			return redirect(agent)
+		agent.starred = (request.body.decode('utf-8').lower() == "true")
+		agent.save()
+		contactStarChanged(agent)
+		return HttpResponse(content=str(agent.starred))
 	
 
 @csrf_exempt

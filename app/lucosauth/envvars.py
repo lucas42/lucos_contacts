@@ -6,13 +6,11 @@ class EnvVarUser(AnonymousUser):
 	agent = None
 	USERNAME_FIELD = 'system'
 	REQUIRED_FIELDS = []
-	# Marker so @require_scope can identify machine-authed requests and skip
-	# the aithne scope check (machine auth is handled entirely by @api_auth).
-	_is_api_user = True
-	def __init__(self, system, apikey):
+	def __init__(self, system, apikey, scopes=None):
 		super().__init__()
 		self.system = system
 		self.apikey = apikey
+		self.scopes = scopes or []
 	def is_authenticated(self):
 		return True
 	def is_staff(self):
@@ -44,8 +42,15 @@ if rawkeys:
 	for rawpair in pairs:
 		pair = rawpair.split("=",2)
 		system = pair[0].strip()
-		apikey = pair[1].strip()
-		user = EnvVarUser(system, apikey)
+		# The value part may include a |scope suffix: "key|contacts:write"
+		raw_value = pair[1].strip()
+		if '|' in raw_value:
+			apikey, scope_str = raw_value.split('|', 1)
+			scopes = [s.strip() for s in scope_str.split(',') if s.strip()]
+		else:
+			apikey = raw_value
+			scopes = []
+		user = EnvVarUser(system, apikey, scopes=scopes)
 		usersByKey[apikey] = user
 		if system.startswith("external_calendar:"):
 			calendar_user = user

@@ -18,7 +18,9 @@ def direct_admin_login(request, extra_context=None):
 admin.site.login = direct_admin_login
 
 urlpatterns = [
-	re_path(r'^people/(?P<extid>(\d+|me|add))(/(?P<method>(view|accounts|starred)))?/?$', agents_views.agent),
+	re_path(r'^people/(?P<extid>(\d+|me))/?$', agents_views.PersonDetailView.as_view()),
+	re_path(r'^people/(?P<extid>\d+)/accounts/?$', agents_views.PersonAccountsView.as_view()),
+	re_path(r'^people/(?P<extid>\d+)/starred/?$', agents_views.PersonStarredView.as_view()),
 	re_path(r'^people/(?P<list>(phone|postal|gifts|starred|all))$', agents_views.agentindex),
 	re_path(r'^calendar/?$', calendar_views.renderCalendar),
 	re_path(r'^calendar.ics$', calendar_views.outputICalendar),

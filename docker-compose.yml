@@ -57,7 +57,7 @@ services:
     image: lucas42/lucos_contacts_app:${VERSION:-latest}
     environment:
       - SECRET_KEY=test
-      - CLIENT_KEYS=external_calendar:test=1234
+      - CLIENT_KEYS=external_calendar:test=1234|contacts:read,contacts:write
       - APP_ORIGIN=http://localhost:8013
     depends_on:
       - db

@@ -9,10 +9,10 @@ contacts-specific differences from the eolas reference:
     authority aithne calls, so a missing Person is a genuine config error.
 
 Public API:
-  verify_aithne_token(token_str)                      -> (principal_class, sub, scopes) or None
-  map_principal(request, principal_class, sub, scopes) -> None
-  aithne_login_redirect(request, next_path=None)       -> HttpResponseRedirect
-  get_aithne_origin()                                  -> str
+  verify_aithne_token(token_str)             -> (sub, scopes) or None
+  map_principal(request, sub, scopes)        -> None
+  aithne_login_redirect(request, next_path=None) -> HttpResponseRedirect
+  get_aithne_origin()                        -> str
 """
 
 import logging
@@ -91,8 +91,8 @@ def get_aithne_origin():
 def verify_aithne_token(token_str):
     """Verify an aithne-issued JWT.
 
-    Returns a (principal_class, sub, scopes) tuple on success, or None on any
-    failure (bad signature, expired, missing claims, etc.).
+    Returns a (sub, scopes) tuple on success, or None on any failure
+    (bad signature, expired, missing claims, etc.).
 
     - ES256 with algorithm pinning (never trust the header alg field)
     - iss == AITHNE_ORIGIN, aud contains l42.eu
@@ -142,22 +142,21 @@ def verify_aithne_token(token_str):
         logger.warning("JWT rejected: %s — %s", type(exc).__name__, exc)
         return None
 
-    principal_class = payload.get("principal_class")
     scopes = payload.get("scopes") or []
     sub = payload["sub"]
+    principal_class = payload.get("principal_class")  # for logging only
     logger.debug(
         "JWT verified: principal_class=%s sub=%.30s scopes=%s",
         principal_class, sub, scopes,
     )
-    return (principal_class, sub, scopes)
+    return (sub, scopes)
 
 
-def map_principal(request, principal_class, sub, scopes):
+def map_principal(request, sub, scopes):
     """Map a verified JWT principal to a Django user and populate request.user.
 
     Authorization is scope-only (ADR-0002 §4/§6): is_staff and is_superuser
-    are derived from scopes, never from principal_class.  principal_class is
-    used only to identify the principal in log output.
+    are derived from scopes only.
 
     contacts-specific: sub is resolved to a Person (by pk), then a Django User
     is created/fetched for the session.  User.first_name is populated from
@@ -224,8 +223,8 @@ def map_principal(request, principal_class, sub, scopes):
     user.agent = person
     request.user = user
     logger.debug(
-        "Mapped %s '%s' → User pk=%s (Person pk=%s, name=%r) staff=%s superuser=%s",
-        principal_class, sub[:30], user.pk, person_pk, person.getName(),
+        "Mapped sub='%s' → User pk=%s (Person pk=%s, name=%r) staff=%s superuser=%s",
+        sub[:30], user.pk, person_pk, person.getName(),
         user.is_staff, user.is_superuser,
     )
 

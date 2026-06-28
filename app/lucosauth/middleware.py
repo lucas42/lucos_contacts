@@ -66,9 +66,9 @@ class AithneAuthMiddleware:
             request.user = AnonymousUser()
             result = verify_aithne_token(token)
             if result is not None:
-                principal_class, sub, scopes = result
+                sub, scopes = result
                 request.aithne_scopes = scopes
-                map_principal(request, principal_class, sub, scopes)
+                map_principal(request, sub, scopes)
             else:
                 logger.warning(
                     "aithne token present (via %s) but verification failed — "
