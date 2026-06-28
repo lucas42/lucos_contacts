@@ -63,39 +63,39 @@ class ApiAuthDecoratorTest(TestCase):
 
 
 # ---------------------------------------------------------------------------
-# /people/add — CSRF protection via JSON-only body
+# /people/add — write scope and CSRF protection
 # ---------------------------------------------------------------------------
 
 class AgentAddCsrfProtectionTest(TestCase):
-	"""POST /people/add must require application/json to block simple-form CSRF.
+	"""POST /people/add enforces contacts:write scope for cookie-authenticated users.
 
-	aithne_session is SameSite=None — cross-site form POSTs include it.
-	Requiring JSON (a non-simple Content-Type) forces a CORS preflight, which
-	the browser blocks for cross-origin requests without CORS headers.
+	Machine API key users (_is_api_user) bypass scope and content-type checks —
+	they use Authorization headers (not cookies) so are not at CSRF risk and
+	may send form-encoded or JSON bodies.
+
+	Cookie-authenticated users (aithne_session) must send JSON (a non-simple
+	CORS request requiring a preflight) to prevent cross-site form attacks
+	when aithne_session is SameSite=None.
 	"""
 
 	def setUp(self):
 		self.client = Client()
 
-	def test_form_encoded_post_returns_415(self):
-		"""A form-encoded POST (the classic CSRF vector) is rejected with 415."""
-		response = self.client.post(
-			'/people/add',
-			data={'name': 'Eve'},
-			content_type='application/x-www-form-urlencoded',
-			**AUTH_HEADER,
-		)
-		self.assertEqual(response.status_code, 415)
+	# ── Machine API key user behaviour ─────────────────────────────────────────
 
-	def test_non_json_content_type_returns_415(self):
-		"""A POST with text/plain Content-Type (not application/json) is rejected with 415."""
-		response = self.client.post(
-			'/people/add',
-			data='name=Eve',
-			content_type='text/plain',
-			**AUTH_HEADER,
-		)
-		self.assertEqual(response.status_code, 415)
+	def test_api_key_form_encoded_post_creates_person(self):
+		"""Machine API key clients may use form-encoded POST — not at CSRF risk."""
+		from urllib.parse import urlencode
+		with patch('agents.views.contactCreated'):
+			response = self.client.post(
+				'/people/add',
+				data=urlencode({'name': 'Eve'}),
+				content_type='application/x-www-form-urlencoded',
+				**AUTH_HEADER,
+			)
+		self.assertEqual(response.status_code, 302)
+		from agents.models import PersonName
+		self.assertTrue(PersonName.objects.filter(name='Eve').exists())
 
 	def test_invalid_json_returns_400(self):
 		"""A POST with Content-Type: application/json but invalid body returns 400."""
@@ -130,6 +130,63 @@ class AgentAddCsrfProtectionTest(TestCase):
 		self.assertEqual(response.status_code, 302)
 		from agents.models import PersonName
 		self.assertTrue(PersonName.objects.filter(name='Alice').exists())
+
+	# ── Cookie-authenticated (aithne) user behaviour ───────────────────────────
+
+	@patch('lucosauth.middleware.verify_aithne_token')
+	def test_cookie_user_form_encoded_returns_415(self, mock_verify):
+		"""Cookie-authenticated user: form-encoded POST is rejected (CSRF vector)."""
+		person = Person.objects.create()
+		mock_verify.return_value = ('human', str(person.pk), ['contacts:read', 'contacts:write'])
+		self.client.cookies['aithne_session'] = 'fake.jwt.token'
+		response = self.client.post(
+			'/people/add',
+			data={'name': 'Eve'},
+			content_type='application/x-www-form-urlencoded',
+		)
+		self.assertEqual(response.status_code, 415)
+
+	@patch('lucosauth.middleware.verify_aithne_token')
+	def test_cookie_user_text_plain_returns_415(self, mock_verify):
+		"""Cookie-authenticated user: text/plain POST is rejected (simple CORS request)."""
+		person = Person.objects.create()
+		mock_verify.return_value = ('human', str(person.pk), ['contacts:read', 'contacts:write'])
+		self.client.cookies['aithne_session'] = 'fake.jwt.token'
+		response = self.client.post(
+			'/people/add',
+			data='name=Eve',
+			content_type='text/plain',
+		)
+		self.assertEqual(response.status_code, 415)
+
+	@patch('lucosauth.middleware.verify_aithne_token')
+	def test_cookie_user_missing_write_scope_returns_403(self, mock_verify):
+		"""Cookie user with contacts:read but not contacts:write: 403."""
+		person = Person.objects.create()
+		mock_verify.return_value = ('human', str(person.pk), ['contacts:read'])
+		self.client.cookies['aithne_session'] = 'fake.jwt.token'
+		response = self.client.post(
+			'/people/add',
+			data=json.dumps({'name': 'Eve'}),
+			content_type='application/json',
+		)
+		self.assertEqual(response.status_code, 403)
+
+	@patch('agents.views.contactCreated')
+	@patch('lucosauth.middleware.verify_aithne_token')
+	def test_cookie_user_with_write_scope_creates_person(self, mock_verify, mock_loganne):
+		"""Cookie user with contacts:write can create via JSON POST."""
+		person = Person.objects.create()
+		mock_verify.return_value = ('human', str(person.pk), ['contacts:read', 'contacts:write'])
+		self.client.cookies['aithne_session'] = 'fake.jwt.token'
+		response = self.client.post(
+			'/people/add',
+			data=json.dumps({'name': 'Bob'}),
+			content_type='application/json',
+		)
+		self.assertEqual(response.status_code, 302)
+		from agents.models import PersonName
+		self.assertTrue(PersonName.objects.filter(name='Bob').exists())
 
 
 # ---------------------------------------------------------------------------
@@ -389,7 +446,11 @@ class RequireScopeDecoratorTest(SimpleTestCase):
 # ---------------------------------------------------------------------------
 
 class VerifyAithneTokenPrincipalClassTest(SimpleTestCase):
-	"""verify_aithne_token must reject tokens with an unknown principal_class."""
+	"""verify_aithne_token passes through principal_class without filtering.
+
+	Scope is the gate (ADR-0002 §4/§6) — principal_class is surfaced to callers
+	for logging/display but never used to reject tokens.
+	"""
 
 	def _make_mock_jwks_client(self):
 		mock = MagicMock()
@@ -398,8 +459,8 @@ class VerifyAithneTokenPrincipalClassTest(SimpleTestCase):
 
 	@patch('lucosauth.aithne._jwks_client')
 	@patch('jwt.decode')
-	def test_unknown_principal_class_returns_none(self, mock_decode, mock_jwks_client):
-		"""A token whose principal_class is not 'human' or 'agent' is rejected."""
+	def test_unknown_principal_class_is_accepted(self, mock_decode, mock_jwks_client):
+		"""A token with an unrecognised principal_class is accepted — scope is the gate."""
 		mock_decode.return_value = {
 			'principal_class': 'alien',
 			'sub': '42',
@@ -407,19 +468,21 @@ class VerifyAithneTokenPrincipalClassTest(SimpleTestCase):
 		}
 		from lucosauth.aithne import verify_aithne_token
 		result = verify_aithne_token('some.jwt.token')
-		self.assertIsNone(result)
+		self.assertIsNotNone(result)
+		self.assertEqual(result[0], 'alien')
 
 	@patch('lucosauth.aithne._jwks_client')
 	@patch('jwt.decode')
-	def test_none_principal_class_returns_none(self, mock_decode, mock_jwks_client):
-		"""A token with no principal_class claim is rejected."""
+	def test_none_principal_class_is_accepted(self, mock_decode, mock_jwks_client):
+		"""A token with no principal_class claim is accepted — scope is the gate."""
 		mock_decode.return_value = {
 			'sub': '42',
 			'scopes': ['contacts:read'],
 		}
 		from lucosauth.aithne import verify_aithne_token
 		result = verify_aithne_token('some.jwt.token')
-		self.assertIsNone(result)
+		self.assertIsNotNone(result)
+		self.assertIsNone(result[0])  # principal_class passthrough is None
 
 	@patch('lucosauth.aithne._jwks_client')
 	@patch('jwt.decode')

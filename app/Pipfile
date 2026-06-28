@@ -12,6 +12,7 @@ icalendar = "*"
 psycopg = {extras = ["c"], version = "*"}
 rdflib = "*"
 PyJWT = {extras = ["cryptography"], version = "*"}
+cryptography = "*"
 
 [dev-packages]
 

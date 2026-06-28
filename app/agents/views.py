@@ -30,17 +30,33 @@ def agent(request, extid, method=None):
 		return redirect(request.user.agent)
 	if (extid == 'add'):
 		if (request.method == 'POST'):
-			# Require JSON body so this endpoint is a non-simple request in the
-			# CORS sense — JSON POST requires a preflight, blocking cross-site
-			# form attacks even when aithne_session is SameSite=None.
+			is_api_user = getattr(request.user, '_is_api_user', False)
+			# Require contacts:write scope for cookie-authenticated users creating
+			# new contacts — contacts:read is a browse-only grant.  Machine API
+			# key users (_is_api_user) bypass scope checks entirely.
+			if not is_api_user and 'contacts:write' not in getattr(request, 'aithne_scopes', []):
+				return HttpResponse(
+					"contacts:write scope required to create contacts\n",
+					status=403,
+					content_type="text/plain",
+				)
+			# CSRF protection for cookie-authenticated users: require a JSON body
+			# (a non-simple CORS request) so cross-site form POSTs are blocked by
+			# the browser's preflight check even when aithne_session is SameSite=None.
+			# Machine API key clients use Authorization headers (not cookies), so
+			# they are not at CSRF risk and may send form-encoded or JSON bodies.
 			content_type = request.content_type or ''
-			if not content_type.startswith('application/json'):
+			if not is_api_user and not content_type.startswith('application/json'):
 				return HttpResponse(status=415, content="JSON body required (Content-Type: application/json)\n")
-			try:
-				data = json.loads(request.body)
-			except (json.JSONDecodeError, ValueError):
-				return HttpResponseBadRequest("Invalid JSON body\n")
-			name = data.get('name')
+			if content_type.startswith('application/json'):
+				try:
+					data = json.loads(request.body)
+				except (json.JSONDecodeError, ValueError):
+					return HttpResponseBadRequest("Invalid JSON body\n")
+				name = data.get('name')
+			else:
+				# Machine API key client: legacy form-encoded POST
+				name = request.POST.get('name')
 			if not name:
 				return HttpResponseBadRequest("No name provided\n")
 			newagent = Person()
@@ -102,7 +118,7 @@ def agent(request, extid, method=None):
 
 @csrf_exempt
 @api_auth
-@require_scope('contacts:admin')
+@require_scope('contacts:write')
 @require_http_methods(["POST"])
 def importer(request):
 	data = json.loads(request.body)

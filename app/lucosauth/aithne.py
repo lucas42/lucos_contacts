@@ -143,12 +143,6 @@ def verify_aithne_token(token_str):
         return None
 
     principal_class = payload.get("principal_class")
-    if principal_class not in ("human", "agent"):
-        logger.warning(
-            "JWT rejected: unknown principal_class %r (expected 'human' or 'agent')",
-            principal_class,
-        )
-        return None
     scopes = payload.get("scopes") or []
     sub = payload["sub"]
     logger.debug(

@@ -213,14 +213,18 @@ class RelationshipInlineJourneyTest(AdminJourneyTestCase):
 				break
 
 		# ── Step 3: POST and verify relationship is NOT deleted ───────────────
-		# follow=False: PersonAdmin.response_change redirects to the person's
-		# public page (agent.get_absolute_url()), which is now gated by
-		# @require_scope.  The admin test authenticates via LucosUser (old
-		# session auth, no aithne scopes), so following the redirect would yield
-		# 403.  A 302 here is the correct success signal — the admin POST
-		# completed and the redirect proves it.
+		# follow=False to capture the redirect without following it.
+		# A bare 302 is not enough: a failed authentication would also return a
+		# 302 redirect (to aithne login).  We assert that the Location header
+		# points to Alice's public page — PersonAdmin.response_change redirects
+		# there on a successful POST — not to the aithne login endpoint.
 		post_response = self.client.post(change_url, post_data, follow=False)
 		self.assertEqual(post_response.status_code, 302)
+		self.assertIn(
+			alice.get_absolute_url(),
+			post_response['Location'],
+			"Expected success redirect to alice's public page, got: " + post_response.get('Location', ''),
+		)
 
 		self.assertTrue(
 			Relationship.objects.filter(pk=rel.pk).exists(),
