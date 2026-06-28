@@ -75,9 +75,9 @@ class AithneAuthMiddleware:
                     "treating %s as unauthenticated (see rejection reason above)",
                     source, request.path,
                 )
-        else:
-            logger.debug("No aithne token on %s — proceeding as anonymous", request.path)
         # No JWT: leave request.user as set by AuthenticationMiddleware (session auth).
+        # (No log here — unauthenticated requests to /_info and similar public
+        # endpoints are expected; a log line per healthcheck is just noise.)
 
         return self.get_response(request)
 

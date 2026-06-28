@@ -141,6 +141,24 @@ class LoginViewAithneRedirectTest(SimpleTestCase):
 			response = loginview(request)
 		self.assertNotIn('token=sometoken', response['Location'])
 
+	def test_authenticated_user_gets_403_not_redirect(self):
+		"""Authenticated user hitting /accounts/login returns 403, not aithne redirect.
+
+		An authenticated user sent to /accounts/login lacks a required scope or
+		is_staff flag — not an aithne session.  Redirecting to aithne login is
+		unhelpful (they'd get the same token back); 403 makes the problem clear.
+		"""
+		from unittest.mock import MagicMock
+		request = self.factory.get('/accounts/login?next=/admin/')
+		user = MagicMock()
+		user.is_authenticated = True
+		request.user = user
+		with patch.dict('os.environ', {'AITHNE_ORIGIN': 'http://aithne.test'}):
+			response = loginview(request)
+		self.assertEqual(response.status_code, 403)
+		# Must NOT redirect to aithne login
+		self.assertFalse(hasattr(response, 'url') and 'aithne.test' in response.get('Location', ''))
+
 
 # ---------------------------------------------------------------------------
 # AithneAuthMiddleware
