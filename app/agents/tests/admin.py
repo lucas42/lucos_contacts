@@ -213,8 +213,18 @@ class RelationshipInlineJourneyTest(AdminJourneyTestCase):
 				break
 
 		# ── Step 3: POST and verify relationship is NOT deleted ───────────────
-		post_response = self.client.post(change_url, post_data, follow=True)
-		self.assertEqual(post_response.status_code, 200)
+		# follow=False to capture the redirect without following it.
+		# A bare 302 is not enough: a failed authentication would also return a
+		# 302 redirect (to aithne login).  We assert that the Location header
+		# points to Alice's public page — PersonAdmin.response_change redirects
+		# there on a successful POST — not to the aithne login endpoint.
+		post_response = self.client.post(change_url, post_data, follow=False)
+		self.assertEqual(post_response.status_code, 302)
+		self.assertIn(
+			alice.get_absolute_url(),
+			post_response['Location'],
+			"Expected success redirect to alice's public page, got: " + post_response.get('Location', ''),
+		)
 
 		self.assertTrue(
 			Relationship.objects.filter(pk=rel.pk).exists(),
