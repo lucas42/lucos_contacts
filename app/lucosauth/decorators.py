@@ -48,7 +48,10 @@ def require_scope(scope):
 		def _decorator(request, *args, **kwargs):
 			# Unified scope resolution: prefer user.scopes (machine principal)
 			# over request.aithne_scopes (JWT principal).
-			scopes = getattr(request.user, 'scopes', None) or getattr(request, 'aithne_scopes', [])
+			# Must use `is not None` — an empty list is a valid (scopeless) machine
+			# credential and must not fall through to aithne_scopes.
+			user_scopes = getattr(request.user, 'scopes', None)
+			scopes = user_scopes if user_scopes is not None else getattr(request, 'aithne_scopes', [])
 
 			# Branch 1: scope present → proceed
 			if scope in scopes:

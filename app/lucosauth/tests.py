@@ -351,6 +351,21 @@ class RequireScopeDecoratorTest(SimpleTestCase):
 		response = view(request)
 		self.assertEqual(response.status_code, 403)
 
+	def test_machine_user_without_scope_ignores_aithne_scopes(self):
+		"""Scopeless EnvVarUser is not elevated by a JWT cookie on the same request.
+
+		AithneAuthMiddleware populates request.aithne_scopes before @api_auth
+		overrides request.user, so a machine key without |scope suffix that also
+		carries an aithne_session cookie must NOT inherit the JWT's scopes.
+		"""
+		from lucosauth.envvars import EnvVarUser
+		view = self._make_protected_view('contacts:read')
+		request = self.factory.get('/people/all')
+		request.user = EnvVarUser(system='scopeless_caller', apikey='nokey')
+		request.aithne_scopes = ['contacts:read']  # JWT cookie bleed-through
+		response = view(request)
+		self.assertEqual(response.status_code, 403)
+
 	def test_authenticated_wrong_scope_not_redirected(self):
 		"""Branch 2 (403) — not branch 3 (redirect) — when authenticated but missing scope."""
 		view = self._make_protected_view('contacts:admin')
