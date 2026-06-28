@@ -11,7 +11,7 @@ django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
 icalendar = "*"
 psycopg = {extras = ["c"], version = "*"}
 rdflib = "*"
-PyJWT = {extras = ["cryptography"], version = "*"}
+PyJWT = "*"
 cryptography = "*"
 
 [dev-packages]
