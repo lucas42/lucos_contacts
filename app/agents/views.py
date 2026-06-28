@@ -75,6 +75,12 @@ class PersonAccountsView(View):
 	"""POST /people/{extid}/accounts — update account links (contacts:write)."""
 
 	def post(self, request, extid):
+		# Require JSON body to prevent CSRF via cross-origin simple requests.
+		# aithne_session is SameSite=None so a text/plain cross-origin fetch
+		# (no preflight) would carry the cookie — reject non-JSON before parsing.
+		if not (request.content_type or '').startswith('application/json'):
+			return HttpResponse(status=415, content="JSON body required (Content-Type: application/json)\n")
+
 		ext, agent = _resolve_person(extid)
 		if agent.id != ext.id:
 			return redirect(agent)
@@ -124,6 +130,11 @@ class PersonStarredView(View):
 @require_scope('contacts:write')
 @require_http_methods(["POST"])
 def importer(request):
+	# Require JSON body to prevent CSRF via cross-origin simple requests.
+	# aithne_session is SameSite=None so a text/plain cross-origin fetch
+	# (no preflight) would carry the cookie — reject non-JSON before parsing.
+	if not (request.content_type or '').startswith('application/json'):
+		return HttpResponse(status=415, content="JSON body required (Content-Type: application/json)\n")
 	data = json.loads(request.body)
 	output = importPerson(data)
 	return JsonResponse(output)

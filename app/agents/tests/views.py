@@ -327,3 +327,73 @@ class ContentNegotiationTest(TestCase):
 		response = self.client.get(f'/people/{self.person.id}', **AUTH_HEADER)
 		self.assertEqual(response.status_code, 200)
 		self.assertIn('text/html', response['Content-Type'])
+
+
+# ---------------------------------------------------------------------------
+# Content-Type enforcement on mutation endpoints
+# ---------------------------------------------------------------------------
+
+class MutationEndpointContentTypeTest(TestCase):
+	"""POST /people/{id}/accounts and POST /people/import enforce Content-Type.
+
+	aithne_session is SameSite=None so a cross-origin text/plain fetch (a CORS
+	"simple" request — no preflight required) would carry the cookie, allowing
+	an attacker's page to POST valid JSON and trigger mutations.  Both endpoints
+	must reject non-JSON Content-Type with 415 before parsing the body.
+	"""
+
+	def setUp(self):
+		self.client = Client()
+		self.person = make_person('Alice')
+
+	# ── /people/{id}/accounts ───────────────────────────────────────────────
+
+	def test_accounts_non_json_content_type_returns_415(self):
+		"""POST /people/{id}/accounts with text/plain body is rejected."""
+		response = self.client.post(
+			f'/people/{self.person.id}/accounts',
+			data='[]',
+			content_type='text/plain',
+			**AUTH_HEADER,
+		)
+		self.assertEqual(response.status_code, 415)
+
+	def test_accounts_form_encoded_returns_415(self):
+		"""POST /people/{id}/accounts with form-encoded body is rejected."""
+		response = self.client.post(
+			f'/people/{self.person.id}/accounts',
+			data={'type': 'email', 'address': 'a@example.com'},
+			**AUTH_HEADER,
+		)
+		self.assertEqual(response.status_code, 415)
+
+	def test_accounts_json_content_type_accepted(self):
+		"""POST /people/{id}/accounts with application/json body is accepted."""
+		response = self.client.post(
+			f'/people/{self.person.id}/accounts',
+			data=json.dumps([]),
+			content_type='application/json',
+			**AUTH_HEADER,
+		)
+		self.assertEqual(response.status_code, 204)
+
+	# ── /people/import ──────────────────────────────────────────────────────
+
+	def test_importer_non_json_content_type_returns_415(self):
+		"""POST /people/import with text/plain body is rejected."""
+		response = self.client.post(
+			'/people/import',
+			data='{}',
+			content_type='text/plain',
+			**AUTH_HEADER,
+		)
+		self.assertEqual(response.status_code, 415)
+
+	def test_importer_form_encoded_returns_415(self):
+		"""POST /people/import with form-encoded body is rejected."""
+		response = self.client.post(
+			'/people/import',
+			data={'identifiers': '[]'},
+			**AUTH_HEADER,
+		)
+		self.assertEqual(response.status_code, 415)
