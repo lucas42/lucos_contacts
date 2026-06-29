@@ -31,6 +31,7 @@ services:
       - APP_ORIGIN
       - AITHNE_ORIGIN
       - AITHNE_JWKS_URL
+      - ENVIRONMENT
     restart: always
     depends_on:
       db:
