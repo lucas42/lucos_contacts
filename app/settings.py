@@ -104,9 +104,8 @@ INSTALLED_APPS = (
 SECRET_KEY = os.environ["SECRET_KEY"]
 
 AUTHENTICATION_BACKENDS = (
-    'lucosauth.models.LucosAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
-AUTH_DOMAIN = 'auth.l42.eu'
 
 SECURE_PROXY_SSL_HEADER = (
 	'HTTP_X_FORWARDED_PROTO', 'https'
