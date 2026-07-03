@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "5344b399a644b378f8b7069158d194f7c29941ca1ef733a6fc16bcfe183d4e84"
+            "sha256": "cdd3f007c796adb1130bbdbf0fd18704bcad4933fd475d90b60b3c587523667d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -366,11 +366,12 @@
         },
         "phonenumbers": {
             "hashes": [
-                "sha256:9ab8a02b940b90c64f3866c0b25a30e567ddf7bb9836a3e11efdb0478f65fc1c",
-                "sha256:ba1d0da52711d5fdda6b2b673b2621fe80774fc5d1b2e5a6ef783396b0343186"
+                "sha256:00751c75d1166485ca80ce02ec15b6a61a2628e9b313381579330bc70c934075",
+                "sha256:1221bf8e65bd2c02770226488af806d4636814bc997104d3a1f7de6ed6410bd2"
             ],
+            "index": "pypi",
             "markers": "python_version >= '2.5'",
-            "version": "==9.0.33"
+            "version": "==9.0.34"
         },
         "psycopg": {
             "extras": [
@@ -461,11 +462,12 @@
         },
         "typing-extensions": {
             "hashes": [
-                "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466",
-                "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"
+                "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+                "sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5"
             ],
+            "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==4.15.0"
+            "version": "==4.16.0"
         },
         "tzdata": {
             "hashes": [
