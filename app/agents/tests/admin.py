@@ -27,7 +27,6 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from agents.models import Person, PersonName, Relationship
-from lucosauth.models import LucosUser
 
 
 def make_person(name=None):
@@ -44,28 +43,20 @@ class AdminJourneyTestCase(TestCase):
 
 	Provides:
 
-	- An authenticated ``django.test.Client`` logged in as a ``LucosUser``.
-	  Any ``LucosUser`` instance passes Django admin's ``is_staff`` check
-	  because ``LucosUser.is_staff`` is a regular method (not a property);
-	  accessing it as an attribute returns a truthy bound-method object.
-	- A companion native ``User`` row with the same primary key, required to
-	  satisfy the ``django_admin_log`` foreign key (this mirrors the HACK
-	  comment in ``LucosAuthBackend.authenticate``).
+	- An authenticated ``django.test.Client`` logged in as a native ``User``
+	  with ``is_staff``/``is_superuser`` set, matching how aithne's
+	  ``map_principal`` authenticates staff in production (a native ``User``
+	  authenticated via ``django.contrib.auth.backends.ModelBackend``, not
+	  the retired ``LucosAuthBackend``/``LucosUser`` session flow).
 	- The ``make_person`` helper for creating test agents with optional names.
 	- The ``_post_data_from_response`` helper for building POST data from a
 	  Person change-form GET response.
 	"""
 
 	def setUp(self):
-		self.admin_person = Person.objects.create()
-		self.admin_user = LucosUser.objects.create(agent=self.admin_person)
-		# HACK: satisfy django_admin_log FK — mirrors LucosAuthBackend.authenticate
-		User.objects.create(id=self.admin_user.id)
+		self.admin_user = User.objects.create(username='admin-test', is_staff=True, is_superuser=True)
 		self.client = Client()
-		self.client.force_login(
-			self.admin_user,
-			backend='lucosauth.models.LucosAuthBackend',
-		)
+		self.client.force_login(self.admin_user)
 
 	def _post_data_from_response(self, response):
 		"""
