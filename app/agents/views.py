@@ -54,7 +54,13 @@ class PersonDetailView(View):
 
 		fmt, rdf_info = negotiate_response_format(request)
 		if fmt == "json":
-			return JsonResponse({'id': agent.id, 'name': agent.getName(), 'url': agent.get_absolute_url()})
+			# primary_email is derived the same way serializePerson computes it,
+			# so this machine-readable endpoint (consumed by lucos_aithne's
+			# contactsClient.Get(), ADR-0003 item 4) stays in sync with the one
+			# already used by the HTML profile page, loganne events, and the
+			# importer.
+			primary_email = serializePerson(agent=agent).get('primary_email')
+			return JsonResponse({'id': agent.id, 'name': agent.getName(), 'url': agent.get_absolute_url(), 'primary_email': primary_email})
 		if fmt == "rdf":
 			graph = agent_to_rdf(agent, include_type_label=True)
 			rdflib_format, content_type = rdf_info

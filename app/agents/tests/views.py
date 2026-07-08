@@ -2,7 +2,7 @@ import json
 from datetime import date
 from unittest.mock import patch
 from django.test import TestCase, Client
-from agents.models import Person, PersonName, RomanticRelationship
+from agents.models import Person, PersonName, RomanticRelationship, EmailAddress
 
 
 AUTH_HEADER = {'HTTP_AUTHORIZATION': 'bearer 1234'}
@@ -109,6 +109,41 @@ class PersonDetailJsonTest(TestCase):
 		self.assertEqual(data['id'], alice.id)
 		self.assertEqual(data['name'], 'Alice')
 		self.assertIn('url', data)
+
+	def test_primary_email_present_when_set(self):
+		alice = make_person('Alice')
+		EmailAddress.objects.create(agent=alice, address='alice@example.com')
+		response = self.client.get(
+			f'/people/{alice.id}',
+			HTTP_ACCEPT='application/json',
+			**AUTH_HEADER,
+		)
+		data = json.loads(response.content)
+		self.assertEqual(data['primary_email'], 'alice@example.com')
+
+	def test_primary_email_null_when_no_email(self):
+		alice = make_person('Alice')
+		response = self.client.get(
+			f'/people/{alice.id}',
+			HTTP_ACCEPT='application/json',
+			**AUTH_HEADER,
+		)
+		data = json.loads(response.content)
+		self.assertIsNone(data['primary_email'])
+
+	def test_primary_email_reflects_designated_primary(self):
+		alice = make_person('Alice')
+		EmailAddress.objects.create(agent=alice, address='old@example.com')
+		newest = EmailAddress.objects.create(agent=alice, address='new@example.com')
+		newest.is_primary = True
+		newest.save()
+		response = self.client.get(
+			f'/people/{alice.id}',
+			HTTP_ACCEPT='application/json',
+			**AUTH_HEADER,
+		)
+		data = json.loads(response.content)
+		self.assertEqual(data['primary_email'], 'new@example.com')
 
 	def test_rdf_still_works(self):
 		"""Existing RDF content negotiation is unaffected on individual page."""
