@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from django.db import IntegrityError, transaction
 from django.test import TestCase
-from agents.models import Person, Relationship
+from agents.models import Person, Relationship, EmailAddress
 from agents.models.relationshipTypes import Parent, Child, Sibling
 
 def get_agents_by_relType(subject, relType):
@@ -196,3 +197,75 @@ class DeathTest(TestCase):
 		luke = Person.objects.create()
 		luke.is_dead =False
 		self.assertFalse(luke.is_dead)
+
+class EmailAddressPrimaryTest(TestCase):
+
+	def test_first_active_email_is_auto_primary(self):
+		luke = Person.objects.create()
+		email = EmailAddress.objects.create(agent=luke, address='luke@example.com')
+		self.assertTrue(email.is_primary)
+
+	def test_second_email_is_not_auto_primary(self):
+		luke = Person.objects.create()
+		first = EmailAddress.objects.create(agent=luke, address='first@example.com')
+		second = EmailAddress.objects.create(agent=luke, address='second@example.com')
+		self.assertTrue(first.is_primary)
+		self.assertFalse(second.is_primary)
+
+	def test_setting_new_primary_unsets_old_one(self):
+		luke = Person.objects.create()
+		first = EmailAddress.objects.create(agent=luke, address='first@example.com')
+		second = EmailAddress.objects.create(agent=luke, address='second@example.com')
+
+		second.is_primary = True
+		second.save()
+		first.refresh_from_db()
+
+		self.assertFalse(first.is_primary)
+		self.assertTrue(second.is_primary)
+
+	def test_inactive_email_cannot_be_primary(self):
+		luke = Person.objects.create()
+		email = EmailAddress.objects.create(agent=luke, address='luke@example.com', active=False)
+		self.assertFalse(email.is_primary)
+
+	def test_deactivating_the_primary_clears_it(self):
+		luke = Person.objects.create()
+		email = EmailAddress.objects.create(agent=luke, address='luke@example.com')
+		self.assertTrue(email.is_primary)
+
+		email.active = False
+		email.save()
+
+		self.assertFalse(email.is_primary)
+
+	def test_new_active_email_becomes_primary_after_old_primary_deactivated(self):
+		luke = Person.objects.create()
+		first = EmailAddress.objects.create(agent=luke, address='first@example.com')
+		first.active = False
+		first.save()
+
+		second = EmailAddress.objects.create(agent=luke, address='second@example.com')
+		self.assertTrue(second.is_primary)
+
+	def test_person_can_have_no_primary_email(self):
+		luke = Person.objects.create()
+		self.assertFalse(EmailAddress.objects.filter(agent=luke, is_primary=True).exists())
+
+	def test_db_constraint_prevents_two_primaries_for_same_person(self):
+		luke = Person.objects.create()
+		first = EmailAddress.objects.create(agent=luke, address='first@example.com')
+		second = EmailAddress.objects.create(agent=luke, address='second@example.com')
+
+		# Bypass the save() invariant directly to prove the DB-level backstop holds.
+		with self.assertRaises(IntegrityError):
+			with transaction.atomic():
+				EmailAddress.objects.filter(pk=second.pk).update(is_primary=True)
+
+	def test_different_people_can_each_have_their_own_primary(self):
+		luke = Person.objects.create()
+		james = Person.objects.create()
+		lukes_email = EmailAddress.objects.create(agent=luke, address='luke@example.com')
+		james_email = EmailAddress.objects.create(agent=james, address='james@example.com')
+		self.assertTrue(lukes_email.is_primary)
+		self.assertTrue(james_email.is_primary)

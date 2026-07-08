@@ -56,9 +56,42 @@ class PhoneNumber(BaseAccount):
 
 class EmailAddress(BaseAccount):
 	address = models.EmailField(max_length=255, blank=False)
+	is_primary = models.BooleanField(default=False)
 	class Meta:
 		verbose_name = _('email address')
 		verbose_name_plural = _('email addresses')
+		constraints = [
+			# Backstop beneath the save() logic below - guarantees at most one *active*
+			# primary email per person even on write paths that bypass save() (bulk
+			# updates, future API writes).  Zero-primary is allowed (condition only
+			# matches is_primary=True rows).
+			models.UniqueConstraint(fields=['agent'], condition=models.Q(is_primary=True), name='unique_primary_email_per_agent'),
+		]
+
+	def save(self, *args, **kwargs):
+		# is_primary => active: an inactive row can never be the (effective) primary,
+		# since serializePerson only ever looks at active addresses.  If this row has
+		# been deactivated, clear its primary flag regardless of what was passed in -
+		# this may leave the person with no primary until one is (re-)chosen.
+		if not self.active:
+			self.is_primary = False
+
+		# If this agent has no active primary email, and this row is active, make it
+		# the primary (auto-first) - mirrors PersonName.save(), scoped to active rows.
+		if self.active:
+			primaryCount = EmailAddress.objects.filter(agent=self.agent, is_primary=True, active=True).count()
+			if primaryCount == 0:
+				self.is_primary = True
+
+		# If this is the primary email, ensure none of the other emails for this agent
+		# are primary any more (unset-others-then-set, so a single save never leaves
+		# two rows holding it at once).
+		if self.is_primary:
+			queryset = EmailAddress.objects.filter(agent=self.agent)
+			if self.pk:
+				queryset = queryset.exclude(pk=self.pk)
+			queryset.update(is_primary=False)
+		super().save(*args, **kwargs)
 
 class PostalAddress(BaseAccount):
 	address = models.CharField(max_length=255, blank=False)

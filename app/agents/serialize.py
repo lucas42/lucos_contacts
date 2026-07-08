@@ -48,6 +48,7 @@ def serializePerson(agent, currentagent=None, extended=False):
 		rawaddresses.append(postaladdress.address)
 		formattedaddresses.append(postaladdress.address.replace(',', ',\n'))
 	emailaddresses = [email.address for email in agent.emailaddress_set.all() if email.active]
+	primaryemail = next((email.address for email in agent.emailaddress_set.all() if email.active and email.is_primary), None)
 	facebookaccounts = [facebookaccount.userid for facebookaccount in agent.facebookaccount_set.all() if facebookaccount.active]
 	googlecontacts = [googlecontact.contactid for googlecontact in agent.googlecontact_set.all() if googlecontact.active]
 	googlephotoprofiles = [profile.search_path for profile in agent.googlephotosprofile_set.all() if profile.active]
@@ -69,6 +70,7 @@ def serializePerson(agent, currentagent=None, extended=False):
 		'names': all_names,
 		'phone': phonenums,
 		'email': emailaddresses,
+		'primary_email': primaryemail,
 		'url': agent.get_absolute_url(),
 		'addresses': rawaddresses,
 		'formattedaddresses': formattedaddresses,
