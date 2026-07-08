@@ -26,7 +26,7 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from agents.models import Person, PersonName, Relationship
+from agents.models import Person, PersonName, Relationship, EmailAddress
 
 
 def make_person(name=None):
@@ -222,6 +222,103 @@ class RelationshipInlineJourneyTest(AdminJourneyTestCase):
 			"With can_delete=False, the inline DELETE flag must have no effect — "
 			"the relationship row must still exist after the POST.",
 		)
+
+
+class EmailPrimaryAdminJourneyTest(AdminJourneyTestCase):
+	"""
+	Journey tests for editing EmailAddress.is_primary via the Person admin's
+	EmailInline - specifically the two failure modes lucas42 hit in review of
+	lucas42/lucos_contacts#768 that unit-level model tests didn't catch,
+	because they only exercise EmailAddress.save() directly and never go
+	through Model.full_clean() (ModelForm/admin does; plain .save() doesn't).
+	"""
+
+	def _email_formset_prefix(self, response):
+		for inline_admin_formset in response.context['inline_admin_formsets']:
+			if inline_admin_formset.formset.model is EmailAddress:
+				return inline_admin_formset.formset.prefix
+		raise AssertionError("EmailAddress inline formset not found in response context")
+
+	def test_single_save_primary_swap(self):
+		"""Unselecting one email's is_primary and selecting another's in the
+		same admin save must succeed - not raise a spurious constraint error.
+
+		Django's Model.full_clean() (called by ModelForm) runs
+		validate_constraints() against the pre-transaction DB state for each
+		form independently, before any form in the formset has saved. Without
+		EmailAddress.validate_constraints() excluding the primary-email
+		constraint, swapping primary between two of a person's own emails in
+		one submission always failed here, because the old primary still
+		looked like a live duplicate at validation time even though save()'s
+		own unset-others-then-set ordering would never actually violate it.
+		"""
+		alice = make_person('Alice')
+		old_primary = EmailAddress.objects.create(agent=alice, address='old@example.com')
+		new_primary = EmailAddress.objects.create(agent=alice, address='new@example.com')
+		self.assertTrue(old_primary.is_primary)
+		self.assertFalse(new_primary.is_primary)
+
+		change_url = reverse('admin:agents_person_change', args=[alice.pk])
+		get_response = self.client.get(change_url)
+		self.assertEqual(get_response.status_code, 200)
+		post_data = self._post_data_from_response(get_response)
+		prefix = self._email_formset_prefix(get_response)
+
+		for inline_admin_formset in get_response.context['inline_admin_formsets']:
+			fs = inline_admin_formset.formset
+			if fs.model is not EmailAddress:
+				continue
+			for i, form in enumerate(fs.initial_forms):
+				if form.instance.pk == old_primary.pk:
+					post_data.pop(f'{prefix}-{i}-is_primary', None)  # unchecked = absent from POST
+				if form.instance.pk == new_primary.pk:
+					post_data[f'{prefix}-{i}-is_primary'] = 'on'
+
+		post_response = self.client.post(change_url, post_data, follow=False)
+		self.assertEqual(post_response.status_code, 302)
+
+		old_primary.refresh_from_db()
+		new_primary.refresh_from_db()
+		self.assertFalse(old_primary.is_primary)
+		self.assertTrue(new_primary.is_primary)
+
+	def test_marking_inactive_email_primary_is_a_validation_error(self):
+		"""Submitting is_primary=True together with active=False must surface
+		a clear validation error, not silently drop the primary flag."""
+		alice = make_person('Alice')
+		email = EmailAddress.objects.create(agent=alice, address='alice@example.com', active=False)
+		self.assertFalse(email.is_primary)
+
+		change_url = reverse('admin:agents_person_change', args=[alice.pk])
+		get_response = self.client.get(change_url)
+		self.assertEqual(get_response.status_code, 200)
+		post_data = self._post_data_from_response(get_response)
+		prefix = self._email_formset_prefix(get_response)
+
+		for inline_admin_formset in get_response.context['inline_admin_formsets']:
+			fs = inline_admin_formset.formset
+			if fs.model is not EmailAddress:
+				continue
+			for i, form in enumerate(fs.initial_forms):
+				if form.instance.pk == email.pk:
+					post_data[f'{prefix}-{i}-is_primary'] = 'on'
+					post_data.pop(f'{prefix}-{i}-active', None)  # stays inactive
+
+		post_response = self.client.post(change_url, post_data, follow=False)
+		self.assertEqual(post_response.status_code, 200)  # re-rendered with errors, not a redirect
+
+		errors = None
+		for inline_admin_formset in post_response.context['inline_admin_formsets']:
+			if inline_admin_formset.formset.model is EmailAddress:
+				errors = inline_admin_formset.formset.errors
+		self.assertIsNotNone(errors)
+		self.assertTrue(
+			any('is_primary' in form_errors for form_errors in errors),
+			f"Expected an is_primary validation error, got: {errors}",
+		)
+
+		email.refresh_from_db()
+		self.assertFalse(email.is_primary)
 
 
 @override_settings(LANGUAGE_CODE='en-us')

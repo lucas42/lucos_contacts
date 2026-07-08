@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
+from django.db import models, router
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from phonenumber_field.modelfields import PhoneNumberField
 from .agent import Person, PersonName
 from django.utils.translation import gettext_lazy as _
@@ -67,6 +67,58 @@ class EmailAddress(BaseAccount):
 			# matches is_primary=True rows).
 			models.UniqueConstraint(fields=['agent'], condition=models.Q(is_primary=True), name='unique_primary_email_per_agent'),
 		]
+
+	# Named so validate_constraints() below can skip re-checking it pre-save
+	# without silently swallowing any other constraint EmailAddress might gain.
+	PRIMARY_CONSTRAINT_NAME = 'unique_primary_email_per_agent'
+
+	def clean(self):
+		super().clean()
+		# is_primary => active, surfaced as an explicit validation error rather
+		# than save()'s silent auto-clear (see below) - so an admin user who
+		# marks an inactive email primary (or deactivates a currently-primary
+		# one without also unsetting is_primary) gets a clear explanation
+		# instead of the checkbox quietly reverting with no feedback.
+		# save() still auto-clears for any write path that skips validation
+		# (bulk updates, scripts, migrations) - this is purely about giving a
+		# human editing the admin form a chance to fix their intent.
+		if self.is_primary and not self.active:
+			raise ValidationError({'is_primary': _("An inactive email address can't be set as primary - reactivate it, or unset primary, first.")})
+
+	def validate_constraints(self, exclude=None):
+		# Skip Django's automatic pre-save check of PRIMARY_CONSTRAINT_NAME
+		# (Model.full_clean() -> validate_constraints(), added in Django 4.1).
+		# That check queries the CURRENT (pre-transaction) DB state for each
+		# instance independently, before ANY form in a formset has saved - so
+		# swapping the primary between two of a person's own emails in a single
+		# admin-inline-formset submission always fails it: at validation time the
+		# old primary still shows as is_primary=True, so the new primary's own
+		# validation sees a "duplicate" that was never actually going to exist
+		# once both forms save (Django surfaces this as "Constraint
+		# unique_primary_email_per_agent is violated").
+		#
+		# The invariant itself is enforced correctly elsewhere: save() below
+		# clears every other row's is_primary before setting this one
+		# (unset-others-then-set), so at no SQL statement boundary do two rows
+		# ever hold is_primary=True - the swap genuinely is safe in one save.
+		# The DB constraint remains as the real backstop for write paths that
+		# bypass save() entirely (bulk updates, future API writes); only this
+		# redundant, overly-eager pre-save check is skipped. Any other
+		# constraint added to this model in future is still validated normally.
+		using = router.db_for_write(self.__class__, instance=self)
+		errors = {}
+		for constraint in self._meta.constraints:
+			if constraint.name == self.PRIMARY_CONSTRAINT_NAME:
+				continue
+			try:
+				constraint.validate(self.__class__, self, exclude=exclude, using=using)
+			except ValidationError as e:
+				if getattr(e, 'code', None) == 'unique' and len(constraint.fields) == 1:
+					errors.setdefault(constraint.fields[0], []).append(e)
+				else:
+					errors = e.update_error_dict(errors)
+		if errors:
+			raise ValidationError(errors)
 
 	def save(self, *args, **kwargs):
 		# is_primary => active: an inactive row can never be the (effective) primary,
