@@ -168,6 +168,47 @@ class RelationshipTest(TestCase):
 		self.assertTrue(Person.objects.filter(pk=main_id).exists())
 		self.assertFalse(Person.objects.filter(pk=secondary_person.pk).exists())
 
+	def test_merge_two_agents_both_have_primary_email(self):
+		"""Merging two people who each already have their own primary email must not
+		trip the partial-unique constraint - and mainagent's existing primary wins."""
+		from agents.admin import PersonAdmin
+		from django.contrib.admin.sites import AdminSite
+
+		main_person = Person.objects.create()
+		secondary_person = Person.objects.create()
+		main_email = EmailAddress.objects.create(agent=main_person, address='main@example.com')
+		secondary_email = EmailAddress.objects.create(agent=secondary_person, address='secondary@example.com')
+		self.assertTrue(main_email.is_primary)
+		self.assertTrue(secondary_email.is_primary)
+
+		admin_instance = PersonAdmin(Person, AdminSite())
+		admin_instance._merge_two_agents(main_person, secondary_person)
+
+		emails = EmailAddress.objects.filter(agent=main_person)
+		self.assertEqual(emails.count(), 2)
+		primaries = emails.filter(is_primary=True)
+		self.assertEqual(primaries.count(), 1)
+		self.assertEqual(primaries.first().address, 'main@example.com')
+
+	def test_merge_two_agents_only_secondary_has_primary_email(self):
+		"""If mainagent has no primary email of its own, the merged-in address
+		(secondary's former primary) is auto-designated primary - same auto-first
+		behaviour as adding a person's first active email."""
+		from agents.admin import PersonAdmin
+		from django.contrib.admin.sites import AdminSite
+
+		main_person = Person.objects.create()
+		secondary_person = Person.objects.create()
+		secondary_email = EmailAddress.objects.create(agent=secondary_person, address='secondary@example.com')
+		self.assertTrue(secondary_email.is_primary)
+
+		admin_instance = PersonAdmin(Person, AdminSite())
+		admin_instance._merge_two_agents(main_person, secondary_person)
+
+		primaries = EmailAddress.objects.filter(agent=main_person, is_primary=True)
+		self.assertEqual(primaries.count(), 1)
+		self.assertEqual(primaries.first().address, 'secondary@example.com')
+
 class RelationshipTypeTest(TestCase):
 
 	def test_parent_relationship(self):

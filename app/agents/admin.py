@@ -165,7 +165,17 @@ class PersonAdmin(admin.ModelAdmin):
 		ExternalPerson.objects.filter(agent=secondary).update(agent=mainagent)
 		PersonName.objects.filter(agent=secondary).update(agent=mainagent)
 		PhoneNumber.objects.filter(agent=secondary).update(agent=mainagent)
-		EmailAddress.objects.filter(agent=secondary).update(agent=mainagent)
+		# Clear is_primary on reassignment - secondary's primary (if any) would
+		# otherwise collide with mainagent's own primary under the partial-unique
+		# constraint (both agent=mainagent, is_primary=True, in the same bulk
+		# UPDATE). If mainagent ends up with active emails but no primary as a
+		# result, re-save the oldest one to let EmailAddress.save()'s auto-first
+		# logic pick a new primary, same as it would for a freshly added address.
+		EmailAddress.objects.filter(agent=secondary).update(agent=mainagent, is_primary=False)
+		if not EmailAddress.objects.filter(agent=mainagent, active=True, is_primary=True).exists():
+			firstEmail = EmailAddress.objects.filter(agent=mainagent, active=True).order_by('pk').first()
+			if firstEmail is not None:
+				firstEmail.save()
 		PostalAddress.objects.filter(agent=secondary).update(agent=mainagent)
 		FacebookAccount.objects.filter(agent=secondary).update(agent=mainagent)
 		GoogleAccount.objects.filter(agent=secondary).update(agent=mainagent)
