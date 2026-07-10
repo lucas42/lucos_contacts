@@ -490,8 +490,9 @@ class LKGJWKSClientReachabilityTest(SimpleTestCase):
 	"""
 
 	def setUp(self):
-		from lucosauth.aithne import _LKGJWKSClient, PyJWKClientNetworkError
+		from lucosauth.aithne import _LKGJWKSClient, PyJWKClientNetworkError, PyJWKClientError
 		self.error_cls = PyJWKClientNetworkError
+		self.base_error_cls = PyJWKClientError
 		self.client = _LKGJWKSClient.__new__(_LKGJWKSClient)
 		self.client._client = MagicMock()
 		self.client._last_good_key = None
@@ -500,6 +501,27 @@ class LKGJWKSClientReachabilityTest(SimpleTestCase):
 		self.client._lock = threading.Lock()
 
 	def test_starts_reachable(self):
+		self.assertFalse(self.client.is_unreachable())
+
+	def test_network_error_class_is_not_the_broad_base_class(self):
+		"""Regression guard for the compat shim: PyJWKClientNetworkError must
+		resolve to PyJWT's connection-specific exception (PyJWKClientConnectionError,
+		added 2.8.0), not silently alias the broad PyJWKClientError base class —
+		otherwise unrelated errors like "kid not found" get miscategorised as
+		an aithne outage. This only asserts inequality (not identity with
+		PyJWKClientConnectionError) so it still passes on a hypothetical older
+		PyJWT where the base-class fallback is the only option available."""
+		self.assertIsNot(self.error_cls, self.base_error_cls)
+
+	def test_kid_not_found_error_does_not_mark_unreachable(self):
+		"""A bare PyJWKClientError (e.g. "kid not found" after a successful
+		JWKS refresh) means the endpoint WAS reached — it must propagate
+		without flipping the reachability signal."""
+		self.client._client.get_signing_key_from_jwt.side_effect = self.base_error_cls(
+			'Unable to find a signing key that matches: "some-kid"'
+		)
+		with self.assertRaises(self.base_error_cls):
+			self.client.get_signing_key_from_jwt('token')
 		self.assertFalse(self.client.is_unreachable())
 
 	def test_cold_start_network_error_marks_unreachable(self):

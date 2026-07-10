@@ -28,10 +28,17 @@ from jwt import PyJWKClient, PyJWKClientError
 
 logger = logging.getLogger(__name__)
 
-# Import PyJWKClientNetworkError if available (PyJWT >= 2.4.0); fall back to
-# the base class so the except clause still catches network failures.
+# PyJWT exports PyJWKClientConnectionError (added in 2.8.0) specifically for a
+# JWKS fetch failing due to a connection/network error — as opposed to the
+# broader PyJWKClientError, which also covers e.g. "kid not found" once the
+# endpoint has been reached successfully.  (PyJWKClientNetworkError never
+# existed in PyJWT's public API — the name below is kept only as our own
+# internal alias for readability at call sites.)  Older PyJWT versions before
+# 2.8.0 don't export it — fall back to the base class so the except clauses
+# below still catch *something*, though at that point they can no longer
+# distinguish a genuine network failure from other JWKS client errors.
 try:
-    from jwt import PyJWKClientNetworkError
+    from jwt import PyJWKClientConnectionError as PyJWKClientNetworkError
 except ImportError:
     PyJWKClientNetworkError = PyJWKClientError
 
