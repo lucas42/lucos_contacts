@@ -477,3 +477,121 @@ class MapPrincipalAgentTest(TestCase):
 
 		# Should not have replaced the user
 		self.assertIs(request.user, original_user)
+
+
+# ---------------------------------------------------------------------------
+# _LKGJWKSClient — reachability tracking (lucas42/lucos_contacts#772)
+# ---------------------------------------------------------------------------
+
+class LKGJWKSClientReachabilityTest(SimpleTestCase):
+	"""_LKGJWKSClient tracks whether the most recent fetch attempt hit a
+	network error, independent of whether a last-known-good key let
+	verification succeed anyway.
+	"""
+
+	def setUp(self):
+		from lucosauth.aithne import _LKGJWKSClient, PyJWKClientNetworkError
+		self.error_cls = PyJWKClientNetworkError
+		self.client = _LKGJWKSClient.__new__(_LKGJWKSClient)
+		self.client._client = MagicMock()
+		self.client._last_good_key = None
+		self.client._unreachable = False
+		import threading
+		self.client._lock = threading.Lock()
+
+	def test_starts_reachable(self):
+		self.assertFalse(self.client.is_unreachable())
+
+	def test_cold_start_network_error_marks_unreachable(self):
+		"""No cached key + network error: fails closed AND marks unreachable."""
+		self.client._client.get_signing_key_from_jwt.side_effect = self.error_cls("boom")
+		with self.assertRaises(self.error_cls):
+			self.client.get_signing_key_from_jwt('token')
+		self.assertTrue(self.client.is_unreachable())
+
+	def test_network_error_with_cached_key_still_marks_unreachable(self):
+		"""Even when a last-known-good key masks the failure from the caller,
+		the reachability signal must still flip — aithne's login page is down
+		regardless of whether an existing session can still verify."""
+		cached_key = MagicMock()
+		self.client._last_good_key = cached_key
+		self.client._client.get_signing_key_from_jwt.side_effect = self.error_cls("boom")
+		result = self.client.get_signing_key_from_jwt('token')
+		self.assertEqual(result, cached_key)
+		self.assertTrue(self.client.is_unreachable())
+
+	def test_successful_fetch_clears_unreachable(self):
+		"""A successful fetch (fresh or from the underlying client's own cache)
+		self-heals the reachability signal — no separate recovery step needed."""
+		self.client._unreachable = True
+		self.client._client.get_signing_key_from_jwt.return_value = 'a-key'
+		result = self.client.get_signing_key_from_jwt('token')
+		self.assertEqual(result, 'a-key')
+		self.assertFalse(self.client.is_unreachable())
+
+
+class IsAithneReachableTest(SimpleTestCase):
+	"""is_aithne_reachable() reflects the shared JWKS client's state."""
+
+	def test_reflects_jwks_client_unreachable(self):
+		import lucosauth.aithne as aithne_mod
+		mock_client = MagicMock()
+		mock_client.is_unreachable.return_value = True
+		with patch.object(aithne_mod, '_jwks_client', mock_client):
+			self.assertFalse(aithne_mod.is_aithne_reachable())
+
+	def test_reflects_jwks_client_reachable(self):
+		import lucosauth.aithne as aithne_mod
+		mock_client = MagicMock()
+		mock_client.is_unreachable.return_value = False
+		with patch.object(aithne_mod, '_jwks_client', mock_client):
+			self.assertTrue(aithne_mod.is_aithne_reachable())
+
+
+# ---------------------------------------------------------------------------
+# require_scope branch 3 — local page vs redirect when aithne is unreachable
+# ---------------------------------------------------------------------------
+
+class RequireScopeAithneUnavailableTest(SimpleTestCase):
+	"""Branch 3 renders a local page instead of redirecting when aithne is
+	known to be unreachable (lucas42/lucos_contacts#772)."""
+
+	def setUp(self):
+		self.factory = RequestFactory()
+
+	def _make_protected_view(self, scope='contacts:read'):
+		@require_scope(scope)
+		def view(request):
+			return HttpResponse(status=200)
+		return view
+
+	def _make_unauth_request(self, path='/people/all'):
+		request = self.factory.get(path)
+		request.user = AnonymousUser()
+		request.aithne_scopes = []
+		return request
+
+	def test_renders_local_page_when_unreachable(self):
+		view = self._make_protected_view()
+		request = self._make_unauth_request()
+		with patch('lucosauth.aithne.is_aithne_reachable', return_value=False):
+			response = view(request)
+		self.assertEqual(response.status_code, 503)
+		self.assertIn(b'temporarily unavailable', response.content.lower())
+
+	def test_does_not_redirect_when_unreachable(self):
+		view = self._make_protected_view()
+		request = self._make_unauth_request()
+		with patch('lucosauth.aithne.is_aithne_reachable', return_value=False):
+			response = view(request)
+		self.assertNotEqual(response.status_code, 302)
+
+	def test_still_redirects_when_reachable(self):
+		"""Existing behaviour is preserved when aithne is up."""
+		view = self._make_protected_view()
+		request = self._make_unauth_request()
+		with patch('lucosauth.aithne.is_aithne_reachable', return_value=True), \
+			 patch.dict('os.environ', {'AITHNE_ORIGIN': 'http://aithne.test'}):
+			response = view(request)
+		self.assertEqual(response.status_code, 302)
+		self.assertIn('/auth/login', response['Location'])

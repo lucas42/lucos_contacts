@@ -1,0 +1,9 @@
+{% extends "agents/base.html" %}
+{% load i18n %}
+
+{% block headtitle %}{% trans 'Sign-in unavailable' %} - LucOs Contacts{% endblock %}
+{% block title %}{% trans 'Sign-in unavailable' %}{% endblock %}
+{% block body %}
+	<p>{% trans "Sign-in is temporarily unavailable. Try again in a few minutes." %}</p>
+	<pre>{% trans "Couldn't reach the authentication service (aithne) to verify your session." %}</pre>
+{% endblock %}

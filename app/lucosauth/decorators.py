@@ -34,6 +34,9 @@ def require_scope(scope):
 	     Not a redirect — re-login yields the same token, which would loop.
 	  3. Scope absent + not authenticated (no valid JWT) → redirect to
 	     aithne login with the current page as ?next= (full absolute URL).
+	     If aithne itself is known unreachable (see is_aithne_reachable()),
+	     render a local "sign-in unavailable" page instead of redirecting
+	     into a dead aithne.
 
 	Scope resolution (unified for machine and human principals):
 	  - Machine principals (EnvVarUser from @api_auth): scopes from .scopes
@@ -73,8 +76,13 @@ def require_scope(scope):
 					content_type="text/html; charset=utf-8",
 				)
 
-			# Branch 3: no valid token → redirect to aithne login
-			from lucosauth.aithne import aithne_login_redirect
+			# Branch 3: no valid token → redirect to aithne login, unless aithne
+			# itself is known unreachable — in that case redirecting just hands
+			# the visitor a dead link with no explanation, so render a local
+			# "sign-in unavailable" page instead.
+			from lucosauth.aithne import aithne_login_redirect, aithne_unavailable_response, is_aithne_reachable
+			if not is_aithne_reachable():
+				return aithne_unavailable_response(request)
 			logger.warning(
 				"Unauthenticated request to %s — no valid aithne token, redirecting to login",
 				request.path,
