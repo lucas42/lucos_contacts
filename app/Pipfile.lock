@@ -324,12 +324,12 @@
         },
         "icalendar": {
             "hashes": [
-                "sha256:32dacc396101825b82f9f1bbdf691c02be613130d5ab7a457e553fcd20959fdd",
-                "sha256:77922b6be57dfcc2e94f93063d2fd7e948ada9b5bdf7b08bebbc684b1b66c7c4"
+                "sha256:6cf904a928881e20c89b682e75bca2eb97e8c5ca629782ed44a519abf4cac1cc",
+                "sha256:90dd280cb4f67d1ef07b5178c2c33db4fc0a05627e50a3758b6b2aa9b117bc07"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==7.2.0"
+            "version": "==7.2.2"
         },
         "idna": {
             "hashes": [
@@ -448,7 +448,6 @@
                 "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
                 "sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5"
             ],
-            "index": "pypi",
             "markers": "python_version >= '3.9'",
             "version": "==4.16.0"
         },
@@ -457,7 +456,6 @@
                 "sha256:4a1518b8993086a7982523e071643f3c0e5f213e75b21318e78bcabfff9d1415",
                 "sha256:dc096730c87af6cab1b171c9d532be840741ff5d459015e7f6947bd7d7e54931"
             ],
-            "index": "pypi",
             "markers": "python_version >= '2'",
             "version": "==2026.3"
         },
