@@ -21,7 +21,6 @@
                 "sha256:59dcb51c272ad209d59bed5708a64a333083e86017d7fcdd67498eeab7784340",
                 "sha256:fe386d1c2bff7259ea95929266d12a8cf9a8b5a1c2598402967d8792e7a7c094"
             ],
-            "index": "pypi",
             "markers": "python_version >= '3.10'",
             "version": "==3.12.1"
         },
@@ -308,11 +307,11 @@
                 "phonenumbers"
             ],
             "hashes": [
-                "sha256:2b83e843dac35eec6a69880a166487235b737a71a1e38c9a52e5ad67d6996083",
-                "sha256:7a1cb3a6456edb54d879f11ffa0acb227ded08c93b587035d0f28093f0e46511"
+                "sha256:19c606fda7bb25630c4913f7ac83c1824186ea17e2e4c6dc9aa9373e8f5843c5",
+                "sha256:a6dd71250f7fd0724aad995df01bdb4ac457a65622f120d0d623792fe8283798"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==8.4.0"
+            "version": "==8.5.0"
         },
         "gunicorn": {
             "hashes": [
@@ -353,7 +352,6 @@
                 "sha256:00751c75d1166485ca80ce02ec15b6a61a2628e9b313381579330bc70c934075",
                 "sha256:1221bf8e65bd2c02770226488af806d4636814bc997104d3a1f7de6ed6410bd2"
             ],
-            "index": "pypi",
             "markers": "python_version >= '2.5'",
             "version": "==9.0.34"
         },
