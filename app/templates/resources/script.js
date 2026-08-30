@@ -120,22 +120,35 @@ const searchForm = document.querySelector("#contact-search-form");
 if (searchForm) {
 	const searchInput = searchForm.querySelector("input[name=q]");
 	let debounceTimer;
+	let requestSeq = 0;
 
-	const fetchResults = async () => {
-		const url = new URL(window.location.href);
-		if (searchInput.value) {
-			url.searchParams.set("q", searchInput.value);
-		} else {
-			url.searchParams.delete("q");
+	// pushHistory=false and an explicit url are used by the popstate handler,
+	// which is re-fetching a URL the browser already navigated to rather than
+	// producing a new one from the input's current value.
+	const fetchResults = async ({ pushHistory = true, url = null } = {}) => {
+		const targetUrl = url || new URL(window.location.href);
+		if (!url) {
+			if (searchInput.value) {
+				targetUrl.searchParams.set("q", searchInput.value);
+			} else {
+				targetUrl.searchParams.delete("q");
+			}
+			targetUrl.searchParams.delete("page");
 		}
-		url.searchParams.delete("page");
 
+		// Debouncing only stops overlapping fetches from being *scheduled*; it
+		// doesn't stop an earlier one still in flight. Under ordinary network
+		// jitter a later request's response can arrive before an earlier one's,
+		// so track which fetch is the most recent and drop any response that's
+		// no longer current.
+		const thisRequest = ++requestSeq;
 		try {
-			const response = await fetch(url);
+			const response = await fetch(targetUrl);
 			if (!response.ok) {
 				throw `Returned ${response.status} status code`;
 			}
 			const html = await response.text();
+			if (thisRequest !== requestSeq) return;
 			const newResults = new DOMParser().parseFromString(html, "text/html").querySelector("#search-results");
 			const oldResults = document.querySelector("#search-results");
 			if (newResults && oldResults) {
@@ -143,7 +156,9 @@ if (searchForm) {
 				bindStars(newResults);
 				bindContentLinks(newResults);
 			}
-			history.pushState({}, "", url);
+			if (pushHistory) {
+				history.pushState({}, "", targetUrl);
+			}
 		}
 		catch (error) {
 			console.error("Failed to update contact search results", error);
@@ -159,5 +174,15 @@ if (searchForm) {
 	searchInput.addEventListener("input", () => {
 		clearTimeout(debounceTimer);
 		debounceTimer = setTimeout(fetchResults, 300);
+	});
+
+	// A search's pushState doesn't itself re-render the page, so without this,
+	// Back/Forward change the URL but leave #search-results showing whatever
+	// was last fetched — the page silently desyncs from the address bar.
+	window.addEventListener("popstate", () => {
+		clearTimeout(debounceTimer);
+		const url = new URL(window.location.href);
+		searchInput.value = url.searchParams.get("q") || "";
+		fetchResults({ pushHistory: false, url });
 	});
 }
