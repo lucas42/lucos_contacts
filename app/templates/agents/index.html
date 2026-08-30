@@ -4,7 +4,20 @@
 {% block headtitle %}LucOs - Contacts{% endblock %}
 {% block title %}Contacts{% endblock %}
 {% block body %}
-		{% include template %}
+		{% trans 'Filter...' as filter_placeholder %}
+		{% trans 'Filter contacts' as filter_label %}
+		<form method="get" class="search-wrapper" id="contact-search-form">
+			<input type="text" name="q" value="{{ query }}"
+				placeholder="{{ filter_placeholder }}"
+				aria-label="{{ filter_label }}"
+				data-filter-placeholder="{{ filter_placeholder }}"
+				data-filter-label="{{ filter_label }}"
+				class="search-input" />
+			<button type="submit">{% trans 'Search' %}</button>
+		</form>
+		<div id="search-results">
+			{% include template %}
+		</div>
 {% endblock %}
 {% block subnav %}
 	<nav class="tools">

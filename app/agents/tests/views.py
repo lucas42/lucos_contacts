@@ -432,3 +432,118 @@ class MutationEndpointContentTypeTest(TestCase):
 			**AUTH_HEADER,
 		)
 		self.assertEqual(response.status_code, 415)
+
+
+class ContactSearchTest(TestCase):
+	"""GET /people/{list}?q=... filters across the whole list, not just the current page."""
+
+	def setUp(self):
+		self.client = Client()
+
+	def test_search_matches_only_the_queried_person(self):
+		alice = make_person('Alice')
+		make_person('Bob')
+		response = self.client.get(
+			'/people/all?q=Ali',
+			HTTP_ACCEPT='application/json',
+			**AUTH_HEADER,
+		)
+		self.assertEqual(response.status_code, 200)
+		data = json.loads(response.content)
+		self.assertEqual(len(data), 1)
+		self.assertEqual(data[0]['id'], alice.id)
+
+	def test_search_matches_non_primary_names(self):
+		"""A PersonName that isn't the primary name is still searchable (matches #90)."""
+		bob = make_person('Bob')
+		PersonName.objects.create(agent=bob, name='Robert')
+		response = self.client.get(
+			'/people/all?q=Robert',
+			HTTP_ACCEPT='application/json',
+			**AUTH_HEADER,
+		)
+		data = json.loads(response.content)
+		self.assertEqual(len(data), 1)
+		self.assertEqual(data[0]['id'], bob.id)
+
+	def test_search_sweeps_beyond_the_first_page(self):
+		"""A match that would fall on page 2+ of /people/all is still found."""
+		for i in range(60):
+			make_person(f'Contact {i:02d}')
+		target = make_person('Zzzfindme')
+		response = self.client.get(
+			'/people/all?q=Zzzfindme',
+			HTTP_ACCEPT='application/json',
+			**AUTH_HEADER,
+		)
+		data = json.loads(response.content)
+		self.assertEqual(len(data), 1)
+		self.assertEqual(data[0]['id'], target.id)
+
+	def test_search_results_paginate_and_page_preserves_query(self):
+		for i in range(55):
+			make_person(f'Findme {i:02d}')
+		make_person('Other')
+
+		first_page = self.client.get('/people/all?q=Findme', HTTP_ACCEPT='text/html', **AUTH_HEADER)
+		self.assertEqual(first_page.status_code, 200)
+		self.assertContains(first_page, 'name="q" value="Findme"')
+		self.assertContains(first_page, 'page=2')
+		self.assertContains(first_page, 'q=Findme')
+		# The 'all' list is paginated at the HTML layer (not the JSON one), so
+		# count rendered rows via the star toggle's data-agentid attribute.
+		self.assertEqual(first_page.content.count(b'data-agentid='), 50)
+
+		second_page = self.client.get(
+			'/people/all?q=Findme&page=2',
+			HTTP_ACCEPT='text/html',
+			**AUTH_HEADER,
+		)
+		self.assertEqual(second_page.status_code, 200)
+		self.assertEqual(second_page.content.count(b'data-agentid='), 5)
+
+	def test_no_match_returns_empty_list(self):
+		make_person('Alice')
+		response = self.client.get(
+			'/people/all?q=Nonexistent',
+			HTTP_ACCEPT='application/json',
+			**AUTH_HEADER,
+		)
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(json.loads(response.content), [])
+
+	def test_search_on_unpaginated_list(self):
+		"""Search on a currently-unpaginated list (e.g. starred) filters, no page_obj involved."""
+		alice = make_person('Alice')
+		alice.starred = True
+		alice.save()
+		bob = make_person('Bob')
+		bob.starred = True
+		bob.save()
+		response = self.client.get(
+			'/people/starred?q=Alice',
+			HTTP_ACCEPT='application/json',
+			**AUTH_HEADER,
+		)
+		data = json.loads(response.content)
+		self.assertEqual(len(data), 1)
+		self.assertEqual(data[0]['id'], alice.id)
+
+	def test_no_query_param_returns_everyone(self):
+		make_person('Alice')
+		make_person('Bob')
+		response = self.client.get('/people/all', HTTP_ACCEPT='application/json', **AUTH_HEADER)
+		data = json.loads(response.content)
+		self.assertEqual(len(data), 2)
+
+	def test_search_input_present_in_html(self):
+		"""The search form renders with a real input carrying the accessible-label/placeholder data.
+
+		Text values aren't asserted here — LANGUAGE_CODE is 'ga-gb', so the
+		rendered strings are Irish translations, not the English msgids.
+		"""
+		response = self.client.get('/people/all', HTTP_ACCEPT='text/html', **AUTH_HEADER)
+		self.assertContains(response, 'id="contact-search-form"')
+		self.assertContains(response, 'name="q"')
+		self.assertContains(response, 'data-filter-label="')
+		self.assertContains(response, 'data-filter-placeholder="')

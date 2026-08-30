@@ -1,38 +1,46 @@
-document.querySelectorAll(".star").forEach(star => {
-	star.addEventListener("click", async event => {
-		star.classList.add("loading");
-		event.preventDefault();
-		const agentid = star.dataset.agentid;
-		const wasStarred = star.dataset.starred == "True";
-		const toStar = !wasStarred;
+function bindStars(root) {
+	root.querySelectorAll(".star").forEach(star => {
+		star.addEventListener("click", async event => {
+			star.classList.add("loading");
+			event.preventDefault();
+			const agentid = star.dataset.agentid;
+			const wasStarred = star.dataset.starred == "True";
+			const toStar = !wasStarred;
 
-		try {
-			const response = await fetch(`/people/${agentid}/starred`, {
-				method: 'PUT',
-				body: toStar
-			});
-			if (response.status !== 200) {
-				throw `Returned ${response.status} status code`;
+			try {
+				const response = await fetch(`/people/${agentid}/starred`, {
+					method: 'PUT',
+					body: toStar
+				});
+				if (response.status !== 200) {
+					throw `Returned ${response.status} status code`;
+				}
+				star.dataset.starred = await response.text();
+				star.classList.remove("loading");
+				star.classList.add("changed", "changed-transition");
+				setTimeout(() => star.classList.remove("changed"), 500);
+				setTimeout(() => star.classList.remove("changed-transition"), 5000);
 			}
-			star.dataset.starred = await response.text();
-			star.classList.remove("loading");
-			star.classList.add("changed", "changed-transition");
-			setTimeout(() => star.classList.remove("changed"), 500);
-			setTimeout(() => star.classList.remove("changed-transition"), 5000);
-		}
-		catch (error) {
-			star.classList.remove("loading");
-			star.classList.add("failed");
-			console.error("Failed to update star", error);
-		}
+			catch (error) {
+				star.classList.remove("loading");
+				star.classList.add("failed");
+				console.error("Failed to update star", error);
+			}
+		});
 	});
-});
-document.querySelectorAll(".content a").forEach(link => {
-	link.target = "_blank";
-});
-document.querySelectorAll(".agenttable .name a").forEach(link => {
-	link.href += "#giftideas";
-});
+}
+
+function bindContentLinks(root) {
+	root.querySelectorAll(".content a").forEach(link => {
+		link.target = "_blank";
+	});
+	root.querySelectorAll(".agenttable .name a").forEach(link => {
+		link.href += "#giftideas";
+	});
+}
+
+bindStars(document);
+bindContentLinks(document);
 
 
 class LanguageSelector extends HTMLElement {
@@ -108,26 +116,48 @@ class LanguageSelector extends HTMLElement {
 }
 customElements.define('language-selector', LanguageSelector);
 
-document.querySelectorAll(".agentlist").forEach((list, index) => {
-	if (list.closest("#relations")) return;
-	const searchWrapper = document.createElement("div");
-	searchWrapper.classList.add("search-wrapper");
-	const searchInput = document.createElement("input");
-	searchInput.type = "text";
-	searchInput.placeholder = list.dataset.filterPlaceholder || "Filter...";
-	searchInput.id = `contact-search-${index}`;
-	searchInput.name = `contact-search-${index}`;
-	searchInput.setAttribute("aria-label", list.dataset.filterLabel || "Filter contacts");
-	searchInput.classList.add("search-input");
-	searchWrapper.appendChild(searchInput);
-	list.parentNode.insertBefore(searchWrapper, list);
+const searchForm = document.querySelector("#contact-search-form");
+if (searchForm) {
+	const searchInput = searchForm.querySelector("input[name=q]");
+	let debounceTimer;
+
+	const fetchResults = async () => {
+		const url = new URL(window.location.href);
+		if (searchInput.value) {
+			url.searchParams.set("q", searchInput.value);
+		} else {
+			url.searchParams.delete("q");
+		}
+		url.searchParams.delete("page");
+
+		try {
+			const response = await fetch(url);
+			if (!response.ok) {
+				throw `Returned ${response.status} status code`;
+			}
+			const html = await response.text();
+			const newResults = new DOMParser().parseFromString(html, "text/html").querySelector("#search-results");
+			const oldResults = document.querySelector("#search-results");
+			if (newResults && oldResults) {
+				oldResults.replaceWith(newResults);
+				bindStars(newResults);
+				bindContentLinks(newResults);
+			}
+			history.pushState({}, "", url);
+		}
+		catch (error) {
+			console.error("Failed to update contact search results", error);
+		}
+	};
+
+	searchForm.addEventListener("submit", event => {
+		event.preventDefault();
+		clearTimeout(debounceTimer);
+		fetchResults();
+	});
 
 	searchInput.addEventListener("input", () => {
-		const query = searchInput.value.toLowerCase();
-		list.querySelectorAll("li").forEach(li => {
-			const names = li.dataset.allNames.toLowerCase().split("|");
-			const matches = names.some(name => name.includes(query));
-			li.style.display = matches ? "" : "none";
-		});
+		clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(fetchResults, 300);
 	});
-});
+}
