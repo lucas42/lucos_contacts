@@ -1,9 +1,8 @@
 {% load i18n %}
 {% include "agents/pagination.html" %}
-<ul class='agentlist' data-filter-placeholder="{% trans 'Filter...' %}"
-	data-filter-label="{% trans 'Filter contacts' %}">
+<ul class='agentlist'>
 	{% for agent in agents %}
-	<li data-all-names="{{ agent.names|join:'|' }}">
+	<li>
 		<a href="{{ agent.url }}" {% if agent.isDead %} class="isdead" {% endif %}>
 			<span class="star" data-agentid="{{ agent.id }}" data-starred="{{ agent.starred }}"></span>
 			<h3>{{ agent.name }}</h3>

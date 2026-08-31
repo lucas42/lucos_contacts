@@ -101,6 +101,16 @@ a.pagination-link:hover {
 	background: #fff;
 }
 
+.search-wrapper button {
+	margin-top: 5px;
+}
+
+.search-error {
+	color: #cc0033;
+	font-size: 0.9em;
+	margin: 5px 0 0;
+}
+
 .agenttable {
 	margin: auto;
 	max-width: 700px;

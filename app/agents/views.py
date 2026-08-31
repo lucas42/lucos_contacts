@@ -153,7 +153,7 @@ PAGINATED_LISTS = {'all', 'phone'}
 def agentindex(request, list):
 	agents = []
 	template = 'agents/agentlist.html'
-	prefetches = ['personname_set']
+	prefetches = []
 	if (list == 'postal'):
 		agentlist = Person.objects.filter(postaladdress__isnull=False)
 		prefetches.append('postaladdress_set')
@@ -169,6 +169,10 @@ def agentindex(request, list):
 		agentlist = Person.objects.all()
 	else:
 		agentlist = Person.objects.filter(id=0)
+
+	query = request.GET.get('q', '').strip()
+	if query:
+		agentlist = agentlist.filter(personname__name__icontains=query)
 
 	agentlist = agentlist.prefetch_related(*prefetches)
 
@@ -192,7 +196,6 @@ def agentindex(request, list):
 		data = {
 			'id': agent.id,
 			'name': agent.getName(),
-			'names': [p.name for p in agent.personname_set.all()],
 			'url': agent.get_absolute_url(),
 			'starred': agent.starred,
 			'isDead': agent.is_dead,
@@ -228,6 +231,7 @@ def agentindex(request, list):
 		'list': list,
 		'addurl': reverse('admin:agents_person_add'),
 		'page_obj': page_obj,
+		'query': query,
 	})
 
 @api_auth
