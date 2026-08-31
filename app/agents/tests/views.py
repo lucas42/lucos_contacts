@@ -547,3 +547,7 @@ class ContactSearchTest(TestCase):
 		self.assertContains(response, 'name="q"')
 		self.assertContains(response, 'data-filter-label="')
 		self.assertContains(response, 'data-filter-placeholder="')
+		# Error region for fetch failures — hidden by default, translated text
+		# supplied via data-error-text for script.js to display on failure.
+		self.assertContains(response, 'id="contact-search-error"')
+		self.assertContains(response, 'data-error-text="')

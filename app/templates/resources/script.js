@@ -119,12 +119,20 @@ customElements.define('language-selector', LanguageSelector);
 const searchForm = document.querySelector("#contact-search-form");
 if (searchForm) {
 	const searchInput = searchForm.querySelector("input[name=q]");
+	const searchError = document.getElementById("contact-search-error");
 	let debounceTimer;
 	let requestSeq = 0;
 
-	// pushHistory=false and an explicit url are used by the popstate handler,
-	// which is re-fetching a URL the browser already navigated to rather than
-	// producing a new one from the input's current value.
+	// The plain <form> submit button is only needed as a no-JS fallback —
+	// once this debounced auto-search logic is running, it's redundant
+	// clutter (results already update as you type).
+	const submitButton = searchForm.querySelector("button[type=submit]");
+	if (submitButton) submitButton.hidden = true;
+
+	// pushHistory=false and an explicit url are used by the popstate/pageshow
+	// handlers below, which are re-fetching a URL the browser already
+	// navigated to rather than producing a new one from the input's current
+	// value.
 	const fetchResults = async ({ pushHistory = true, url = null } = {}) => {
 		const targetUrl = url || new URL(window.location.href);
 		if (!url) {
@@ -134,6 +142,13 @@ if (searchForm) {
 				targetUrl.searchParams.delete("q");
 			}
 			targetUrl.searchParams.delete("page");
+
+			// Typing (debounced) and pressing Enter (submit) both funnel through
+			// here. If the debounced fetch already landed this exact query
+			// before Enter was pressed, there's nothing left to do — most
+			// importantly, don't push a second identical history entry, which
+			// is what breaks the back button after "type, pause, then Enter".
+			if (pushHistory && targetUrl.toString() === window.location.href) return;
 		}
 
 		// Debouncing only stops overlapping fetches from being *scheduled*; it
@@ -159,9 +174,14 @@ if (searchForm) {
 			if (pushHistory) {
 				history.pushState({}, "", targetUrl);
 			}
+			if (searchError) searchError.hidden = true;
 		}
 		catch (error) {
 			console.error("Failed to update contact search results", error);
+			if (thisRequest === requestSeq && searchError) {
+				searchError.textContent = searchError.dataset.errorText;
+				searchError.hidden = false;
+			}
 		}
 	};
 
@@ -179,10 +199,18 @@ if (searchForm) {
 	// A search's pushState doesn't itself re-render the page, so without this,
 	// Back/Forward change the URL but leave #search-results showing whatever
 	// was last fetched — the page silently desyncs from the address bar.
-	window.addEventListener("popstate", () => {
+	const syncFromLocation = () => {
 		clearTimeout(debounceTimer);
 		const url = new URL(window.location.href);
 		searchInput.value = url.searchParams.get("q") || "";
 		fetchResults({ pushHistory: false, url });
+	};
+	window.addEventListener("popstate", syncFromLocation);
+	// Some browsers (notably ones using the back/forward cache) restore a
+	// page from bfcache without firing popstate, leaving #search-results
+	// stuck on whatever was showing when the page was frozen. `pageshow`
+	// with event.persisted is the standard way to catch that case too.
+	window.addEventListener("pageshow", event => {
+		if (event.persisted) syncFromLocation();
 	});
 }

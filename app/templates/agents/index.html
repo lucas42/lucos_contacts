@@ -6,6 +6,7 @@
 {% block body %}
 		{% trans 'Filter...' as filter_placeholder %}
 		{% trans 'Filter contacts' as filter_label %}
+		{% trans 'Search failed — please try again.' as search_error_text %}
 		<form method="get" class="search-wrapper" id="contact-search-form">
 			<input type="text" name="q" value="{{ query }}"
 				placeholder="{{ filter_placeholder }}"
@@ -14,6 +15,7 @@
 				data-filter-label="{{ filter_label }}"
 				class="search-input" />
 			<button type="submit">{% trans 'Search' %}</button>
+			<p id="contact-search-error" class="search-error" data-error-text="{{ search_error_text }}" hidden></p>
 		</form>
 		<div id="search-results">
 			{% include template %}
