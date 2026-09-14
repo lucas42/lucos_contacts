@@ -429,12 +429,12 @@
         },
         "phonenumbers": {
             "hashes": [
-                "sha256:6806bebd46638af2fc2609675ea046067a40512eca81bf1446132e2fda29d113",
-                "sha256:f3cbeb1a42bf226060c60fc6277f5431755d325eddc23fbf2c72ef7e156113c6"
+                "sha256:41a7ff0257d5a7a096a8e263da7efc0a96a6162c84ba64af2ebf8972d09e70e1",
+                "sha256:d83b878d0188c81a5f5e8572cedcc7262bd0ea3806eb7c8e35d8666d262a8af0"
             ],
             "index": "pypi",
             "markers": "python_version >= '2.5'",
-            "version": "==9.0.38"
+            "version": "==9.0.39"
         },
         "psycopg": {
             "extras": [
