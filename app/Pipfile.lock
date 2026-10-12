@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "737a89efb68fd5f5fa36c31157a9e7e7fbe35bcd69cf52f03ab9ed4e65382514"
+            "sha256": "efefd1bc1e18d1fbdd38e1b5eabf27808c075aafe2cb4769ec50f38dfddc61ba"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -386,12 +386,12 @@
         },
         "django": {
             "hashes": [
-                "sha256:585fb82bf15053c42cf52e67c2f1b54a032dca384759315fd6678ab1870d1d72",
-                "sha256:7ab93536d8e677aa14554c56426290c69480bf2ee68d7513d4a22f57d6bfeb84"
+                "sha256:141efee6ec64d1db6db90683bf734c550102450f444fb099063b0be1bd27d991",
+                "sha256:a1e92451ccb8b514e91bbb3b6d186d20b4030558f116b5d9de6535455ff210b7"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.12'",
-            "version": "==6.1.1"
+            "version": "==6.1.2"
         },
         "django-phonenumber-field": {
             "extras": [
@@ -442,12 +442,12 @@
         },
         "phonenumbers": {
             "hashes": [
-                "sha256:189c028c4acd41ee80782e50f74a91260bd76d9115c83be94302509e1cdb5e84",
-                "sha256:a0dd1bc98efa0b6f5839c7b1fface2ebdf0a811645dd8211ae3f037a17ec07ac"
+                "sha256:ccf2ea44f8aa35c487f26146a31520ecedf8e1af1f57c803678ecb5ef5c01668",
+                "sha256:dfa6f74eeac67c044b75313fe0af10774d7d1e1242241437279d4c2fb8027c01"
             ],
             "index": "pypi",
             "markers": "python_version >= '2.5'",
-            "version": "==9.0.40"
+            "version": "==9.0.41"
         },
         "psycopg": {
             "extras": [
@@ -469,11 +469,12 @@
         },
         "pycparser": {
             "hashes": [
-                "sha256:600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29",
-                "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"
+                "sha256:51d5a8ba2be0bbe440b99d2112604c95bbbc3c2748a64260186c541e1729cd80",
+                "sha256:d875f09c3507d00e1aba0eecc6dcadc1352f30fff09dc6bff2f1c2935e97c2bc"
             ],
+            "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==3.0"
+            "version": "==3.11"
         },
         "pyjwt": {
             "extras": [
