@@ -4,6 +4,11 @@
 {% block headtitle %}LucOs - {{ name }}{% endblock %}
 {% block title %}{{ name }}{% endblock %}
 {% block body %}
+		{%if photosOrigin %}
+			<a id="photos-profile" href="{{photosOrigin}}/people/by-contact/{{id}}" target="_blank" rel="noopener" aria-label="{% blocktrans trimmed %}{{name}} in Photos (opens in new tab){% endblocktrans %}" hidden>
+				<img src="{{photosOrigin}}/people/by-contact/{{id}}/profile-picture" alt="" width="120" height="120" hidden />
+			</a>
+		{%endif%}
 		{%if isDead %}
 			<div id="dead">
 				<span class="rest-in-peace">{% trans 'Rest In Peace' %}</span>

@@ -2,7 +2,7 @@ import json
 from datetime import date
 from unittest.mock import patch
 from django.test import TestCase, Client
-from agents.models import Person, PersonName, RomanticRelationship, EmailAddress
+from agents.models import Person, PersonName, RomanticRelationship, EmailAddress, ExternalPerson
 
 
 AUTH_HEADER = {'HTTP_AUTHORIZATION': 'bearer 1234'}
@@ -551,3 +551,61 @@ class ContactSearchTest(TestCase):
 		# supplied via data-error-text for script.js to display on failure.
 		self.assertContains(response, 'id="contact-search-error"')
 		self.assertContains(response, 'data-error-text="')
+
+
+
+class PhotosProfilePictureTest(TestCase):
+	"""The person page embeds the lucos_photos profile picture, hidden until it loads (lucos_contacts#842)."""
+
+	def setUp(self):
+		self.client = Client()
+		self.person = make_person('Alice')
+
+	def _html(self, person_id=None, **kwargs):
+		return self.client.get(f'/people/{person_id or self.person.id}', HTTP_ACCEPT='text/html', **AUTH_HEADER, **kwargs)
+
+	def test_hidden_link_and_image_when_the_origin_is_set(self):
+		with patch.dict('os.environ', {'LUCOS_PHOTOS_ORIGIN': 'https://photos.example'}):
+			response = self._html()
+		page = response.content.decode()
+		self.assertEqual(response.status_code, 200)
+		self.assertIn(f'href="https://photos.example/people/by-contact/{self.person.id}"', page)
+		self.assertIn(f'src="https://photos.example/people/by-contact/{self.person.id}/profile-picture"', page)
+		self.assertIn('aria-label="Alice in Photos (opens in new tab)"', page)
+		self.assertIn('target="_blank"', page)
+		self.assertIn('rel="noopener"', page)
+		link = page[page.index('<a id="photos-profile"'):page.index('</a>', page.index('<a id="photos-profile"'))]
+		self.assertEqual(link.count('hidden'), 2)  # the link and the image both start hidden
+		self.assertIn('alt=""', link)
+		self.assertNotIn('onload', link)
+		self.assertNotIn('onerror', link)
+
+	def test_trailing_slash_on_the_origin_is_ignored(self):
+		with patch.dict('os.environ', {'LUCOS_PHOTOS_ORIGIN': 'https://photos.example/'}):
+			page = self._html().content.decode()
+		self.assertIn(f'href="https://photos.example/people/by-contact/{self.person.id}"', page)
+
+	def test_nothing_is_rendered_when_the_origin_is_not_set(self):
+		with patch.dict('os.environ', {}, clear=False) as env:
+			env.pop('LUCOS_PHOTOS_ORIGIN', None)
+			page = self._html().content.decode()
+		self.assertNotIn('photos-profile', page)
+		self.assertNotIn('by-contact', page)
+
+	def test_nothing_is_rendered_when_the_origin_is_empty(self):
+		with patch.dict('os.environ', {'LUCOS_PHOTOS_ORIGIN': ''}):
+			page = self._html().content.decode()
+		self.assertNotIn('photos-profile', page)
+
+	def test_the_url_uses_the_canonical_contact_id(self):
+		merged_away = ExternalPerson.objects.create(agent=self.person)
+		with patch.dict('os.environ', {'LUCOS_PHOTOS_ORIGIN': 'https://photos.example'}):
+			response = self._html(person_id=merged_away.id, follow=True)
+		page = response.content.decode()
+		self.assertIn(f'/people/by-contact/{self.person.id}"', page)
+		self.assertNotIn(f'/people/by-contact/{merged_away.id}', page)
+
+	def test_json_response_is_unchanged(self):
+		with patch.dict('os.environ', {'LUCOS_PHOTOS_ORIGIN': 'https://photos.example'}):
+			response = self.client.get(f'/people/{self.person.id}', HTTP_ACCEPT='application/json', **AUTH_HEADER)
+		self.assertNotIn('photos', json.loads(response.content))

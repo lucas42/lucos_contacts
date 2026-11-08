@@ -71,6 +71,7 @@ class PersonDetailView(View):
 		# so that long email addresses get split across lines in a more sensible place.
 		output['email'] = [{"view": email.replace("@", "​@"), "raw": email} for email in output['email']]
 		output['title'] = output['name']
+		output['photosOrigin'] = os.environ.get('LUCOS_PHOTOS_ORIGIN', '').rstrip('/')
 		return render(None, 'agents/agent.html', output)
 
 

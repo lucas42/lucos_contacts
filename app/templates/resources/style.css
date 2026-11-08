@@ -332,6 +332,24 @@ a.account.googlephotoprofile:hover {
 	color: #fff;
 }
 
+#photos-profile {
+	float: right;
+	margin: 0 0 1rem 1rem;
+	width: 120px;
+	height: 120px;
+}
+#photos-profile[hidden],
+#photos-profile img[hidden] {
+	display: none;
+}
+#photos-profile img {
+	display: block;
+	width: 120px;
+	height: 120px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
 #eolas {
 	display: block;
 	font-weight: bold;
