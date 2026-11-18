@@ -32,6 +32,7 @@ services:
       - AITHNE_ORIGIN
       - AITHNE_JWKS_URL
       - ENVIRONMENT
+      - LUCOS_PHOTOS_ORIGIN
     restart: always
     depends_on:
       db:

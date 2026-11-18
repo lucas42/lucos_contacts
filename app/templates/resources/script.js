@@ -39,8 +39,18 @@ function bindContentLinks(root) {
 	});
 }
 
+// The profile picture comes from lucos_photos with the browser's own session; it stays hidden unless it loads.
+function bindPhotosProfile(root) {
+	const image = root.querySelector("#photos-profile img");
+	if (!image) return;
+	const reveal = () => image.parentNode.hidden = false;
+	if (image.complete && image.naturalWidth > 0) reveal();
+	else image.addEventListener("load", reveal);
+}
+
 bindStars(document);
 bindContentLinks(document);
+bindPhotosProfile(document);
 
 
 class LanguageSelector extends HTMLElement {
