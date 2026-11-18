@@ -575,7 +575,7 @@ class PhotosProfilePictureTest(TestCase):
 		self.assertIn('target="_blank"', page)
 		self.assertIn('rel="noopener"', page)
 		link = page[page.index('<a id="photos-profile"'):page.index('</a>', page.index('<a id="photos-profile"'))]
-		self.assertEqual(link.count('hidden'), 2)  # the link and the image both start hidden
+		self.assertEqual(link.count('hidden'), 1)  # the link starts hidden; the image is revealed with it
 		self.assertIn('alt=""', link)
 		self.assertNotIn('onload', link)
 		self.assertNotIn('onerror', link)

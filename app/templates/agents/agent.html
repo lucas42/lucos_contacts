@@ -6,7 +6,7 @@
 {% block body %}
 		{%if photosOrigin %}
 			<a id="photos-profile" href="{{photosOrigin}}/people/by-contact/{{id}}" target="_blank" rel="noopener" aria-label="{% blocktrans trimmed %}{{name}} in Photos (opens in new tab){% endblocktrans %}" hidden>
-				<img src="{{photosOrigin}}/people/by-contact/{{id}}/profile-picture" alt="" width="120" height="120" hidden />
+				<img src="{{photosOrigin}}/people/by-contact/{{id}}/profile-picture" alt="" width="120" height="120" />
 			</a>
 		{%endif%}
 		{%if isDead %}

@@ -343,8 +343,7 @@ a.account.googlephotoprofile:hover {
 	outline-offset: 2px;
 	border-radius: 50%;
 }
-#photos-profile[hidden],
-#photos-profile img[hidden] {
+#photos-profile[hidden] {
 	display: none;
 }
 #photos-profile img {
