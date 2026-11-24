@@ -26,12 +26,12 @@
         },
         "certifi": {
             "hashes": [
-                "sha256:a9895e6e2758b371e0545e321a3a8fd1fcfd9829ada8824a936dfb16aaaf36cd",
-                "sha256:e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1"
+                "sha256:7422df25243767b9877031a2248cb14d09ddac9beee846f4cef3d5c9191d488f",
+                "sha256:af1cb240a8133f105aa52684a3a3258339d7f2fd0bd4e2812698ff5cf5588c4e"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.7'",
-            "version": "==2026.10.23"
+            "version": "==2026.11.20"
         },
         "cffi": {
             "hashes": [
@@ -415,12 +415,12 @@
         },
         "icalendar": {
             "hashes": [
-                "sha256:7bd001c8e648205e1bde5c6a5b77096598e8d0893dcf57755c6c597635620132",
-                "sha256:8355acfe17be81b368f0b1e3740817cea9b56ea889931f8f1a87c62f2d28db0b"
+                "sha256:f15380927aed4318860e001c03b543c48578c73aec46e2d384c5d0802082b808",
+                "sha256:f95ce4ff8f41d8ad9ca253a676ef40c672abd3774458d197c215055a0d805cc4"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==7.3.0"
+            "version": "==7.3.2"
         },
         "idna": {
             "hashes": [
@@ -442,12 +442,12 @@
         },
         "phonenumbers": {
             "hashes": [
-                "sha256:349bc799f15e010e35bd2c7d28149950ae74479cb1e11fb054ed9a95ecb4b437",
-                "sha256:d4e508ab800c3e5ce219b14be339deb3d55a0ab81af82fea44749fcabd01e908"
+                "sha256:8fddbbf98e6b7c4be02f96c132df6b9b1ff6a6976e6a338155bc79c04e5a509e",
+                "sha256:91f44c4085afcb86418b6339502a0957cd643238fad23dee314ea2008c0eaaa4"
             ],
             "index": "pypi",
             "markers": "python_version >= '2.5'",
-            "version": "==9.0.43"
+            "version": "==9.0.44"
         },
         "psycopg": {
             "extras": [
@@ -501,7 +501,6 @@
                 "sha256:a5e246f79eb80475e691bf93862cead98decd8a498cf53ba0516fcdc0f50dc1c",
                 "sha256:d7295ff14fdc0f92f662100bfb6c551d160ca090f2939f1ec5b9794265c03f06"
             ],
-            "index": "pypi",
             "markers": "python_version >= '3.11'",
             "version": "==4.0.0"
         },
